@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0c0c10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Brain Dump">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Brain Dump</title>
+<style>
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px 16px 50px; background: radial-gradient(ellipse at top, #1a1a24 0%, #0c0c10 70%); color: #f0f0f5; max-width: 720px; margin: 0 auto; min-height: 100vh; cursor: default; overflow-x: hidden; }
+  @media (max-width: 480px) {
+    body { padding: 16px 12px 40px; }
+    h1 { font-size: 1.85rem; }
+    #catInput, #catSelect { min-width: 0; flex: 1 1 140px; }
+    #micBtn, #addItemBtn { min-width: 48px; min-height: 48px; }
+    .item button.done, .item button.del, .item button.undo, .item button.restore { min-width: 44px; min-height: 44px; }
+  }
+  input, textarea, select, .cat-name { cursor: text; }
+  button, .arrow, .cat-dot, .del-cat, .done, .del, .color-btn, .group-header { cursor: pointer; }
+  .group-header, .arrow, .cat-name { user-select: none; -webkit-user-select: none; }
+  .item { cursor: grab; }
+  .item:active { cursor: grabbing; }
+  h1 { font-size: 2.2rem; font-weight: 800; text-align: center; margin: 0 0 6px; background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 18px; }
+  .controls, .finish-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 14px; align-items: center; }
+  input, select, button, textarea { font-family: inherit; }
+  input, select { padding: 9px 12px; border-radius: 10px; border: 1px solid #333; background: #1a1a22; color: #eee; }
+  button { background: #3b82f6; color: white; border: none; border-radius: 10px; padding: 9px 14px; cursor: pointer; font-weight: 600; }
+  button.secondary { background: #2c2c36; }
+  button.active { background: #3b82f6; }
+  .input-area { display: flex; gap: 8px; margin-bottom: 16px; }
+  textarea { flex: 1; padding: 12px; border-radius: 14px; border: 1px solid #333; background: #1a1a22; color: #eee; min-height: 58px; resize: vertical; }
+  #micBtn { background: #22c55e; min-width: 58px; }
+  #micBtn.listening { background: #ef4444; }
+  .voice-opts { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 13px; color: #888; }
+  .voice-opts select { padding: 4px 8px; }
+  .toolbar { display: none; gap: 8px; margin-bottom: 12px; align-items: center; background: #1a1a22; padding: 8px 12px; border-radius: 12px; }
+  .color-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid #444; }
+  .item { background: #1e1e28; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; border: 1px solid #2a2a36; cursor: grab; }
+  .item.selected { outline: 2px solid #60a5fa; }
+  .item.ghosted .main { text-decoration: line-through; opacity: 0.65; }
+  .item-text { flex: 1; }
+  .meta { font-size: 11px; color: #999; margin-left: 6px; }
+  .group-header.current { color: #93c5fd; }
+  .group-items.collapsed { display: none !important; }
+  .empty { text-align: center; color: #666; padding: 40px 0; }
+  #howTo { display: none; background: #1a1a22; border-radius: 14px; padding: 14px; margin-bottom: 16px; font-size: 14px; line-height: 1.55; }
+  .color-picker { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #1e1e28; padding: 18px; border-radius: 16px; z-index: 1000; text-align: center; border: 1px solid #444; }
+  .swatch { width: 34px; height: 34px; border-radius: 50%; display: inline-block; margin: 5px; cursor: pointer; border: 3px solid #555; }
+</style>
+</head>
+<body>
+  <h1>Brain Dump</h1>
+  <div class="subtitle">Just get it out of your head.</div>
+
+  <div class="controls">
+    <input id="catInput" placeholder="New category...">
+    <button id="addCatBtn">Add Category</button>
+    <select id="catSelect"><option value="">No category</option></select>
+    <button id="howToToggle" class="secondary">How to</button>
+  </div>
+  <div id="howTo" style="display:none;">
+    <strong>Talk or type freely.</strong> Umms ignored.<br>
+    Split: “next”, comma, or a pause (see Pause under the mic; default 1.5s).<br>
+    New tasks also start on “I have to”, “I need to”, “I should”, and similar — those words are left off the item.<br>
+    Category: type above + Enter, or say “category personal”.<br>
+    “make category work red”, “move buy milk to personal”, “scratch that move it to ideas”.<br>
+    Due: “set a deadline of 3 days”, “due tomorrow”, “give call mom a deadline of 5 days”.<br>
+    “scratch that”, “delete the last 2” or “delete the last two items”, “correction”.<br>
+    Drag items between categories. Click color circle to change category color.
+  </div>
+
+  <div class="finish-row">
+    <button id="selectBtn" class="secondary">Select</button>
+    <button id="exportBtn" class="secondary">Export</button>
+  </div>
+  <div id="micStatus" style="text-align:center;font-size:13px;color:#888;min-height:18px;"></div>
+  <div class="voice-opts">
+    <label for="voicePause">Pause</label>
+    <select id="voicePause" title="Wait this long after a thought is recognized before saving it. Joins a thought if it was split mid-sentence.">
+      <option value="0">Off</option>
+      <option value="1000">1s</option>
+      <option value="1500" selected>1.5s</option>
+      <option value="2000">2s</option>
+      <option value="2500">2.5s</option>
+    </select>
+  </div>
+
+  <div class="input-area">
+    <textarea id="itemInput" placeholder="Dump thoughts... Add or Enter" spellcheck="true"></textarea>
+    <button id="micBtn">🎤</button>
+    <button id="addItemBtn">Add</button>
+  </div>
+
+  <div class="toolbar" id="toolbar">
+    <span>Selected:</span>
+    <button id="deleteSelected" class="secondary" style="background:#ef4444;">Delete</button>
+    <button id="undoSelected" class="secondary">Mark not done</button>
+    <select id="moveSelectedTo" style="padding:6px 10px;">
+      <option value="">Move to...</option>
+    </select>
+    <span style="margin-left:8px;">Color:</span>
+    <div class="color-btn" data-color="#ff8a80" style="background:#ff8a80"></div>
+    <div class="color-btn" data-color="#82b1ff" style="background:#82b1ff"></div>
+    <div class="color-btn" data-color="#b9f6ca" style="background:#b9f6ca"></div>
+    <div class="color-btn" data-color="#ffff8d" style="background:#ffff8d"></div>
+    <div class="color-btn" data-color="#ea80fc" style="background:#ea80fc"></div>
+    <div class="color-btn" data-color="#ffd180" style="background:#ffd180"></div>
+  </div>
+
+  <div id="list"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const catInput = $('catInput'), addCatBtn = $('addCatBtn'), catSelect = $('catSelect');
+const itemInput = $('itemInput'), addItemBtn = $('addItemBtn'), micBtn = $('micBtn'), listEl = $('list');
+const howTo = $('howTo'), howToToggle = $('howToToggle');
+const modeRemove = null, modeGhost = null, selectBtn = $('selectBtn');
+const toolbar = $('toolbar'), micStatus = $('micStatus');
+
+let items = JSON.parse(localStorage.getItem('bd-items') || '[]');
+let categories = JSON.parse(localStorage.getItem('bd-cats') || '[]');
+let currentCat = localStorage.getItem('bd-current') || '';
+let finishMode = 'ghost'; // always ghost now
+let selectMode = false;
+let lastAddedId = null;
+let pendingCorrection = false;
+
+const PALETTE = ['#ff8a80','#82b1ff','#b9f6ca','#ffff8d','#ea80fc','#ffd180','#ff9e80','#b388ff'];
+
+let collapsed = JSON.parse(localStorage.getItem('bd-collapsed') || '{}');
+
+function save() {
+  localStorage.setItem('bd-items', JSON.stringify(items));
+  localStorage.setItem('bd-cats', JSON.stringify(categories));
+  localStorage.setItem('bd-current', currentCat);
+  localStorage.setItem('bd-finish', finishMode);
+  localStorage.setItem('bd-collapsed', JSON.stringify(collapsed));
+}
+function setStatus(msg) { micStatus.textContent = msg || ''; }
+
+function updateSelect() {
+  catSelect.innerHTML = '<option value="">No category</option>' + categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  catSelect.value = currentCat || '';
+  // Also update move dropdown
+  const moveSel = $('moveSelectedTo');
+  if (moveSel) {
+    moveSel.innerHTML = '<option value="">Move to...</option><option value="Uncategorized">Uncategorized</option>' +
+      categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  }
+}
+function getColor(name) {
+  return (categories.find(c => c.name === name) || {}).color || '#ffffff';
+}
+
+howToToggle.onclick = () => {
+  if (howTo.style.display === 'none' || howTo.style.display === '') {
+    howTo.style.display = 'block';
+    howToToggle.textContent = 'How to (close)';
+  } else {
+    howTo.style.display = 'none';
+    howToToggle.textContent = 'How to';
+  }
+};
+selectBtn.onclick = () => {
+  selectMode = !selectMode;
+  selectBtn.textContent = selectMode ? 'Done' : 'Select';
+  selectBtn.classList.toggle('active', selectMode);
+  if (!selectMode) items.forEach(i => i.selected = false);
+  render();
+};
+
+function render() {
+  updateSelect();
+  const visible = items.filter(i => !i.deleted);
+  const deletedItems = items.filter(i => i.deleted);
+  if (!visible.length && !categories.length && !deletedItems.length) {
+    listEl.innerHTML = '<div class="empty">Nothing yet. Type or speak.</div>';
+    toolbar.style.display = 'none';
+    return;
+  }
+  toolbar.style.display = (selectMode && items.some(i => i.selected)) ? 'flex' : 'none';
+
+  const groups = {};
+  categories.forEach(c => groups[c.name] = []);
+  groups['Uncategorized'] = [];
+  visible.forEach(it => {
+    const k = it.category || 'Uncategorized';
+    if (!groups[k]) groups[k] = [];
+    groups[k].push(it);
+  });
+
+  let html = '';
+  Object.keys(groups).sort((a,b) => a==='Uncategorized'?1:b==='Uncategorized'?-1:a.localeCompare(b)).forEach(name => {
+    const arr = groups[name];
+    if (name === 'Uncategorized' && !arr.length && !categories.length) return;
+    const col = name === 'Uncategorized' ? '#666' : getColor(name);
+    html += `<div class="group-header ${name === currentCat ? 'current' : ''}" data-cat="${name.replace(/"/g,'')}">
+      <span class="arrow" data-cat="${name.replace(/"/g,'')}" title="Double-click to collapse">${collapsed[name] ? '▶' : '▼'}</span>
+      <span class="cat-name" data-cat="${name.replace(/"/g,'')}" title="Click to rename">${name}</span>
+      <span style="opacity:0.6;font-size:13px;">(${arr.length})</span>
+      <span class="cat-dot" data-cat="${name.replace(/"/g,'')}" style="width:16px;height:16px;border-radius:50%;background:${col};display:inline-block;margin-left:8px;cursor:pointer;"></span>
+      <button class="del-cat" data-cat="${name.replace(/"/g,'')}" title="Delete category" style="background:#ef4444;border:none;color:white;border-radius:50%;width:20px;height:20px;font-size:11px;margin-left:6px;cursor:pointer;padding:0;">✕</button>
+    </div>
+      <div class="group-items ${collapsed[name] ? 'collapsed' : ''}" data-for="${name.replace(/"/g,'')}">`;
+    arr.sort((a,b) => (a.ghosted?1:0) - (b.ghosted?1:0)); // active first, ghosted at bottom
+    arr.forEach(it => {
+      const due = it.due ? `<span class="meta" style="color:#1e40af;background:rgba(255,255,255,0.85);padding:1px 5px;border-radius:4px;">due ${new Date(it.due).toLocaleDateString()}</span>` : '';
+      const fin = it.finishedAt ? `<span class="meta" style="color:#166534;background:rgba(255,255,255,0.85);padding:1px 5px;border-radius:4px;">done ${it.finishedAt}</span>` : '';
+      html += `<div class="item ${it.selected?'selected':''} ${it.ghosted?'ghosted':''}" draggable="true" data-id="${it.id}" style="background:${it.color||'#1e1e28'};color:#111;">
+        <div class="item-text"><span class="main">${it.text}</span> ${due}${fin}</div>
+        ${!it.ghosted ? `<button class="done" data-id="${it.id}" style="background:#22c55e;border:none;color:#fff;border-radius:50%;width:28px;height:28px;">✓</button>` : ''}
+        <button class="del" data-id="${it.id}" style="background:#ef4444;border:none;color:#fff;border-radius:50%;width:28px;height:28px;">✕</button>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  const ghosted = items.filter(i => i.ghosted && !i.deleted);
+  if (ghosted.length) {
+    html += `<div class="group-header" data-cat="Finished" style="opacity:.7;margin-top:28px;"><span class="arrow" data-cat="Finished">▼</span> Finished (${ghosted.length})</div><div class="group-items" data-for="Finished">`;
+    ghosted.forEach(it => {
+      const fin = it.finishedAt ? `<span class="meta" style="color:#166534;background:rgba(255,255,255,0.85);padding:1px 5px;border-radius:4px;">done ${it.finishedAt}</span>` : '';
+      html += `<div class="item ghosted" draggable="true" data-id="${it.id}" style="background:${it.color||'#1e1e28'};color:#111;opacity:0.75;">
+        <div class="item-text"><span class="main">${it.text}</span> ${fin}</div>
+        <button class="undo" data-id="${it.id}" title="Mark not done" style="background:#3b82f6;border:none;color:white;border-radius:50%;width:26px;height:26px;font-size:14px;">↩</button>
+        <button class="del" data-id="${it.id}" title="Delete" style="background:#ef4444;border:none;color:white;border-radius:50%;width:26px;height:26px;">✕</button>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  const deleted = deletedItems;
+  if (deleted.length) {
+    html += `<div class="group-header" style="opacity:.65;margin-top:28px;">Recently Deleted (${deleted.length})</div><div class="group-items">`;
+    deleted.forEach(it => {
+      html += `<div class="item" data-id="${it.id}" style="opacity:.65;"><div class="item-text">${it.text}</div>
+        <button class="restore" data-id="${it.id}" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:4px 8px;">Restore</button></div>`;
+    });
+    html += '</div>';
+  }
+  listEl.innerHTML = html;
+
+  // Color dots handled by delegation now
+  // Drag and drop remains below
+  // Drag and drop — attach to both headers and item areas
+  document.querySelectorAll('.item[draggable]').forEach(el => {
+    el.ondragstart = e => {
+      e.dataTransfer.setData('text/plain', el.dataset.id);
+      e.dataTransfer.effectAllowed = 'move';
+    };
+  });
+  document.querySelectorAll('.group-header, .group-items').forEach(zone => {
+    zone.ondragover = e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; zone.style.background = 'rgba(96,165,250,0.1)'; };
+    zone.ondragleave = () => { zone.style.background = ''; };
+    zone.ondrop = e => {
+      e.preventDefault();
+      zone.style.background = '';
+      const id = e.dataTransfer.getData('text/plain');
+      let cat = zone.dataset.for || zone.dataset.cat;
+      if (!cat || cat === 'Recently Deleted') return;
+      const it = items.find(i => i.id == id);
+      if (it) {
+        it.category = (cat === 'Uncategorized' || cat === 'Finished') ? '' : cat;
+        it.color = getColor(it.category);
+        if (cat !== 'Finished') {
+          it.ghosted = false;
+          it.finishedAt = null;
+        }
+        save();
+        render();
+      }
+    };
+  });
+}
+
+function showColorPicker(catName) {
+  document.querySelectorAll('.color-picker').forEach(p => p.remove());
+  const div = document.createElement('div');
+  div.className = 'color-picker';
+  div.innerHTML = `<div style="margin-bottom:10px;font-weight:600;">Color for “${catName}”</div>`;
+  PALETTE.forEach(col => {
+    const s = document.createElement('div');
+    s.className = 'swatch';
+    s.style.background = col;
+    s.onclick = () => {
+      let c = categories.find(x => x.name === catName);
+      if (!c) { c = {name: catName, color: col}; categories.push(c); }
+      else c.color = col;
+      const conflict = categories.find(x => x.color === col && x.name !== catName);
+      items.forEach(it => { if (it.category === catName) it.color = col; });
+      save(); render();
+      if (conflict) {
+        div.querySelector('div').textContent = `${conflict.name} uses this color — pick another?`;
+        div.querySelector('div').style.color = '#f59e0b';
+      } else div.remove();
+    };
+    div.appendChild(s);
+  });
+  const skip = document.createElement('button');
+  skip.textContent = 'Done';
+  skip.className = 'secondary';
+  skip.style.marginTop = '10px';
+  skip.onclick = () => div.remove();
+  div.appendChild(document.createElement('br'));
+  div.appendChild(skip);
+  document.body.appendChild(div);
+}
+
+addCatBtn.onclick = () => {
+  const name = catInput.value.trim();
+  if (!name) return;
+  if (!categories.find(c => c.name === name)) categories.push({ name, color: PALETTE[categories.length % PALETTE.length] });
+  currentCat = name;
+  catInput.value = '';
+  save();
+  render();
+  showColorPicker(name);
+};
+catInput.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); addCatBtn.click(); } };
+catSelect.onchange = () => { currentCat = catSelect.value; save(); render(); };
+
+function addItem(text) {
+  text = (text || itemInput.value).trim();
+  if (!text) return;
+  const it = {
+    id: Date.now() + Math.random(),
+    text,
+    category: currentCat,
+    color: currentCat ? getColor(currentCat) : '#ffffff',
+    ghosted: false, finishedAt: null, due: null, deleted: false, selected: false
+  };
+  items.unshift(it);
+  lastAddedId = it.id;
+  itemInput.value = '';
+  save(); render();
+  return it;
+}
+addItemBtn.onclick = () => addItem();
+itemInput.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addItem(); } };
+
+// Event delegation for the whole list
+listEl.addEventListener('click', e => {
+  const t = e.target;
+  const itemEl = t.closest('.item');
+  const header = t.closest('.group-header');
+
+  // Done button
+  if (t.classList.contains('done') && itemEl) {
+    const it = items.find(i => i.id == itemEl.dataset.id);
+    if (!it) return;
+    it.ghosted = true;
+    it.finishedAt = new Date().toLocaleString();
+    save(); render();
+    return;
+  }
+  // Undo finished (uncheck) — only via the button
+  if (t.classList.contains('undo') && itemEl) {
+    const it = items.find(i => i.id == itemEl.dataset.id);
+    if (it) {
+      it.ghosted = false;
+      it.finishedAt = null;
+      save();
+      render();
+    }
+    return;
+  }
+
+  // Delete item
+  if (t.classList.contains('del') && itemEl) {
+    const it = items.find(i => i.id == itemEl.dataset.id);
+    if (it) { it.deleted = true; it.deletedAt = Date.now(); save(); render(); }
+    return;
+  }
+  // Restore
+  if (t.classList.contains('restore') && itemEl) {
+    const it = items.find(i => i.id == itemEl.dataset.id);
+    if (it) { it.deleted = false; save(); render(); }
+    return;
+  }
+  // Delete category
+  if (t.classList.contains('del-cat')) {
+    const cat = t.dataset.cat;
+    if (confirm('Delete category “' + cat + '” and its items?')) {
+      items = items.filter(i => (i.category || 'Uncategorized') !== cat);
+      categories = categories.filter(c => c.name !== cat);
+      if (currentCat === cat) currentCat = '';
+      save(); render();
+    }
+    return;
+  }
+  // Color dot
+  if (t.classList.contains('cat-dot')) {
+    showColorPicker(t.dataset.cat);
+    return;
+  }
+  // Select mode toggle on item
+  if (selectMode && itemEl && !t.closest('button')) {
+    const it = items.find(i => i.id == itemEl.dataset.id);
+    if (it && !it.deleted) { it.selected = !it.selected; save(); render(); }
+    return;
+  }
+  // Rename: click on category name
+  if (t.classList.contains('cat-name')) {
+    e.stopPropagation();
+    e.preventDefault();
+    const oldName = t.dataset.cat;
+    if (!oldName || ['Uncategorized','Finished','Recently Deleted'].includes(oldName)) return;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = oldName;
+    input.style.cssText = 'font-weight:700;font-size:15px;width:160px;padding:3px 8px;border-radius:6px;border:2px solid #3b82f6;background:#0f0f12;color:#fff;cursor:text;';
+    t.replaceWith(input);
+    input.focus();
+    input.select();
+    let done = false;
+    const finishRename = () => {
+      if (done) return;
+      done = true;
+      const newName = input.value.trim();
+      if (newName && newName !== oldName) {
+        const cat = categories.find(c => c.name === oldName);
+        if (cat) cat.name = newName;
+        items.forEach(it => { if (it.category === oldName) it.category = newName; });
+        if (currentCat === oldName) currentCat = newName;
+        if (collapsed[oldName] !== undefined) {
+          collapsed[newName] = collapsed[oldName];
+          delete collapsed[oldName];
+        }
+        save();
+      }
+      render();
+    };
+    input.addEventListener('blur', finishRename);
+    input.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') { ev.preventDefault(); finishRename(); }
+      if (ev.key === 'Escape') { done = true; render(); }
+    });
+    return;
+  }
+
+  // Single click header = set current (ignore arrow, buttons, name, dot)
+  if (header && !t.closest('button') && !t.classList.contains('cat-dot') && !t.classList.contains('arrow') && !t.classList.contains('cat-name')) {
+    const cat = header.dataset.cat;
+    if (cat && cat !== 'Uncategorized' && cat !== 'Recently Deleted' && cat !== 'Finished') {
+      currentCat = cat;
+      save();
+      updateSelect();
+      setStatus('Adding to ' + cat);
+      // Don't full re-render here to avoid killing double-click
+      document.querySelectorAll('.group-header').forEach(h => h.classList.toggle('current', h.dataset.cat === cat));
+    }
+  }
+});
+
+// Reliable collapse on arrow double-click + rename on name double-click
+listEl.addEventListener('dblclick', function(e) {
+  const arrow = e.target.closest('.arrow');
+  const catNameSpan = e.target.closest('.cat-name');
+
+  if (arrow) {
+    e.preventDefault();
+    const header = arrow.closest('.group-header');
+    if (!header) return;
+    const itemsDiv = header.nextElementSibling;
+    if (itemsDiv && itemsDiv.classList.contains('group-items')) {
+      itemsDiv.classList.toggle('collapsed');
+      const cat = header.dataset.cat;
+      if (cat) {
+        collapsed[cat] = itemsDiv.classList.contains('collapsed');
+        save();
+      }
+      arrow.textContent = itemsDiv.classList.contains('collapsed') ? '▶' : '▼';
+    }
+    e.stopPropagation();
+    return;
+  }
+
+  if (catNameSpan) {
+    const oldName = catNameSpan.dataset.cat;
+    if (!oldName || oldName === 'Uncategorized' || oldName === 'Finished' || oldName === 'Recently Deleted') return;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = oldName;
+    input.style.cssText = 'font-weight:700; font-size:15px; width:160px; padding:2px 8px; border-radius:6px; border:2px solid #3b82f6; background:#111; color:white;';
+    catNameSpan.style.display = 'none';
+    catNameSpan.parentNode.insertBefore(input, catNameSpan);
+    input.focus();
+    input.select();
+
+    const saveRename = () => {
+      const newName = input.value.trim();
+      if (newName && newName !== oldName) {
+        const cat = categories.find(c => c.name === oldName);
+        if (cat) cat.name = newName;
+        items.forEach(it => { if (it.category === oldName) it.category = newName; });
+        if (currentCat === oldName) currentCat = newName;
+        if (collapsed[oldName] !== undefined) {
+          collapsed[newName] = collapsed[oldName];
+          delete collapsed[oldName];
+        }
+        save();
+      }
+      render();
+    };
+    input.addEventListener('blur', saveRename);
+    input.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') { ev.preventDefault(); saveRename(); }
+      if (ev.key === 'Escape') render();
+    });
+    e.stopPropagation();
+  }
+});
+
+// Select mode actions
+$('deleteSelected').onclick = () => {
+  items.forEach(it => { if (it.selected) { it.deleted = true; it.deletedAt = Date.now(); it.selected = false; } });
+  selectMode = false; selectBtn.textContent = 'Select';
+  save(); render();
+};
+$('undoSelected').onclick = () => {
+  items.forEach(it => { if (it.selected && it.ghosted) { it.ghosted = false; it.finishedAt = null; it.selected = false; } });
+  selectMode = false; selectBtn.textContent = 'Select';
+  save(); render();
+};
+$('moveSelectedTo').onchange = () => {
+  const target = $('moveSelectedTo').value;
+  if (!target) return;
+  items.forEach(it => {
+    if (it.selected) {
+      it.category = target === 'Uncategorized' ? '' : target;
+      it.color = getColor(it.category);
+      it.ghosted = false;
+      it.finishedAt = null;
+      it.selected = false;
+    }
+  });
+  selectMode = false; selectBtn.textContent = 'Select';
+  $('moveSelectedTo').value = '';
+  save(); render();
+};
+
+// Color toolbar
+document.querySelectorAll('.color-btn').forEach(btn => {
+  btn.onclick = () => {
+    const col = btn.dataset.color;
+    const selected = items.filter(it => it.selected && !it.deleted);
+    if (!selected.length) return;
+
+    // Check if this color is already linked to a category
+    const linked = categories.find(c => c.color === col);
+
+    if (linked) {
+      // Move selected items into the existing category
+      selected.forEach(it => {
+        it.color = col;
+        it.category = linked.name;
+        it.selected = false;
+      });
+      selectMode = false;
+      selectBtn.textContent = 'Select';
+      save();
+      render();
+      setStatus('Moved to ' + linked.name);
+      return;
+    }
+
+    // Color not linked — prompt to create a category
+    const name = prompt('This color isn’t linked to a category yet.\n\nName the new category:');
+    if (name && name.trim()) {
+      const catName = name.trim();
+      categories.push({ name: catName, color: col });
+      selected.forEach(it => {
+        it.color = col;
+        it.category = catName;
+        it.selected = false;
+      });
+      if (!currentCat) currentCat = catName;
+      selectMode = false;
+      selectBtn.textContent = 'Select';
+      save();
+      render();
+      setStatus('Created “' + catName + '” and moved items');
+    } else {
+      // Just color them, no category
+      selected.forEach(it => { it.color = col; it.selected = false; });
+      selectMode = false;
+      selectBtn.textContent = 'Select';
+      save();
+      render();
+    }
+  };
+});
+
+$('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify({items, categories}, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'braindump-backup.json';
+  a.click();
+  setStatus('Backup saved');
+};
+
+// Voice
+let recognition = null;
+let userWantsListening = false;
+let listening = false;
+let fatalVoiceError = false;
+let networkVoiceErrors = 0;
+let voiceRestartTimer = null;
+let voiceBuffer = '';
+let voiceBufferTimer = null;
+const DEFAULT_VOICE_PAUSE_MS = 1500;
+
+const VOICE_COLORS = {red:'#ff8a80',blue:'#82b1ff',green:'#b9f6ca',yellow:'#ffff8d',purple:'#ea80fc',orange:'#ffd180'};
+const UNSUPPORTED_VOICE_MSG = 'Voice needs Chrome or Edge. This browser does not support speech recognition.';
+
+function resetMicUI(clearStatus) {
+  listening = false;
+  micBtn.textContent = '🎤';
+  micBtn.classList.remove('listening');
+  if (clearStatus) setStatus('');
+}
+
+function getLastAdded() {
+  if (lastAddedId != null) {
+    const it = items.find(i => i.id === lastAddedId && !i.deleted);
+    if (it) return it;
+  }
+  return items.find(i => !i.deleted) || null;
+}
+
+function refreshLastAdded() {
+  const it = items.find(i => !i.deleted);
+  lastAddedId = it ? it.id : null;
+}
+
+function cleanTranscript(raw) {
+  let s = String(raw || '').trim();
+  s = s.replace(/\b(um+|uh+|erm+|er+|hmm+|ah+|huh+)\b/gi, ' ');
+  s = s.replace(/(^|[,;]\s*)like\s*(?=[,;]|$)/gi, '$1');
+  s = s.replace(/^\s*like\s+/i, '');
+  s = s.replace(/[\s.,!?…]+$/g, '');
+  s = s.replace(/\s+/g, ' ').trim();
+  return { raw: s, t: s.toLowerCase() };
+}
+
+const WORD_NUMS = {one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10};
+
+// Longest first so "i have to" wins over a bare "have to".
+const INTENT_SRC = "(?:i['’]?ve\\s+got\\s+to|i\\s+have\\s+got\\s+to|i['’]?m\\s+going\\s+to|i\\s+am\\s+going\\s+to|i['’]?m\\s+gonna|i\\s+am\\s+gonna|i\\s+have\\s+to|i\\s+need\\s+to|i\\s+want\\s+to|i\\s+got\\s+to|i\\s+gotta|i\\s+should(?!n)|i\\s+must|don['’]?t\\s+forget\\s+to|remember\\s+to|have\\s+to|need\\s+to)";
+
+function splitVoiceParts(cleanedRaw) {
+  const parts = [];
+  cleanedRaw.split(/\s*\bnext\b\s*/i).forEach(chunk => {
+    chunk.split(/\s*,\s*/).forEach(bit => {
+      const p = bit.trim().replace(/[\s.,!?…]+$/g, '').trim();
+      if (p) parts.push(p);
+    });
+  });
+  return parts;
+}
+
+function toActionText(s) {
+  s = String(s || '').trim().replace(/[\s.,!?…]+$/g, '').trim();
+  if (!s) return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function splitIntentPhrases(text) {
+  const re = new RegExp('(?:^|\\s+)(' + INTENT_SRC + ')(?:\\s+|$)', 'gi');
+  const parts = [];
+  let lastIndex = 0;
+  let found = false;
+  let m;
+  const src = String(text || '');
+  re.lastIndex = 0;
+  while ((m = re.exec(src))) {
+    found = true;
+    const before = src.slice(lastIndex, m.index).trim();
+    if (before) parts.push(toActionText(before));
+    lastIndex = m.index + m[0].length;
+    if (re.lastIndex === m.index) re.lastIndex++;
+  }
+  const rest = src.slice(lastIndex).trim();
+  if (rest) parts.push(toActionText(rest));
+  if (!found) return null;
+  return parts.filter(Boolean);
+}
+
+function looksIncomplete(text) {
+  const t = String(text || '').toLowerCase().trim().replace(/[\s.,!?…]+$/g, '');
+  if (!t) return true;
+  if (new RegExp('(?:' + INTENT_SRC + ')$', 'i').test(t)) return true;
+  if (/\b(?:to|and|or|the|a|an|my|our|your|for|with|of|in|on|at)\s*$/i.test(t)) return true;
+  const stripped = t.replace(new RegExp('^(?:' + INTENT_SRC + ')\\s*', 'i'), '');
+  if (stripped !== t) {
+    const words = stripped.split(/\s+/).filter(Boolean);
+    if (words.length <= 2) return true;
+  }
+  return false;
+}
+
+function getVoicePauseMs() {
+  const el = $('voicePause');
+  if (!el) return DEFAULT_VOICE_PAUSE_MS;
+  const v = parseInt(el.value, 10);
+  return Number.isFinite(v) ? v : DEFAULT_VOICE_PAUSE_MS;
+}
+
+function flushVoiceBuffer() {
+  if (voiceBufferTimer) { clearTimeout(voiceBufferTimer); voiceBufferTimer = null; }
+  const text = voiceBuffer.trim();
+  voiceBuffer = '';
+  if (text) handleVoice(text);
+}
+
+function queueFinalTranscript(text) {
+  text = String(text || '').trim();
+  if (!text) return;
+  const pause = getVoicePauseMs();
+  if (!pause) { handleVoice(text); return; }
+  if (voiceBuffer && !looksIncomplete(voiceBuffer)) {
+    const prev = voiceBuffer;
+    voiceBuffer = '';
+    handleVoice(prev);
+  }
+  voiceBuffer = voiceBuffer ? (voiceBuffer + ' ' + text).replace(/\s+/g, ' ').trim() : text;
+  if (voiceBufferTimer) clearTimeout(voiceBufferTimer);
+  voiceBufferTimer = setTimeout(() => {
+    voiceBufferTimer = null;
+    flushVoiceBuffer();
+  }, pause);
+  if (userWantsListening) setStatus('Listening… ' + voiceBuffer);
+}
+
+function stripVoiceWrap(t) {
+  return String(t || '')
+    .replace(/[\s.,!?…]+$/g, '')
+    .replace(/^(?:(?:please|okay|ok|alright|all right|hey|so|just|can you|could you|would you|will you|go ahead and)[,\s]+)+/i, '')
+    .replace(/\s+(?:please|thanks|thank you)$/i, '')
+    .trim();
+}
+
+function parseDeleteCount(t) {
+  let s = String(t || '').toLowerCase().replace(/[\s.,!?…]+$/g, '').replace(/\s+(?:please|thanks|thank you)$/i, '').trim();
+  const last = s.match(/\bdelete(?:\s+the)?\s+last(?:\s+(one|two|three|four|five|six|seven|eight|nine|ten|\d+))?(?:\s+(?:items?|things?|ones?))?$/);
+  if (last) {
+    if (!last[1]) return 1;
+    if (WORD_NUMS[last[1]] != null) return WORD_NUMS[last[1]];
+    const n = parseInt(last[1], 10);
+    return Number.isFinite(n) ? n : null;
+  }
+  s = stripVoiceWrap(s);
+  if (/^delete(?:\s+that|\s+it)(?:\s+one)?$/.test(s)) return 1;
+  if (/^(?:scratch that|never mind)$/.test(s)) return 1;
+  return null;
+}
+
+function deleteLastItems(n) {
+  n = Math.max(0, n | 0);
+  const live = items.filter(i => !i.deleted);
+  const cut = live.slice(0, n);
+  cut.forEach(it => { it.deleted = true; it.deletedAt = Date.now(); });
+  refreshLastAdded();
+  if (cut.length) { save(); render(); }
+  setStatus(cut.length ? ('Removed ' + cut.length + ' item' + (cut.length === 1 ? '' : 's')) : 'No items to delete');
+  return cut.length;
+}
+
+
+function normalizeName(s) {
+  return String(s || '').toLowerCase().replace(/[\s.,!?…]+$/g, '').replace(/[.,!?…]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function ensureCategory(name, color) {
+  name = String(name || '').trim().replace(/[\s.,!?…]+$/g, '').trim();
+  if (!name) return null;
+  let c = categories.find(x => x.name.toLowerCase() === name.toLowerCase());
+  if (!c) {
+    c = { name, color: color || PALETTE[categories.length % PALETTE.length] };
+    categories.push(c);
+  } else if (color) {
+    c.color = color;
+    items.forEach(it => {
+      if ((it.category || '').toLowerCase() === c.name.toLowerCase()) it.color = color;
+    });
+  }
+  return c;
+}
+
+function findItemByText(q) {
+  const n = normalizeName(q);
+  if (!n) return null;
+  const live = items.filter(i => !i.deleted);
+  const exact = live.find(i => normalizeName(i.text) === n);
+  if (exact) return exact;
+  const cands = live.filter(i => {
+    const t = normalizeName(i.text);
+    return t.includes(n) || n.includes(t);
+  });
+  if (!cands.length) return null;
+  const last = getLastAdded();
+  if (last && cands.includes(last)) return last;
+  cands.sort((a, b) => Math.abs(normalizeName(a.text).length - n.length) - Math.abs(normalizeName(b.text).length - n.length));
+  return cands[0];
+}
+
+function setItemDue(item, days) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  item.due = d.toISOString();
+}
+
+function applyCommand(cleanedRaw) {
+  const t = cleanedRaw.toLowerCase().replace(/[\s.,!?…]+$/g, '').trim();
+  if (!t) return true;
+
+  let m;
+
+  m = t.match(/^scratch that(?:,)?\s+move it to\s+(.+)$/) || stripVoiceWrap(t).match(/^scratch that(?:,)?\s+move it to\s+(.+)$/);
+  if (m) {
+    const cat = ensureCategory(m[1]);
+    const target = getLastAdded();
+    if (cat && target) {
+      target.category = cat.name;
+      target.color = cat.color;
+      save(); render();
+      setStatus('Moved to ' + cat.name);
+    } else {
+      setStatus(target ? 'No category name' : 'No item to move');
+    }
+    return true;
+  }
+
+  // "delete the last 2/two/two items", "delete last two", "delete that", "scratch that"
+  if (!/^correction\b/.test(t) && !/^make category\b/.test(t) && !/^category\s+/.test(t) && !/^move\s+/.test(t) && !/^give\s+/.test(t) && !/^set\s+a\s+deadline\b/.test(t) && t !== 'due tomorrow' && !/\s+due tomorrow$/.test(t)) {
+    const delN = parseDeleteCount(t);
+    if (delN != null) {
+      deleteLastItems(delN);
+      return true;
+    }
+  }
+
+  m = t.match(/^correction\s*[.:,-]?\s*(.*)$/) || stripVoiceWrap(t).match(/^correction\s*[.:,-]?\s*(.*)$/);
+  if (m && /^(?:please[, ]+)?correction\b/.test(t)) {
+    const replacement = (m[1] || '').trim().replace(/[\s.,!?…]+$/g, '').trim();
+    const target = getLastAdded();
+    if (replacement) {
+      if (target) {
+        target.text = (cleanedRaw.replace(/^(?:please[, ]+)?correction\s*[.:,-]?\s*/i, '').trim() || replacement).replace(/[\s.,!?…]+$/g, '').trim();
+        save(); render();
+        setStatus('Corrected');
+      } else {
+        addItem(cleanedRaw.replace(/^(?:please[, ]+)?correction\s*[.:,-]?\s*/i, '').trim());
+      }
+      pendingCorrection = false;
+    } else if (target) {
+      pendingCorrection = true;
+      setStatus('Say the correction');
+    } else {
+      pendingCorrection = false;
+      setStatus('No item to correct');
+    }
+    return true;
+  }
+
+  m = t.match(/^make category\s+(.+)\s+(red|blue|green|yellow|purple|orange)$/) || stripVoiceWrap(t).match(/^make category\s+(.+)\s+(red|blue|green|yellow|purple|orange)$/);
+  if (m) {
+    const colName = m[2];
+    const col = VOICE_COLORS[colName];
+    const c = ensureCategory(m[1], col);
+    if (c) {
+      currentCat = c.name;
+      save(); render();
+      setStatus(c.name + ' → ' + colName);
+    }
+    return true;
+  }
+
+  m = t.match(/^category\s+(.+)$/) || stripVoiceWrap(t).match(/^category\s+(.+)$/);
+  if (m) {
+    const c = ensureCategory(m[1]);
+    if (c) {
+      currentCat = c.name;
+      save(); render();
+      setStatus('Category ' + c.name);
+    }
+    return true;
+  }
+
+  m = t.match(/^move\s+(.+?)\s+to\s+(.+)$/) || stripVoiceWrap(t).match(/^move\s+(.+?)\s+to\s+(.+)$/);
+  if (m) {
+    const cat = ensureCategory(m[2]);
+    const target = findItemByText(m[1]);
+    if (cat && target) {
+      target.category = cat.name;
+      target.color = cat.color;
+      save(); render();
+      setStatus('Moved to ' + cat.name);
+    } else {
+      setStatus(target ? 'No category name' : 'No matching item to move');
+    }
+    return true;
+  }
+
+  m = t.match(/^give\s+(.+?)\s+a\s+deadline\s+of\s+(\d+)\s+days?$/) || stripVoiceWrap(t).match(/^give\s+(.+?)\s+a\s+deadline\s+of\s+(\d+)\s+days?$/);
+  if (m) {
+    const days = +m[2];
+    let target = findItemByText(m[1]);
+    if (!target) {
+      const nameMatch = cleanedRaw.match(/give\s+(.+?)\s+a\s+deadline\s+of\s+\d+\s+days?/i);
+      const created = addItem((nameMatch ? nameMatch[1] : m[1]).trim());
+      target = created || getLastAdded();
+    }
+    if (target) {
+      setItemDue(target, days);
+      save(); render();
+      setStatus('Due set');
+    }
+    return true;
+  }
+
+  m = t.match(/^set\s+a\s+deadline\s+of\s+(\d+)\s+days?$/) || stripVoiceWrap(t).match(/^set\s+a\s+deadline\s+of\s+(\d+)\s+days?$/);
+  if (m) {
+    const target = getLastAdded();
+    if (target) {
+      setItemDue(target, +m[1]);
+      save(); render();
+      setStatus('Due set');
+    } else {
+      setStatus('No item to set a due date');
+    }
+    return true;
+  }
+
+  if (/^due tomorrow$/.test(t) || /^due tomorrow$/.test(stripVoiceWrap(t))) {
+    const target = getLastAdded();
+    if (target) {
+      setItemDue(target, 1);
+      save(); render();
+      setStatus('Due set');
+    } else {
+      setStatus('No item to set a due date');
+    }
+    return true;
+  }
+
+  m = t.match(/^(.+)\s+due tomorrow$/);
+  if (m) {
+    let target = findItemByText(m[1]);
+    if (!target) {
+      const nameMatch = cleanedRaw.match(/^(.+)\s+due tomorrow$/i);
+      addItem((nameMatch ? nameMatch[1] : m[1]).trim());
+      target = getLastAdded();
+    }
+    if (target) {
+      setItemDue(target, 1);
+      save(); render();
+      setStatus('Due set');
+    }
+    return true;
+  }
+
+  return false;
+}
+
+function handleVoice(raw) {
+  const cleaned = cleanTranscript(raw);
+  if (!cleaned.t) { setStatus(userWantsListening ? 'Listening…' : ''); return; }
+
+  if (pendingCorrection) {
+    pendingCorrection = false;
+    const target = getLastAdded();
+    if (target) {
+      target.text = cleaned.raw;
+      save(); render();
+      setStatus('Corrected');
+      return;
+    }
+  }
+
+  if (applyCommand(cleaned.raw)) return;
+
+  const chunks = splitVoiceParts(cleaned.raw);
+  const parts = [];
+  chunks.forEach(chunk => {
+    const intentParts = splitIntentPhrases(chunk);
+    if (intentParts && intentParts.length) parts.push(...intentParts);
+    else parts.push(chunk);
+  });
+
+  const changed = parts.length > 1 || (parts.length === 1 && parts[0] !== cleaned.raw);
+  if (changed) {
+    parts.forEach(part => {
+      if (!part) return;
+      if (!applyCommand(part)) addItem(part);
+    });
+    setStatus(userWantsListening ? 'Listening…' : '');
+    return;
+  }
+
+  addItem(cleaned.raw);
+  setStatus(userWantsListening ? 'Listening…' : '');
+}
+
+
+if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+  recognition.onresult = e => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const res = e.results[i];
+      const text = (res[0] && res[0].transcript || '').trim();
+      if (!res.isFinal) {
+        if (text && userWantsListening) {
+          const pending = voiceBuffer ? voiceBuffer + ' ' + text : text;
+          setStatus('Listening… ' + pending);
+        }
+        continue;
+      }
+      if (text) queueFinalTranscript(text);
+    }
+  };
+  recognition.onerror = e => {
+    const err = (e && e.error) || '';
+    if (err === 'no-speech' || err === 'aborted') return;
+    if (err === 'not-allowed' || err === 'service-not-allowed') {
+      fatalVoiceError = true;
+      userWantsListening = false;
+      if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+      resetMicUI(false);
+      setStatus('Mic permission denied. Allow the microphone and click the mic again.');
+      return;
+    }
+    if (err === 'audio-capture') {
+      fatalVoiceError = true;
+      userWantsListening = false;
+      if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+      resetMicUI(false);
+      setStatus('No microphone found.');
+      return;
+    }
+    if (err === 'network') {
+      networkVoiceErrors += 1;
+      if (networkVoiceErrors >= 3) {
+        fatalVoiceError = true;
+        userWantsListening = false;
+        if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+        resetMicUI(false);
+        setStatus('Voice network error. Check your connection and click the mic again.');
+      } else {
+        setStatus('Voice network issue, retrying…');
+      }
+      return;
+    }
+    setStatus('Voice error: ' + err);
+  };
+  recognition.onend = () => {
+    if (userWantsListening && !fatalVoiceError) {
+      if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
+      voiceRestartTimer = setTimeout(() => {
+        voiceRestartTimer = null;
+        if (!userWantsListening || fatalVoiceError) return;
+        try {
+          recognition.start();
+          if (!/retrying/i.test(micStatus.textContent || '')) setStatus('Listening…');
+        } catch (err) {
+          const msg = String((err && err.message) || err);
+          if (/already started|InvalidState/i.test(msg)) return;
+          userWantsListening = false;
+          resetMicUI(false);
+          setStatus('Listening paused — click the mic. ' + msg);
+        }
+      }, 80);
+      return;
+    }
+    resetMicUI(false);
+  };
+} else {
+  setStatus(UNSUPPORTED_VOICE_MSG);
+}
+
+micBtn.onclick = () => {
+  if (!recognition) return setStatus(UNSUPPORTED_VOICE_MSG);
+  if (userWantsListening || listening) {
+    userWantsListening = false;
+    fatalVoiceError = false;
+    if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+    flushVoiceBuffer();
+    try { recognition.stop(); } catch (err) {}
+    resetMicUI(true);
+    return;
+  }
+  fatalVoiceError = false;
+  networkVoiceErrors = 0;
+  userWantsListening = true;
+  listening = true;
+  micBtn.textContent = '⏹';
+  micBtn.classList.add('listening');
+  try {
+    recognition.start();
+    setStatus('Listening…');
+  } catch (err) {
+    userWantsListening = false;
+    resetMicUI(false);
+    setStatus('Could not start listening: ' + ((err && err.message) || err));
+  }
+};
+
+(function initVoicePause() {
+  const el = $('voicePause');
+  if (!el) return;
+  const stored = localStorage.getItem('bd-voice-pause');
+  const valid = [...el.options].some(o => o.value === stored);
+  el.value = valid ? stored : String(DEFAULT_VOICE_PAUSE_MS);
+  el.onchange = () => localStorage.setItem('bd-voice-pause', el.value);
+})();
+
+// Auto-clean old deleted
+setInterval(() => {
+  const cutoff = Date.now() - 48*60*60*1000;
+  const before = items.length;
+  items = items.filter(i => !i.deleted || (i.deletedAt || 0) > cutoff);
+  if (items.length !== before) { save(); render(); }
+}, 60000);
+
+if ((location.protocol === 'http:' || location.protocol === 'https:') && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+render();
+</script>
+</body>
+</html>
