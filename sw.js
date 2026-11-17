@@ -1,12 +1,12 @@
-const CACHE_NAME = 'brain-dump-v1';
+const CACHE_NAME = 'brain-dump-v2';
 const SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-512-maskable.png',
-  './icons/apple-touch-icon.png'
+  './icon-192.png',
+  './icon-512.png',
+  './icon-512-maskable.png',
+  './apple-touch-icon.png'
 ];
 
 self.addEventListener('install', event => {
@@ -37,7 +37,6 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/');
 
   if (isHTML) {
-    // Network-first so new deploys take effect; fall back to cache offline.
     event.respondWith(
       fetch(req).then(res => {
         if (res && res.ok) {
@@ -52,7 +51,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Cache-first for app-shell assets (icons, manifest, etc.).
   event.respondWith(
     caches.match(req).then(cached => {
       if (cached) return cached;
