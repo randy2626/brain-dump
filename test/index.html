@@ -355,23 +355,29 @@ S.removeItem=function(x){return r.call(this,k.call(this,x));};})();</script>
 
 /* ===== warm ===== */
 /* Warm — a paper journal you actually want to write in */
-html[data-theme="warm"] { background: #e4d5bc; }
+html[data-theme="warm"] {
+  background: #e4d5bc;
+  padding: 10px 8px 12px;
+  box-sizing: border-box;
+}
 html[data-theme="warm"] body {
   font-family: "Source Serif 4", "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+  position: relative;
   margin: 0 auto;
-  padding: 22px 16px 56px;
+  padding: 18px 16px 52px;
   max-width: 720px;
-  min-height: 100vh;
+  min-height: calc(100vh - 22px);
   color: #2b2118;
   cursor: default;
   overflow-x: hidden;
   background-color: #f4ead8;
   background-image:
-    linear-gradient(rgba(140, 100, 55, 0.045) 1px, transparent 1px),
+    linear-gradient(rgba(140, 100, 55, 0.07) 1px, transparent 1px),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.32  0 0 0 0 0.16  0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
     radial-gradient(ellipse at 50% 0%, #fbf6ec 0%, #f0e4ce 55%, #e7d5b6 100%);
-  background-size: 100% 32px, 180px 180px, auto;
+  background-size: 100% 28px, 180px 180px, auto;
   background-attachment: local, local, scroll;
+  box-shadow: 0 8px 22px rgba(90, 60, 20, 0.14), 0 0 0 1px rgba(90, 60, 20, 0.08);
 }
 html[data-theme="warm"] h1 {
   font-family: Fraunces, "Source Serif 4", Georgia, serif;
@@ -552,7 +558,8 @@ html[data-theme="warm"] .fx-particle { border-radius: 2px 6px 3px 5px; width: 7p
   html[data-theme="warm"] .input-area { margin-bottom: 10px; }
   html[data-theme="warm"] .group-header { padding-top: 8px; padding-bottom: 4px; }
 
-  html[data-theme="warm"] body { padding: 14px 12px 40px; }
+  html[data-theme="warm"] { padding: 8px 7px 10px; }
+  html[data-theme="warm"] body { padding: 14px 12px 44px; min-height: calc(100vh - 18px); }
   html[data-theme="warm"] h1 { font-size: 1.95rem; }
   html[data-theme="warm"] .subtitle { font-size: 1.22rem; margin-bottom: 14px; }
   html[data-theme="warm"] #catInput, html[data-theme="warm"] #catSelect { min-width: 0; flex: 1 1 140px; }
@@ -623,6 +630,68 @@ html[data-theme="warm"] #trackerStrip .strip-dot { color:#c4ad8e; }
 html[data-theme="warm"] #trackerToggle { border-radius:12px; }
 html[data-theme="warm"] .tracker-minus, html[data-theme="warm"] .tracker-del { border-radius:12px; box-shadow:0 0 0 1px #d4c0a2; }
 
+
+
+/* Warm paper page: handwritten date/time and a quiet yellow pencil in the corner. */
+#pageWhen, #pageArt { display: none; }
+html[data-theme="warm"] #pageWhen {
+  display: block;
+  font-family: "Patrick Hand", "Segoe Print", "Bradley Hand", "Comic Sans MS", "Chalkboard SE", cursive;
+  font-size: 1.38rem;
+  text-align: center;
+  color: #7a4a28;
+  margin: 2px 0 2px;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  min-height: 1.4em;
+  position: relative;
+  z-index: 1;
+}
+html[data-theme="warm"] #pageArt {
+  display: block;
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  top: 8px;
+  right: 2px;
+  width: 136px;
+  height: 80px;
+  opacity: 0.5;
+}
+html[data-theme="warm"] #pageArt svg { display: block; width: 100%; height: 100%; }
+/* Keep type and controls above the pencil so it never covers inputs, buttons, or items. */
+html[data-theme="warm"] h1,
+html[data-theme="warm"] .subtitle,
+html[data-theme="warm"] #whyLine,
+html[data-theme="warm"] #welcome,
+html[data-theme="warm"] #nudgeCard,
+html[data-theme="warm"] .controls,
+html[data-theme="warm"] #howTo,
+html[data-theme="warm"] .finish-row,
+html[data-theme="warm"] #settings,
+html[data-theme="warm"] #micStatus,
+html[data-theme="warm"] .voice-opts,
+html[data-theme="warm"] #addingTo,
+html[data-theme="warm"] .input-area,
+html[data-theme="warm"] #trackers,
+html[data-theme="warm"] .toolbar,
+html[data-theme="warm"] .search-row,
+html[data-theme="warm"] #list,
+html[data-theme="warm"] #trackHint {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 480px) {
+  html[data-theme="warm"] #pageWhen { font-size: 1.18rem; min-height: 1.3em; margin: 0 0 0; }
+  /* Smaller and tucked further into the top-right corner so it stays off the title and controls. */
+  html[data-theme="warm"] #pageArt {
+    top: 2px;
+    right: -6px;
+    width: 92px;
+    height: 54px;
+    opacity: 0.42;
+  }
+}
 
 /* ===== playful ===== */
 /* Playful — soft rounded cards, a little delight when you finish something */
@@ -1413,7 +1482,26 @@ html[data-theme="bold"] .tracker-minus, html[data-theme="bold"] .tracker-del { b
 
 </head>
 <body data-theme="warm" data-tracker-place="strip">
+  <div id="pageArt" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90" fill="none" aria-hidden="true">
+  <ellipse cx="90" cy="62" rx="50" ry="5" fill="#5a3a22" opacity="0.12"/>
+  <g transform="rotate(-16 80 40)">
+    <rect x="40" y="30" width="92" height="14" rx="1" fill="#d4b05a"/>
+    <rect x="40" y="30" width="92" height="4" fill="#e0c56e" opacity="0.7"/>
+    <rect x="40" y="40" width="92" height="4" fill="#b8943e" opacity="0.35"/>
+    <path d="M40 30 L18 37 L40 44 Z" fill="#e6d3a4"/>
+    <path d="M18 37 L26 34.2 L26 39.8 Z" fill="#5a4a3a"/>
+    <path d="M18 37 L22 36 L22 38 Z" fill="#2a2420"/>
+    <rect x="132" y="30" width="10" height="14" fill="#b8b0a4" stroke="#8a8478" stroke-width="0.6"/>
+    <line x1="135" y1="30" x2="135" y2="44" stroke="#8a8478" stroke-width="0.5"/>
+    <line x1="139" y1="30" x2="139" y2="44" stroke="#8a8478" stroke-width="0.5"/>
+    <rect x="142" y="31" width="8" height="12" rx="1.5" fill="#c47a7a"/>
+  </g>
+  <path d="M28 70 C 32 64, 42 66, 40 72 C 36 76, 30 74, 28 70 Z" fill="#e6d3a4" stroke="#c4a878" stroke-width="0.6"/>
+  <path d="M44 76 C 48 70, 58 71, 54 78 C 50 82, 45 80, 44 76 Z" fill="#dcc49a" stroke="#c4a878" stroke-width="0.6"/>
+  <path d="M22 80 C 26 76, 34 78, 32 84 C 28 86, 22 84, 22 80 Z" fill="#ead9b8" stroke="#c4a878" stroke-width="0.5"/>
+</svg></div>
   <h1>Brain Dump</h1>
+  <div id="pageWhen" class="page-when" aria-live="polite"></div>
   <div class="subtitle">A little notebook for whatever's rattling around.</div>
   <div id="whyLine"></div>
   <div id="welcome" aria-live="polite"></div>
@@ -2032,6 +2120,7 @@ function applyTheme(name, persist) {
   if (persist !== false) {
     try { localStorage.setItem(THEME_KEY, name); } catch (e) {}
   }
+  if (typeof window.__bdUpdatePageWhen === 'function') window.__bdUpdatePageWhen();
 }
 function emptyHTML() { return THEME_META[currentTheme].empty; }
 function looksHTML(current, name) {
@@ -4161,6 +4250,29 @@ render();
       setTimeout(function () { p.remove(); }, 900);
     }
   }
+})();
+
+// Live handwritten date/time on the Warm paper page (America/Chicago).
+(function () {
+  function fmt() {
+    const el = document.getElementById('pageWhen');
+    if (!el) return;
+    const warm = document.documentElement.getAttribute('data-theme') === 'warm';
+    if (!warm) { el.textContent = ''; return; }
+    try {
+      const now = (typeof window.__bdNow === 'number') ? new Date(window.__bdNow) : new Date();
+      const tz = { timeZone: 'America/Chicago' };
+      const day = now.toLocaleDateString('en-US', Object.assign({ weekday: 'short' }, tz));
+      const mon = now.toLocaleDateString('en-US', Object.assign({ month: 'short' }, tz));
+      const d = now.toLocaleDateString('en-US', Object.assign({ day: 'numeric' }, tz));
+      let t = now.toLocaleTimeString('en-US', Object.assign({ hour: 'numeric', minute: '2-digit', hour12: true }, tz));
+      t = t.replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
+      el.textContent = day + ', ' + mon + ' ' + d + ' · ' + t;
+    } catch (e) {}
+  }
+  window.__bdUpdatePageWhen = fmt;
+  fmt();
+  setInterval(fmt, 15000);
 })();
 
 </script>
