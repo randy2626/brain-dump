@@ -2174,7 +2174,8 @@ function attachDictation(btn, field) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { btn.style.display = 'none'; return; }
   btn.onclick = () => {
-    try { if (typeof recognition !== 'undefined' && recognition && (userWantsListening || listening)) micBtn.click(); } catch (e) {}
+    let wasListening = false;
+    try { if (typeof recognition !== 'undefined' && recognition && (userWantsListening || listening)) { wasListening = true; micBtn.click(); } } catch (e) {}
     const r = new SR();
     r.lang = 'en-US'; r.interimResults = false; r.continuous = false;
     btn.classList.add('listening'); btn.textContent = '⏹';
@@ -2185,7 +2186,9 @@ function attachDictation(btn, field) {
     };
     const stop = () => { btn.classList.remove('listening'); btn.textContent = '🎤'; };
     r.onend = stop; r.onerror = stop;
-    try { r.start(); } catch (e) { stop(); }
+    // Give the main mic a moment to let go (iPhone reports "mic not available" if both grab it at once).
+    const go = () => { try { r.start(); } catch (e) { stop(); } };
+    if (wasListening) setTimeout(go, 350); else go();
   };
 }
 
@@ -3389,6 +3392,16 @@ let voiceRestartTimer = null;
 let voiceBuffer = '';
 let voiceBufferTimer = null;
 const DEFAULT_VOICE_PAUSE_MS = 1500;
+// iPhone/iPad (incl. iPadOS that reports as Mac). On iOS each recognition.start() can re-ask for the mic,
+// so we run ONE session per mic tap and never auto-restart there.
+const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent || '') || (/Macintosh/.test(navigator.userAgent || '') && (navigator.maxTouchPoints || 0) > 1);
+const IS_STANDALONE = !!((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone);
+let voiceSessionStart = 0;
+let quickEnds = 0;            // consecutive sessions that ended almost immediately (non-iOS restart guard)
+const MAX_QUICK_ENDS = 5;
+let voiceDone = new Set();    // result indexes already turned into items in this session
+let voicePending = null;      // latest interim text not yet finalized { idx, text }
+let voiceErrorShown = false;  // an error message is on screen; don't overwrite it on end
 
 const VOICE_COLORS = {red:'#ff8a80',blue:'#82b1ff',green:'#b9f6ca',yellow:'#ffff8d',purple:'#ea80fc',orange:'#ffd180'};
 const UNSUPPORTED_VOICE_MSG = 'Voice needs Chrome or Edge. This browser does not support speech recognition.';
@@ -3398,6 +3411,91 @@ function resetMicUI(clearStatus) {
   micBtn.textContent = '🎤';
   micBtn.classList.remove('listening');
   if (clearStatus) setStatus('');
+}
+
+// Friendly, non-blocking messages for speech errors (no popups).
+function voiceErrorInfo(err) {
+  switch (err) {
+    case 'no-speech': return { msg: IS_IOS ? "Didn't catch that. Tap the mic to try again." : '', stop: false };
+    case 'aborted': return { msg: '', stop: false };
+    case 'not-allowed':
+      return { stop: true, msg: IS_IOS
+        ? (IS_STANDALONE ? 'The mic is blocked. Tap the mic and choose Allow (iPhone may ask each time the home-screen app opens).'
+                         : 'The mic is blocked. Tap aA in the address bar → Website Settings → Microphone → Allow, then tap the mic.')
+        : 'The mic is blocked. Allow the microphone for this site, then tap the mic.' };
+    case 'service-not-allowed':
+      return { stop: true, msg: IS_IOS
+        ? 'iPhone speech is off. Turn on Settings → General → Keyboard → Enable Dictation, then tap the mic.'
+        : 'Speech is not allowed in this browser right now. Tap the mic to try again.' };
+    case 'audio-capture':
+      return { stop: true, msg: 'The mic is busy or not available. Close anything else using it (a call, Voice Memos, keyboard dictation) and tap the mic again.' };
+    case 'language-not-supported':
+      return { stop: true, msg: "Voice isn't available for English on this device." };
+    default:
+      return { stop: false, msg: 'Voice hiccup. Tap the mic to try again.' };
+  }
+}
+
+// Small, non-blocking toast with an optional Undo button.
+let voiceToastTimer = null;
+function showVoiceToast(msg, undoFn, ms) {
+  let el = document.getElementById('voiceToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'voiceToast';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    el.style.cssText = 'position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9999;max-width:92vw;background:rgba(40,32,24,.92);color:#fff;border-radius:12px;padding:10px 14px;font-size:15px;line-height:1.3;display:none;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,.25);';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = '';
+  const span = document.createElement('span'); span.className = 'vt-msg'; span.textContent = msg; el.appendChild(span);
+  if (undoFn) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'vt-undo'; b.textContent = 'Undo';
+    b.style.cssText = 'background:none;border:1px solid rgba(255,255,255,.6);color:#fff;border-radius:8px;padding:6px 12px;font-size:15px;min-height:36px;cursor:pointer;';
+    b.onclick = () => { hideVoiceToast(); try { undoFn(); } catch (e) {} };
+    el.appendChild(b);
+  }
+  el.style.display = 'flex';
+  if (voiceToastTimer) clearTimeout(voiceToastTimer);
+  voiceToastTimer = setTimeout(hideVoiceToast, ms || 6000);
+}
+function hideVoiceToast() {
+  const el = document.getElementById('voiceToast');
+  if (el) el.style.display = 'none';
+  if (voiceToastTimer) { clearTimeout(voiceToastTimer); voiceToastTimer = null; }
+}
+function shortQuote(t) { t = String(t || ''); return '“' + (t.length > 40 ? t.slice(0, 38) + '…' : t) + '”'; }
+
+// Normalize what speech gave us: lowercase, no punctuation, single spaces.
+function voiceNorm(t) {
+  return String(t || '').toLowerCase().replace(/[“”"'’.,!?…:;]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+// A bare "remove the last thing" command: scratch that / delete / delete that / never mind / remove that …
+function isBareScratch(t) {
+  const s = stripVoiceWrap(voiceNorm(t));
+  return /^(?:scratch that|scratch this|scratch it|delete|delete that|delete this|delete it|delete that one|never ?mind|remove that|remove it|remove this)$/.test(s);
+}
+// "buy milk scratch that" / "buy milk. Scratch that. call mom" → drop the phrase said right before it.
+// Returns null when there's nothing to do here.
+function splitScratch(raw) {
+  const re = /\b(?:scratch that|delete that)\b[\s.,!?…]*/gi;
+  let m, last = null;
+  while ((m = re.exec(raw))) last = { idx: m.index, end: m.index + m[0].length };
+  if (!last) return null;
+  const before = raw.slice(0, last.idx).replace(/[\s.,!?…]+$/g, '').trim();
+  const after = raw.slice(last.end).replace(/^[\s.,!?…]+/g, '').trim();
+  if (!before) {
+    if (!after || /^move it to\b/i.test(after)) return null; // existing commands handle these
+    return { keep: [], dropped: null, after, leading: true };
+  }
+  const sentences = before.split(/[.!?…]+\s+/).map(s => s.trim()).filter(Boolean);
+  const lastSentence = sentences.pop() || '';
+  const bits = splitVoiceParts(lastSentence);
+  const dropped = bits.pop() || lastSentence;
+  const keep = sentences.concat(bits);
+  return { keep, dropped, after, leading: false };
 }
 
 function getLastAdded() {
@@ -3498,6 +3596,14 @@ function queueFinalTranscript(text) {
   if (!text) return;
   const pause = getVoicePauseMs();
   if (!pause) { handleVoice(text); return; }
+  if (voiceBuffer && isBareScratch(text)) {
+    // The thing to scratch hasn't been saved yet: drop it instead of saving then deleting.
+    const pending = voiceBuffer;
+    voiceBuffer = '';
+    if (voiceBufferTimer) { clearTimeout(voiceBufferTimer); voiceBufferTimer = null; }
+    handleVoice(pending + ' scratch that');
+    return;
+  }
   if (voiceBuffer && !looksIncomplete(voiceBuffer)) {
     const prev = voiceBuffer;
     voiceBuffer = '';
@@ -3532,17 +3638,29 @@ function parseDeleteCount(t) {
   s = stripVoiceWrap(s);
   if (/^delete(?:\s+that|\s+it)(?:\s+one)?$/.test(s)) return 1;
   if (/^(?:scratch that|never mind)$/.test(s)) return 1;
+  if (isBareScratch(s)) return 1;
   return null;
 }
 
 function deleteLastItems(n) {
   n = Math.max(0, n | 0);
   const live = items.filter(i => !i.deleted);
-  const cut = live.slice(0, n);
+  let cut;
+  if (n === 1) { const t = getLastAdded(); cut = t ? [t] : []; }
+  else cut = live.slice(0, n);
   cut.forEach(it => { it.deleted = true; it.deletedAt = Date.now(); });
   refreshLastAdded();
   if (cut.length) { save(); render(); }
+  const msg = cut.length ? (cut.length === 1 ? 'Removed ' + shortQuote(cut[0].text) : 'Removed ' + cut.length + ' items') : 'No items to delete';
   setStatus(cut.length ? ('Removed ' + cut.length + ' item' + (cut.length === 1 ? '' : 's')) : 'No items to delete');
+  if (cut.length) {
+    showVoiceToast(msg, () => {
+      cut.forEach(it => { it.deleted = false; delete it.deletedAt; });
+      lastAddedId = cut[0].id;
+      save(); render();
+      setStatus('Brought back');
+    });
+  }
   return cut.length;
 }
 
@@ -3772,6 +3890,25 @@ function handleVoice(raw) {
     }
   }
 
+  const sc = parseDeleteCount(cleaned.raw) == null ? splitScratch(cleaned.raw) : null;
+  if (sc) {
+    if (sc.leading) {
+      // "scratch that buy eggs" → remove the last item, then capture the rest
+      deleteLastItems(1);
+      handleVoice(sc.after);
+      return;
+    }
+    sc.keep.forEach(k => handleVoice(k));
+    if (sc.dropped) {
+      const dropped = sc.dropped;
+      setStatus('Dropped ' + shortQuote(dropped));
+      showVoiceToast('Dropped ' + shortQuote(dropped), () => { addItem(dropped); setStatus('Added back'); });
+    }
+    if (sc.after) handleVoice(sc.after);
+    else if (userWantsListening) setTimeout(() => { if (userWantsListening && /^Dropped/.test(micStatus.textContent || '')) setStatus('Listening…'); }, 1500);
+    return;
+  }
+
   if (applyCommand(cleaned.raw)) return;
 
   const chunks = splitVoiceParts(cleaned.raw);
@@ -3803,39 +3940,28 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
   recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = 'en-US';
+  recognition.onstart = () => { voiceSessionStart = Date.now(); };
   recognition.onresult = e => {
-    for (let i = e.resultIndex; i < e.results.length; i++) {
+    const start = Math.max(0, e.resultIndex | 0);
+    for (let i = start; i < e.results.length; i++) {
       const res = e.results[i];
       const text = (res[0] && res[0].transcript || '').trim();
       if (!res.isFinal) {
+        if (text) voicePending = { idx: i, text };
         if (text && userWantsListening) {
           const pending = voiceBuffer ? voiceBuffer + ' ' + text : text;
           setStatus('Listening… ' + pending);
         }
         continue;
       }
+      if (voiceDone.has(i)) continue;   // iOS can resend earlier finals; never add twice
+      voiceDone.add(i);
+      if (voicePending && voicePending.idx <= i) voicePending = null;
       if (text) queueFinalTranscript(text);
     }
   };
   recognition.onerror = e => {
     const err = (e && e.error) || '';
-    if (err === 'no-speech' || err === 'aborted') return;
-    if (err === 'not-allowed' || err === 'service-not-allowed') {
-      fatalVoiceError = true;
-      userWantsListening = false;
-      if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
-      resetMicUI(false);
-      setStatus('Mic permission denied. Allow the microphone and click the mic again.');
-      return;
-    }
-    if (err === 'audio-capture') {
-      fatalVoiceError = true;
-      userWantsListening = false;
-      if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
-      resetMicUI(false);
-      setStatus('No microphone found.');
-      return;
-    }
     if (err === 'network') {
       networkVoiceErrors += 1;
       if (networkVoiceErrors >= 3) {
@@ -3843,37 +3969,84 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
         userWantsListening = false;
         if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
         resetMicUI(false);
-        setStatus('Voice network error. Check your connection and click the mic again.');
+        voiceErrorShown = true;
+        setStatus('Voice needs an internet connection. Check it and tap the mic again.');
       } else {
         setStatus('Voice network issue, retrying…');
       }
       return;
     }
-    setStatus('Voice error: ' + err);
+    const info = voiceErrorInfo(err);
+    if (info.stop) {
+      fatalVoiceError = true;
+      userWantsListening = false;
+      if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+      resetMicUI(false);
+    }
+    if (info.msg) { voiceErrorShown = true; setStatus(info.msg); }
   };
   recognition.onend = () => {
-    if (userWantsListening && !fatalVoiceError) {
+    // Words still on screen that never got marked final (common on iPhone when you stop): keep them.
+    if (voicePending && voicePending.text) {
+      const t = voicePending.text;
+      voicePending = null;
+      queueFinalTranscript(t);
+    }
+    voicePending = null;
+    voiceDone = new Set();
+    const lasted = Date.now() - (voiceSessionStart || 0);
+    if (userWantsListening && !fatalVoiceError && !IS_IOS) {
+      // Desktop browsers end sessions on silence; restart, but never loop on instant ends.
+      quickEnds = lasted < 1000 ? quickEnds + 1 : 0;
+      if (quickEnds >= MAX_QUICK_ENDS) {
+        userWantsListening = false;
+        flushVoiceBuffer();
+        resetMicUI(false);
+        setStatus('Mic stopped. Tap the mic to keep going.');
+        return;
+      }
       if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
       voiceRestartTimer = setTimeout(() => {
         voiceRestartTimer = null;
         if (!userWantsListening || fatalVoiceError) return;
         try {
           recognition.start();
+          voiceSessionStart = Date.now();
           if (!/retrying/i.test(micStatus.textContent || '')) setStatus('Listening…');
         } catch (err) {
           const msg = String((err && err.message) || err);
           if (/already started|InvalidState/i.test(msg)) return;
           userWantsListening = false;
           resetMicUI(false);
-          setStatus('Listening paused — click the mic. ' + msg);
+          setStatus('Mic paused. Tap the mic to keep going.');
         }
       }, 80);
       return;
     }
+    // iPhone: one session per tap (restarting would make iOS ask for the mic again).
+    const endedByIOS = IS_IOS && userWantsListening && !fatalVoiceError;
+    userWantsListening = false;
+    flushVoiceBuffer();
     resetMicUI(false);
+    if (endedByIOS && !voiceErrorShown) {
+      if (!/^(Dropped|Removed)/.test(micStatus.textContent || '')) setStatus('Mic paused. Tap 🎤 to keep going.');
+    }
+    if (IS_IOS) maybeShowMicTip();
   };
 } else {
   setStatus(UNSUPPORTED_VOICE_MSG);
+}
+
+// One-time, non-blocking tip on iPhone about the repeated mic question.
+function maybeShowMicTip() {
+  try {
+    if (localStorage.getItem('bd-mic-tip')) return;
+    localStorage.setItem('bd-mic-tip', '1');
+  } catch (e) { return; }
+  const msg = IS_STANDALONE
+    ? 'Tip: iPhone asks about the mic each time the home-screen app opens. That\'s an Apple rule. Tap Allow and you\'re set for that visit.'
+    : 'Tip: to stop iPhone asking every time, tap aA in the address bar → Website Settings → Microphone → Allow.';
+  setTimeout(() => showVoiceToast(msg, null, 9000), 600);
 }
 
 micBtn.onclick = () => {
@@ -3889,6 +4062,11 @@ micBtn.onclick = () => {
   }
   fatalVoiceError = false;
   networkVoiceErrors = 0;
+  quickEnds = 0;
+  voiceErrorShown = false;
+  voiceDone = new Set();
+  voicePending = null;
+  voiceSessionStart = Date.now();
   userWantsListening = true;
   listening = true;
   micBtn.textContent = '⏹';
@@ -3897,9 +4075,11 @@ micBtn.onclick = () => {
     recognition.start();
     setStatus('Listening…');
   } catch (err) {
+    const msg = String((err && err.message) || err);
+    if (/already started|InvalidState/i.test(msg)) { setStatus('Listening…'); return; }
     userWantsListening = false;
     resetMicUI(false);
-    setStatus('Could not start listening: ' + ((err && err.message) || err));
+    setStatus("Couldn't start the mic. Tap it again in a second.");
   }
 };
 
