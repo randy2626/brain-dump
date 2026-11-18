@@ -73,6 +73,12 @@ S.removeItem=function(x){return r.call(this,k.call(this,x));};})();</script>
   .item { background: #1e1e28; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; border: 1px solid #2a2a36; cursor: grab; }
   .item.selected { outline: 2px solid #60a5fa; }
   .item.ghosted .main { text-decoration: line-through; opacity: 0.65; }
+  /* Drag-to-nest: hold a dragged item over another item ~1s to make that item a sub-category */
+  .item.nest-pending { box-shadow: inset 0 0 0 2px rgba(0,0,0,0.12) !important; }
+  .item.nest-target { position: relative; padding-left: 34px !important; outline: 2.5px dashed rgba(60,40,20,0.8) !important; outline-offset: 2px; box-shadow: inset 10px 0 0 rgba(60,40,20,0.30) !important; transition: padding-left .15s ease; }
+  .item.nest-target .item-text::before { content: '↳'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; opacity: .7; }
+  .item.nest-target::before { content: '↳ Make sub-category'; position: absolute; top: -12px; left: 10px; z-index: 2; font: 600 11px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; letter-spacing: .02em; color: #fff; background: rgba(60,40,20,0.9); border-radius: 999px; padding: 3px 8px; pointer-events: none; white-space: nowrap; }
+  .item.nest-target * { pointer-events: none; }
   .item-text { flex: 1; }
   .meta { font-size: 11px; color: #999; margin-left: 6px; }
   .group-header.current { color: #93c5fd; }
@@ -2534,6 +2540,115 @@ function clearWorkingSpot() {
   setStatus('');
 }
 
+// ---- Drag-to-nest: hold over an item ~1s while dragging, drop = that item becomes a sub-category ----
+const NEST_HOLD_MS = 900;
+let nestDragId = null, nestTargetId = null, nestTimer = null, nestReady = false;
+function cancelNest() {
+  if (nestTimer) { clearTimeout(nestTimer); nestTimer = null; }
+  nestTargetId = null; nestReady = false;
+  document.querySelectorAll('.item.nest-pending, .item.nest-target').forEach(el => el.classList.remove('nest-pending', 'nest-target'));
+}
+// Can item `tid` become a sub-category holding dragged item `did`? Returns { target, parent } or null.
+function nestEligible(tid, did) {
+  if (tid == null || did == null || String(tid) === String(did)) return null;
+  const t = items.find(i => String(i.id) === String(tid));
+  const d = items.find(i => String(i.id) === String(did));
+  if (!t || !d || t.deleted || t.letGo || t.ghosted || d.deleted || d.letGo) return null;
+  if (!subNameFromText(t.text)) return null;
+  const parent = (t.category && findCat(t.category)) ? t.category : '';
+  if (parent && depthOf(parent) >= MAX_DEPTH) return null; // would be more than 3 levels deep
+  return { target: t, dragged: d, parent };
+}
+function subNameFromText(text) {
+  let n = String(text || '').replace(/[›>]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/[\s.,!?…]+$/g, '').trim();
+  if (n.length > 60) n = n.slice(0, 60).trim();
+  return n;
+}
+function uniqueCatName(base) {
+  if (!findCatCI(base) && base.toLowerCase() !== 'uncategorized') return base;
+  let k = 2;
+  while (findCatCI(base + ' ' + k)) k++;
+  return base + ' ' + k;
+}
+function trackNestHover(e) {
+  if (nestDragId == null) return;
+  const el = e.target && e.target.closest ? e.target.closest('.item[data-id]') : null;
+  const zoneFor = el && el.closest('.group-items') ? el.closest('.group-items').dataset.for : '';
+  const ok = el && zoneFor !== 'Finished' && zoneFor !== 'Recently Deleted' && zoneFor !== 'Let go' && nestEligible(el.dataset.id, nestDragId);
+  if (!ok) { if (nestTargetId != null) cancelNest(); return; }
+  if (String(nestTargetId) === String(el.dataset.id)) return; // still holding over the same item
+  cancelNest();
+  nestTargetId = el.dataset.id;
+  el.classList.add('nest-pending');
+  nestTimer = setTimeout(() => {
+    nestTimer = null;
+    const live = document.querySelector('.item.nest-pending[data-id="' + nestTargetId + '"]');
+    if (!live) { cancelNest(); return; }
+    nestReady = true;
+    live.classList.remove('nest-pending');
+    live.classList.add('nest-target');
+    const z = live.closest('.group-items'); if (z) z.style.background = '';
+  }, NEST_HOLD_MS);
+}
+// Turn item `tid` into a sub-category (same spot, same parent) and put item `did` inside it.
+function makeSubFromItem(tid, did) {
+  const ok = nestEligible(tid, did);
+  if (!ok) return false;
+  const t = ok.target, d = ok.dragged, parent = ok.parent;
+  const name = uniqueCatName(subNameFromText(t.text));
+  const tIndex = items.indexOf(t);
+  const before = { d: { category: d.category, color: d.color, ghosted: d.ghosted, finishedAt: d.finishedAt }, kids: [] };
+  // Sit where the item was: anchor to the item just above it in its group (or the group's end if it was first).
+  let anchor = null;
+  if (parent) {
+    const groupItems = items.filter(i => !i.deleted && !i.letGo && (i.category || '') === parent);
+    groupItems.sort((a, b) => (a.ghosted ? 1 : 0) - (b.ghosted ? 1 : 0));
+    const pos = groupItems.indexOf(t);
+    for (let k = pos - 1; k >= 0; k--) { if (groupItems[k] !== d) { anchor = groupItems[k].id; break; } }
+  }
+  const color = parent ? (findCat(parent).color || PALETTE[0]) : ((t.color && t.color !== '#ffffff' && t.color !== '#1e1e28') ? t.color : PALETTE[categories.length % PALETTE.length]);
+  const cat = { name, color };
+  if (parent) cat.parent = parent;
+  if (anchor != null) cat.afterItem = anchor;
+  // Subcategories that were tucked under the old item keep their spot (they follow the new sub-category's anchor).
+  categories.forEach(c => {
+    if (c.afterItem != null && String(c.afterItem) === String(t.id)) {
+      before.kids.push({ name: c.name, afterItem: c.afterItem });
+      if (anchor != null) c.afterItem = anchor; else delete c.afterItem;
+    }
+  });
+  categories.push(cat);
+  items.splice(tIndex, 1);
+  d.category = name;
+  d.color = color;
+  d.ghosted = false;
+  d.finishedAt = null;
+  if (workingItemId != null && (String(workingItemId) === String(t.id))) workingItemId = null;
+  if (collapsed[name]) collapsed[name] = false;
+  if (parent && collapsed[parent]) collapsed[parent] = false;
+  save();
+  render();
+  showVoiceToast('Made ' + shortQuote(name) + ' a sub-category', () => undoMakeSub(name, t, tIndex, d.id, before));
+  return true;
+}
+function undoMakeSub(name, t, tIndex, did, before) {
+  const cat = findCat(name);
+  if (!cat) return;
+  categories = categories.filter(c => c !== cat);
+  // Anything put into the new sub-category since goes back where the old item was.
+  const back = cat.parent || '';
+  items.forEach(i => { if (i.category === name && String(i.id) !== String(did)) { i.category = back; i.color = back ? getColor(back) : '#ffffff'; } });
+  categories.forEach(c => { if (c.parent === name) { if (back) c.parent = back; else delete c.parent; } });
+  const d = items.find(i => String(i.id) === String(did));
+  if (d && d.category === name) Object.assign(d, before.d);
+  if (!items.includes(t)) items.splice(Math.min(tIndex, items.length), 0, t);
+  before.kids.forEach(k => { const c = findCat(k.name); if (c) c.afterItem = k.afterItem; });
+  if (currentCat === name) currentCat = back;
+  delete collapsed[name];
+  save();
+  render();
+}
+
 function render() {
   updateSelect();
   cleanupAfterItem();
@@ -2709,19 +2824,40 @@ function render() {
   document.querySelectorAll('.item[draggable]').forEach(el => {
     el.ondragstart = e => {
       itemWasDragged = true;
+      nestDragId = el.dataset.id;
+      cancelNest();
       e.dataTransfer.setData('text/plain', el.dataset.id);
       e.dataTransfer.effectAllowed = 'move';
     };
-    el.ondragend = () => { setTimeout(() => { itemWasDragged = false; }, 0); };
+    el.ondragend = () => { cancelNest(); nestDragId = null; setTimeout(() => { itemWasDragged = false; }, 0); };
   });
   document.querySelectorAll('.group-header, .group-items').forEach(zone => {
-    zone.ondragover = e => { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; zone.style.background = 'rgba(96,165,250,0.1)'; };
-    zone.ondragleave = () => { zone.style.background = ''; };
+    zone.ondragover = e => {
+      e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move';
+      trackNestHover(e);
+      // While the "make sub" highlight shows, keep the group tint off so the two looks never mix.
+      zone.style.background = (nestReady && zone.contains(document.querySelector('.item.nest-target'))) ? '' : 'rgba(96,165,250,0.1)';
+    };
+    zone.ondragleave = e => {
+      zone.style.background = '';
+      if (!e.relatedTarget || !zone.contains(e.relatedTarget)) {
+        const t = document.querySelector('.item.nest-pending, .item.nest-target');
+        if (t && zone.contains(t) && !(e.relatedTarget && t.contains(e.relatedTarget))) cancelNest();
+      }
+    };
     zone.ondrop = e => {
       e.preventDefault();
       e.stopPropagation();
       zone.style.background = '';
-      const id = e.dataTransfer.getData('text/plain');
+      const id = e.dataTransfer.getData('text/plain') || nestDragId;
+      const overItem = e.target && e.target.closest ? e.target.closest('.item[data-id]') : null;
+      if (nestReady && nestTargetId != null && overItem && String(overItem.dataset.id) === String(nestTargetId)) {
+        const tid = nestTargetId;
+        cancelNest();
+        nestDragId = null;
+        if (makeSubFromItem(tid, id)) return;
+      }
+      cancelNest();
       let cat = zone.dataset.for || zone.dataset.cat;
       if (!cat || cat === 'Recently Deleted' || cat === 'Let go') return;
       const it = items.find(i => i.id == id);
