@@ -9,7 +9,7 @@ S.setItem=function(x,v){return s.call(this,k.call(this,x),v);};
 S.removeItem=function(x){return r.call(this,k.call(this,x));};})();</script>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f4ead8">
 <script>
 (function(){
@@ -1557,6 +1557,69 @@ html[data-theme="bold"] .focus-tag { color:#b45309; }
 html[data-theme="bold"] #whyPending { background:#2a271f; color:#f3eee4; border:2px solid #f5c518; border-radius:8px; }
 </style>
 
+<style id="mobile-polish">
+/* ===== Mobile polish (fixes 6–13 from MOBILE_FIXLIST.md + one-line Undo toast + compact ✓/⋯) — 2026-11-18 ===== */
+/* Fix 7: keep content clear of the clock/notch and the home bar in the home-screen app (no change in a normal browser tab) */
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+html[data-theme="warm"] { padding: calc(10px + env(safe-area-inset-top, 0px)) calc(8px + env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) calc(8px + env(safe-area-inset-left, 0px)); }
+@media (max-width: 480px) {
+  html[data-theme="warm"] { padding: calc(8px + env(safe-area-inset-top, 0px)) calc(7px + env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) calc(7px + env(safe-area-inset-left, 0px)); }
+  .cat-sheet { top: calc(16px + env(safe-area-inset-top, 0px)); }
+  .color-picker { top: calc(16px + env(safe-area-inset-top, 0px)); }
+  .due-sheet { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+}
+/* Fix 8: dump box sits right under the title; quiet status line under it */
+#micStatus { margin: -8px 0 8px; }
+html #micStatus:empty { min-height: 0 !important; margin: 0; }
+@media (max-width: 480px) {
+  html .finish-row #catSelect, html[data-theme] .finish-row #catSelect { flex: 1 1 100%; min-width: 0; }
+  .finish-row .btn-word { display: none; }
+  #settingsBtn { min-width: 44px; padding-left: 10px; padding-right: 10px; }
+  .finish-row button { padding-left: 12px; padding-right: 12px; }
+  .finish-row { gap: 7px; }
+}
+/* Fix 9: 44px tap targets for the top controls on phones */
+@media (max-width: 480px), (hover: none) and (pointer: coarse) {
+  #catInput, #addCatBtn, #catSelect, #howToToggle, #selectBtn, #exportBtn, #settingsBtn, #voicePause, #trackerToggle, #searchInput { min-height: 44px; }
+  #trackerToggle { min-width: 44px; }
+}
+/* Fix 10: How-to opens as a sheet on phones (✕ / outside tap / Escape closes) */
+.howto-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 8px; }
+.howto-close { min-width: 40px; min-height: 40px; padding: 0 10px; line-height: 1; }
+#howTo .voice-opts { justify-content: flex-start; margin: 0 0 10px; }
+@media (max-width: 480px) {
+  html[data-theme] #howTo.as-sheet, #howTo.as-sheet {
+    position: fixed; z-index: 1002; left: 10px; right: 10px; margin: 0;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px)); top: auto;
+    max-height: calc(80vh - env(safe-area-inset-top, 0px)); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  #howTo.as-sheet .howto-head { position: sticky; top: -14px; margin: -14px -14px 8px; padding: 10px 14px 8px; background: inherit; z-index: 1; }
+  .howto-close { min-width: 44px; min-height: 44px; }
+}
+/* Fix 12: in-app ask sheet (replaces confirm/prompt popups), styled like the other sheets */
+.ask-sheet .ask-body { font-size: 14px; opacity: 0.85; margin: 0 0 12px; white-space: pre-line; line-height: 1.4; }
+.ask-sheet .ask-input { width: 100%; min-height: 44px; margin: 0 0 12px; }
+.ask-sheet .ask-actions { display: flex; gap: 8px; }
+.ask-sheet .ask-actions button { flex: 1 1 0; margin: 0; text-align: center; min-height: 48px; }
+.ask-sheet button.danger { background: #b91c1c; color: #fff; }
+.move-sheet .move-list { max-height: 52vh; overflow-y: auto; margin-bottom: 4px; }
+.move-sheet button.here { opacity: 0.55; }
+/* Fix 13: no resize handle on phones; the box grows as you type (JS) */
+@media (max-width: 480px), (hover: none) and (pointer: coarse) {
+  textarea#itemInput { resize: none; }
+}
+/* Extra: compact ✓ / ⋯ on item rows (38px to look at, still a 46px finger target) */
+@media (max-width: 480px), (hover: none) and (pointer: coarse) {
+  html .item button.done, html .item button.item-menu {
+    width: 38px !important; height: 38px !important; min-width: 38px !important; min-height: 38px !important;
+    padding: 0 !important; flex: 0 0 auto; position: relative;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 15px; line-height: 1;
+  }
+  html .item button.done::after, html .item button.item-menu::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
+  html .item { gap: 8px; }
+}
+</style>
 </head>
 <body data-theme="warm" data-tracker-place="strip">
   <div id="pageArt" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90" fill="none" aria-hidden="true">
@@ -1584,50 +1647,50 @@ html[data-theme="bold"] #whyPending { background:#2a271f; color:#f3eee4; border:
   <div id="welcome" aria-live="polite"></div>
   <div id="nudgeCard" aria-live="polite"></div>
 
+  <button type="button" id="addingTo" hidden aria-live="polite"></button>
+  <div id="whyPending" hidden aria-live="polite"></div>
+  <div class="input-area">
+    <textarea id="itemInput" placeholder="What's rattling around up there?" spellcheck="true" rows="2"></textarea>
+    <button id="micBtn">🎤</button>
+    <button id="addItemBtn">Add</button>
+  </div>
+  <div id="micStatus" style="text-align:center;font-size:13px;color:#888;min-height:18px;"></div>
+
   <div class="controls">
     <input id="catInput" placeholder="Name a new page...">
     <button id="addCatBtn">Add Category</button>
+  </div>
+  <div class="finish-row">
     <select id="catSelect"><option value="">No category</option></select>
     <button id="howToToggle" class="secondary">How to</button>
+    <button id="selectBtn" class="secondary">Select</button>
+    <button id="exportBtn" class="secondary">Export</button>
+    <button id="settingsBtn" class="secondary" aria-label="Settings">⚙<span class="btn-word"> Settings</span></button>
   </div>
-  <div id="howTo" style="display:none;">
+  <div id="howTo" style="display:none;" role="dialog" aria-label="How to">
+    <div class="howto-head"><strong>How it works</strong><button type="button" class="howto-close secondary" aria-label="Close how-to">✕</button></div>
+    <div class="voice-opts">
+      <label for="voicePause">Voice pause</label>
+      <select id="voicePause" title="Wait this long after a thought is recognized before saving it. Joins a thought if it was split mid-sentence.">
+        <option value="0">Off</option>
+        <option value="1000">1s</option>
+        <option value="1500" selected>1.5s</option>
+        <option value="2000">2s</option>
+        <option value="2500">2.5s</option>
+      </select>
+    </div>
     <strong>Talk or type freely.</strong> Umms ignored.<br>
-    Split: “next”, comma, or a pause (see Pause under the mic; default 1.5s).<br>
+    Split: “next”, comma, or a pause (see Voice pause at the top of this panel; default 1.5s).<br>
     New tasks also start on “I have to”, “I need to”, “I should”, and similar — those words are left off the item.<br>
     Category: type above + Enter, or say “category personal”.<br>
     Subcategory: tap “+ sub” on a category, type “Work &gt; Clients &gt; Smith” above, or say “subcategory clients” (goes inside the current one) or “subcategory clients under work”. Up to 3 levels.<br>
     “make category work red”, “move buy milk to personal”, “scratch that move it to ideas”.<br>
     Due: “set a deadline of 3 days”, “due tomorrow”, “give call mom a deadline of 5 days”.<br>
     “scratch that”, “delete the last 2” or “delete the last two items”, “correction”.<br>
-    Drag items between categories. Click color circle to change category color.<br>
+    Drag items between categories (on a phone, an item’s ⋯ → Move to… works too). Click color circle to change category color.<br>
     <em>Preview:</em> end an item with a day — “call mom Friday”, “pay rent by the 1st”, “taxes next week” — and it gets a small due tag (tap it to change or clear). Search filters everything as you type. Trackers: “4 books this month”, tap the card to check one off. Tap a category or an item to choose where you’re adding — the “Adding to:” label above the box stays in sync with the dropdown (tap the label to clear). Tap an item, then “+ sub” on that item, to nest a subcategory right under it. An item’s ⋯ holds Not done, Delete, Due date, and + sub. Not done is kind: Keep it, Let it go, or Not sure — no need to explain. Not sure puts a ? on the item; after a few days we’ll ask you to decide: Do it, or Let it go.
   </div>
-
-  <div class="finish-row">
-    <button id="selectBtn" class="secondary">Select</button>
-    <button id="exportBtn" class="secondary">Export</button>
-    <button id="settingsBtn" class="secondary" aria-label="Settings">⚙ Settings</button>
-  </div>
   <div id="settings"></div>
-  <div id="micStatus" style="text-align:center;font-size:13px;color:#888;min-height:18px;"></div>
-  <div class="voice-opts">
-    <label for="voicePause">Pause</label>
-    <select id="voicePause" title="Wait this long after a thought is recognized before saving it. Joins a thought if it was split mid-sentence.">
-      <option value="0">Off</option>
-      <option value="1000">1s</option>
-      <option value="1500" selected>1.5s</option>
-      <option value="2000">2s</option>
-      <option value="2500">2.5s</option>
-    </select>
-  </div>
-
-  <button type="button" id="addingTo" hidden aria-live="polite"></button>
-  <div id="whyPending" hidden aria-live="polite"></div>
-  <div class="input-area">
-    <textarea id="itemInput" placeholder="What's rattling around up there?" spellcheck="true"></textarea>
-    <button id="micBtn">🎤</button>
-    <button id="addItemBtn">Add</button>
-  </div>
 
   <div id="trackHint"></div>
 
@@ -1861,15 +1924,73 @@ function getColor(name) {
   return (categories.find(c => c.name === name) || {}).color || '#ffffff';
 }
 
-howToToggle.onclick = () => {
-  if (howTo.style.display === 'none' || howTo.style.display === '') {
-    howTo.style.display = 'block';
-    howToToggle.textContent = 'How to (close)';
-  } else {
-    howTo.style.display = 'none';
-    howToToggle.textContent = 'How to';
+// Mobile fix 10: on phones How-to opens as a sheet over the page (✕, outside tap, or Escape closes it)
+// so it never pushes the dump box off screen. On wider screens it stays an inline panel.
+function howToIsSheet() { return !!(window.matchMedia && matchMedia('(max-width: 480px)').matches); }
+function openHowTo() {
+  howTo.style.display = 'block';
+  howToToggle.textContent = 'How to (close)';
+  if (howToIsSheet()) {
+    howTo.classList.add('as-sheet');
+    howTo.scrollTop = 0;
+    if (!document.querySelector('.howto-backdrop')) {
+      const back = document.createElement('div');
+      back.className = 'sheet-backdrop howto-backdrop';
+      back.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); closeHowTo(); });
+      document.body.appendChild(back);
+    }
   }
+}
+function closeHowTo() {
+  howTo.style.display = 'none';
+  howTo.classList.remove('as-sheet');
+  howToToggle.textContent = 'How to';
+  document.querySelectorAll('.howto-backdrop').forEach(b => b.remove());
+}
+howToToggle.onclick = () => {
+  if (howTo.style.display === 'none' || howTo.style.display === '') openHowTo();
+  else closeHowTo();
 };
+howTo.querySelector('.howto-close').onclick = closeHowTo;
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && howTo.classList.contains('as-sheet') && howTo.style.display !== 'none') { ev.preventDefault(); closeHowTo(); }
+});
+
+// Mobile fix 12: small in-app sheets instead of the browser's confirm()/prompt() popups.
+// askSheet({ title, body, ok, cancel, danger, input, placeholder }) → Promise: true/false (confirm) or text/null (input).
+function askSheet(o) {
+  o = o || {};
+  document.querySelectorAll('.ask-sheet').forEach(s => { if (s._askDone) s._askDone(o.input ? null : false); });
+  return new Promise(resolve => {
+    const div = document.createElement('div');
+    div.className = 'kind-sheet ask-sheet';
+    div.setAttribute('role', 'dialog');
+    div.innerHTML = `<div class="kind-title">${esc(o.title || 'Are you sure?')}</div>` +
+      (o.body ? `<div class="ask-body">${esc(o.body)}</div>` : '') +
+      (o.input ? `<input type="text" class="ask-input" placeholder="${esc(o.placeholder || '')}" autocomplete="off" enterkeyhint="done">` : '') +
+      `<div class="ask-actions"><button type="button" class="secondary" data-act="cancel">${esc(o.cancel || 'Cancel')}</button>` +
+      `<button type="button" class="${o.danger ? 'danger' : ''}" data-act="ok">${esc(o.ok || 'OK')}</button></div>`;
+    let done = false;
+    const finish = val => {
+      if (done) return; done = true;
+      if (div._sheetDismiss) div._sheetDismiss();
+      div.remove();
+      resolve(val);
+    };
+    div._askDone = finish;
+    const inp = div.querySelector('.ask-input');
+    const okVal = () => o.input ? ((inp.value || '').trim() || null) : true;
+    div.addEventListener('click', ev => {
+      const b = ev.target.closest('button'); if (!b) return;
+      ev.stopPropagation();
+      finish(b.dataset.act === 'ok' ? okVal() : (o.input ? null : false));
+    });
+    if (inp) inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); finish(okVal()); } });
+    document.body.appendChild(div);
+    wireDismiss(div, () => finish(o.input ? null : false));
+    if (inp) setTimeout(() => { try { inp.focus(); } catch (e) {} }, 30);
+  });
+}
 selectBtn.onclick = () => {
   selectMode = !selectMode;
   selectBtn.textContent = selectMode ? 'Done' : 'Select';
@@ -2128,7 +2249,9 @@ function initTrackers() {
     if (b.classList.contains('tracker-tap')) { t.count += 1; t.lastTapAt = bdNow(); saveTrackers(); renderTrackers(); }
     else if (b.classList.contains('tracker-minus')) { t.count = Math.max(0, t.count - 1); saveTrackers(); renderTrackers(); }
     else if (b.classList.contains('tracker-del')) {
-      if (confirm('Remove the “' + t.label + '” tracker?')) { trackers = trackers.filter(x => x !== t); saveTrackers(); renderTrackers(); }
+      askSheet({ title: 'Remove the “' + t.label + '” tracker?', ok: 'Remove', cancel: 'Keep it', danger: true }).then(yes => {
+        if (yes) { trackers = trackers.filter(x => x !== t); saveTrackers(); renderTrackers(); }
+      });
     }
   });
   renderTrackers();
@@ -2189,7 +2312,7 @@ const THEME_META = {
     subtitle: "Say it. It's down.",
     catPh: 'New category...',
     itemPh: "Dump it. We'll sort it later.",
-    empty: '<div class="empty"><div class="empty-emoji">↓</div><div class="empty-title">Nothing in here.</div><div class="empty-sub">Tap below and get it off your chest.</div></div>'
+    empty: '<div class="empty"><div class="empty-emoji">↑</div><div class="empty-title">Nothing in here.</div><div class="empty-sub">Hit the box up top and get it off your chest.</div></div>'
   }
 };
 function loadTheme() {
@@ -2416,8 +2539,10 @@ function openSettings() {
   };
   $('setRerun').onclick = () => { closeSettings(); draft = { become: [...become], becomeText: (profile && profile.becomeText) || '', matters: (profile && profile.matters) || '', nudge, look: currentTheme || 'warm' }; renderWelcome(1); $('welcome').scrollIntoView({ block: 'nearest' }); };
   $('setClear').onclick = () => {
-    if (!confirm('Clear your why and nudge setting?')) return;
-    profile = { skipped: true }; saveProfile(profile); renderWhy(); hideNudge(); closeSettings(); setStatus('Cleared');
+    askSheet({ title: 'Clear your why and nudge setting?', body: 'You can set them up again any time.', ok: 'Clear', cancel: 'Keep them', danger: true }).then(yes => {
+      if (!yes) return;
+      profile = { skipped: true }; saveProfile(profile); renderWhy(); hideNudge(); closeSettings(); setStatus('Cleared');
+    });
   };
   panel.scrollIntoView({ block: 'nearest' });
 }
@@ -3709,7 +3834,7 @@ function addItem(text, opts) {
   if (opts.place === 'end') items.push(it);
   else items.unshift(it);
   lastAddedId = it.id;
-  if (!opts.keepInput) itemInput.value = '';
+  if (!opts.keepInput) { itemInput.value = ''; autoGrowInput(); }
   save(); render();
   revealCurrentCat({ scroll: true });
   if (parsedDue.due) setStatus('Added · ' + dueLabel(it.due) + ' (tap the tag to change)');
@@ -3720,9 +3845,27 @@ function addItem(text, opts) {
 let addKeepsFocus = false;
 addItemBtn.addEventListener('pointerdown', () => { addKeepsFocus = document.activeElement === itemInput; });
 addItemBtn.addEventListener('mousedown', e => { if (document.activeElement === itemInput) e.preventDefault(); });
-addItemBtn.onclick = () => { addItem(); if (addKeepsFocus) itemInput.focus(); addKeepsFocus = false; };
+// Mobile fix 8: after a typed add, a quiet "✓ Added: …" line right under the box (unless something else was just said there)
+function addTypedItem() {
+  const before = micStatus.textContent;
+  const it = addItem();
+  if (it && micStatus.textContent === before) setStatus('✓ Added: ' + shortQuote(it.text));
+  return it;
+}
+addItemBtn.onclick = () => { addTypedItem(); if (addKeepsFocus) itemInput.focus(); addKeepsFocus = false; };
 itemInput.setAttribute('enterkeyhint', 'enter');
-itemInput.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addItem(); } };
+itemInput.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addTypedItem(); } };
+// Mobile fix 13: the dump box grows with what you type (no resize handle on phones)
+function autoGrowInput() {
+  if (!itemInput) return;
+  itemInput.style.height = '';
+  if (!itemInput.value) return;
+  const max = 168;
+  const want = Math.min(itemInput.scrollHeight + 2, max);
+  if (want > itemInput.offsetHeight) itemInput.style.height = want + 'px';
+  itemInput.style.overflowY = itemInput.scrollHeight + 2 > max ? 'auto' : '';
+}
+itemInput.addEventListener('input', autoGrowInput);
 itemInput.addEventListener('focus', () => revealCurrentCat({ scroll: true, smooth: true }));
 itemInput.addEventListener('input', () => revealCurrentCat({ scroll: true }));
 
@@ -3827,10 +3970,11 @@ listEl.addEventListener('click', e => {
     const parentName = c ? (c.parent || '') : '';
     const kids = c ? childrenOf(cat).map(k => k.name) : [];
     const own = items.filter(i => !i.deleted && (i.category || 'Uncategorized') === cat);
-    let msg = 'Delete category “' + cat + '”?';
-    if (own.length) msg += '\n\nIts ' + own.length + ' item' + (own.length === 1 ? '' : 's') + ' will go to Recently Deleted (you can restore for 48 hours).';
-    if (kids.length) msg += '\n\nIts subcategories (' + kids.join(', ') + ') and their items move up to ' + (parentName ? '“' + parentName + '”' : 'the top level') + '.';
-    if (confirm(msg)) {
+    let msg = '';
+    if (own.length) msg += 'Its ' + own.length + ' item' + (own.length === 1 ? '' : 's') + ' will go to Recently Deleted (you can restore for 48 hours).';
+    if (kids.length) msg += (msg ? '\n\n' : '') + 'Its subcategories (' + kids.join(', ') + ') and their items move up to ' + (parentName ? '“' + parentName + '”' : 'the top level') + '.';
+    askSheet({ title: 'Delete category “' + cat + '”?', body: msg, ok: 'Delete', cancel: 'Keep it', danger: true }).then(yes => {
+    if (yes) {
       const now = Date.now();
       own.forEach(i => {
         i.deleted = true; i.deletedAt = now; i.selected = false;
@@ -3842,6 +3986,7 @@ listEl.addEventListener('click', e => {
       if (currentCat === cat) currentCat = parentName;
       save(); render();
     }
+    });
     return;
   }
   // + sub: inline box to add a subcategory
@@ -4131,7 +4276,7 @@ function openItemSheet(id) {
   div.innerHTML = `<div class="cat-sheet-title">“${esc(it.text)}”</div>
     ${notDoneBtn}
     <button type="button" class="danger" data-act="delete">Delete</button>
-    ${subBtn}
+    <div class="sheet-row"><button type="button" class="secondary" data-act="move">Move to…</button>${subBtn}</div>
     <div class="sheet-row"><button type="button" class="secondary" data-act="due">Due date</button><button type="button" class="secondary" data-act="why">${(it.why || it.whyGoal) ? 'Edit the why' : 'Add a why'}</button></div>
     <button type="button" class="secondary" data-act="close">Close</button>`;
   div.addEventListener('click', ev => {
@@ -4143,6 +4288,50 @@ function openItemSheet(id) {
     else if (act === 'due') openDueSheet(it);
     else if (act === 'notdone') openKindSheet(it);
     else if (act === 'why') openWhySheet(it.id);
+    else if (act === 'move') openMoveSheet(it.id);
+  });
+  document.body.appendChild(div);
+  wireDismiss(div, closeCatSheet);
+}
+
+// Mobile fix 6: fingers can't always drag, so an item's ⋯ → Move to… lists every category (same result as a drag-drop).
+function moveTargets() {
+  const out = [];
+  const walk = (parent, depth) => {
+    categories.filter(c => (c.parent || '') === parent).forEach(c => { out.push({ name: c.name, depth }); walk(c.name, depth + 1); });
+  };
+  walk('', 0);
+  // anything whose parent is missing still shows up
+  categories.forEach(c => { if (!out.some(o => o.name === c.name)) out.push({ name: c.name, depth: 0 }); });
+  return out;
+}
+function moveItemTo(id, cat) {
+  const it = items.find(i => i.id == id);
+  if (!it) return false;
+  const prev = { category: it.category, color: it.color, ghosted: it.ghosted, finishedAt: it.finishedAt };
+  it.category = cat === 'Uncategorized' ? '' : cat;
+  it.color = getColor(it.category);
+  it.ghosted = false;
+  it.finishedAt = null;
+  save(); render();
+  showVoiceToast('Moved to ' + (it.category || 'No category'), () => { Object.assign(it, prev); save(); render(); });
+  return true;
+}
+function openMoveSheet(id) {
+  closeCatSheet();
+  const it = items.find(i => i.id == id);
+  if (!it || it.deleted || it.letGo) return;
+  const here = it.category || '';
+  const div = document.createElement('div');
+  div.className = 'cat-sheet move-sheet';
+  const rows = moveTargets().map(t => `<button type="button" class="secondary${t.name === here ? ' here' : ''}" data-move="${esc(t.name)}" style="padding-left:${14 + t.depth * 18}px"${t.name === here ? ' disabled' : ''}>${t.depth ? '↳ ' : ''}${esc(t.name)}${t.name === here ? ' · here now' : ''}</button>`).join('');
+  div.innerHTML = `<div class="cat-sheet-title">Move “${esc(it.text)}” to…</div>
+    <div class="move-list">${rows}<button type="button" class="secondary${!here ? ' here' : ''}" data-move="Uncategorized"${!here ? ' disabled' : ''}>No category${!here ? ' · here now' : ''}</button></div>
+    <button type="button" class="secondary" data-act="close">Cancel</button>`;
+  div.addEventListener('click', ev => {
+    const b = ev.target.closest('button'); if (!b || b.disabled) return;
+    closeCatSheet();
+    if (b.dataset.move != null) moveItemTo(id, b.dataset.move);
   });
   document.body.appendChild(div);
   wireDismiss(div, closeCatSheet);
@@ -4201,8 +4390,8 @@ document.querySelectorAll('.color-btn').forEach(btn => {
       return;
     }
 
-    // Color not linked — prompt to create a category
-    const name = prompt('This color isn’t linked to a category yet.\n\nName the new category:');
+    // Color not linked — ask (in-app sheet) for a name to create a category
+    askSheet({ title: 'New category for this color?', body: 'This color isn’t linked to a category yet. Name one, or skip to just color the items.', input: true, placeholder: 'e.g. Errands', ok: 'Create', cancel: 'Just color' }).then(name => {
     if (name && name.trim()) {
       const catName = name.trim();
       categories.push({ name: catName, color: col });
@@ -4225,6 +4414,7 @@ document.querySelectorAll('.color-btn').forEach(btn => {
       save();
       render();
     }
+    });
   };
 });
 
@@ -4300,15 +4490,16 @@ function showVoiceToast(msg, undoFn, ms) {
     el.id = 'voiceToast';
     el.setAttribute('role', 'status');
     el.setAttribute('aria-live', 'polite');
-    el.style.cssText = 'position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9999;max-width:92vw;background:rgba(40,32,24,.92);color:#fff;border-radius:12px;padding:10px 14px;font-size:15px;line-height:1.3;display:none;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,.25);';
+    el.style.cssText = 'position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9999;width:max-content;max-width:calc(100vw - 24px);white-space:nowrap;background:rgba(40,32,24,.92);color:#fff;border-radius:12px;padding:10px 14px;font-size:15px;line-height:1.3;display:none;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,.25);';
     document.body.appendChild(el);
   }
   el.innerHTML = '';
-  const span = document.createElement('span'); span.className = 'vt-msg'; span.textContent = msg; el.appendChild(span);
+  const span = document.createElement('span'); span.className = 'vt-msg'; span.textContent = msg; span.title = msg;
+  span.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; el.appendChild(span);
   if (undoFn) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'vt-undo'; b.textContent = 'Undo';
-    b.style.cssText = 'background:none;border:1px solid rgba(255,255,255,.6);color:#fff;border-radius:8px;padding:6px 12px;font-size:15px;min-height:36px;cursor:pointer;';
+    b.style.cssText = 'flex:0 0 auto;background:none;border:1px solid rgba(255,255,255,.6);color:#fff;border-radius:8px;padding:6px 12px;font-size:15px;min-height:36px;cursor:pointer;';
     b.onclick = () => { hideVoiceToast(); try { undoFn(); } catch (e) {} };
     el.appendChild(b);
   }
