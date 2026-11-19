@@ -1555,6 +1555,61 @@ html[data-theme="bold"] .fc-kicker { color:#f5c518; opacity:1; }
 html[data-theme="bold"] .fc-title { font-size:20px; }
 html[data-theme="bold"] .focus-tag { color:#b45309; }
 html[data-theme="bold"] #whyPending { background:#2a271f; color:#f3eee4; border:2px solid #f5c518; border-radius:8px; }
+/* ===== Compare personalities (2026-11-19) ===== */
+#compareView { margin: 6px 0 16px; }
+#compareView[hidden] { display:none; }
+.cmp-wrap { position:relative; width:min(1180px, calc(100vw - 40px)); left:50%; transform:translateX(-50%); background:#1a1a22; border:1px solid #2f2f3d; border-radius:16px; padding:14px 14px 16px; box-sizing:border-box; }
+.cmp-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.cmp-h { font-weight:700; font-size:18px; }
+.cmp-note { font-size:13px; opacity:.75; margin-top:2px; line-height:1.35; }
+.cmp-x { min-width:44px; min-height:44px; padding:0; flex:0 0 auto; }
+.cmp-target { font-size:14px; margin:8px 0 10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cmp-tabs { display:none; gap:6px; margin:0 0 8px; }
+.cmp-tab { flex:1 1 0; min-height:40px; padding:6px 4px; font-size:14px; background:transparent; color:inherit; border:1px solid rgba(127,127,127,.35); border-radius:999px; box-shadow:none; }
+.cmp-tab.on { background:rgba(181,82,42,.14); border-color:#b5522a; font-weight:700; }
+.cmp-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:12px; align-items:stretch; }
+.cmp-panel { display:flex; flex-direction:column; gap:8px; background:#22222c; border:1px solid #34344a; border-radius:12px; padding:12px; min-width:0; }
+.cmp-panel.cmp-using { border-color:#a78bfa; box-shadow:0 0 0 1px #a78bfa inset; }
+.cmp-head { position:relative; padding-right:56px; }
+.cmp-name { font-weight:700; font-size:17px; }
+.cmp-desc { font-size:12px; opacity:.7; }
+.cmp-badge { position:absolute; top:0; right:0; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:3px 8px; border-radius:999px; background:#b5522a; color:#fff; }
+.cmp-cuss { display:flex; align-items:center; gap:8px; min-height:40px; font-size:14px; cursor:pointer; }
+.cmp-clean { opacity:.55; font-size:13px; font-style:italic; cursor:default; }
+.cmp-cuss input { width:20px; height:20px; accent-color:#b5522a; }
+.cmp-block { min-width:0; }
+.cmp-kicker { font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; opacity:.65; margin-bottom:2px; }
+.cmp-line { font-size:15px; line-height:1.4; overflow-wrap:anywhere; }
+.cmp-wait { opacity:.55; font-style:italic; }
+.cmp-card { border-top:1px dashed rgba(127,127,127,.35); padding-top:8px; }
+.cmp-title { font-weight:700; font-size:15px; line-height:1.35; }
+.cmp-more { font-size:13px; opacity:.8; margin-top:2px; line-height:1.35; }
+.cmp-use { margin-top:auto; min-height:44px; width:100%; }
+.cmp-use[disabled] { opacity:.7; cursor:default; }
+@media (max-width: 1080px) { .cmp-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .cmp-wrap { width:auto; left:0; transform:none; padding:12px 10px 14px; }
+  .cmp-tabs { display:flex; }
+  .cmp-grid { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:10px; padding-bottom:4px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .cmp-grid::-webkit-scrollbar { display:none; }
+  .cmp-panel { flex:0 0 86%; scroll-snap-align:start; }
+}
+html[data-theme="warm"] .cmp-wrap { background:#fffaf1; border:1px solid #e2d0b4; box-shadow:1px 2px 0 rgba(90,60,20,0.05), 0 8px 18px rgba(90,60,20,0.10); border-radius:6px 12px 8px 7px; color:#2b2118; }
+html[data-theme="warm"] .cmp-h { font-family:"Source Serif 4", serif; color:#1a120c; }
+html[data-theme="warm"] .cmp-panel { background:#fffdf8; border:1px solid #ead9bf; border-radius:6px 10px 7px 8px; }
+html[data-theme="warm"] .cmp-panel.cmp-using { border-color:#b5522a; box-shadow:0 0 0 1px #b5522a inset; }
+html[data-theme="warm"] .cmp-name { font-family:"Source Serif 4", serif; color:#1a120c; }
+html[data-theme="warm"] .cmp-kicker { color:#b5522a; opacity:1; font-family:"Source Serif 4", serif; }
+html[data-theme="warm"] .cmp-line, html[data-theme="warm"] .cmp-title { font-family:"Patrick Hand", "Segoe Print", cursive; font-size:1.12rem; font-weight:400; color:#2b2118; }
+html[data-theme="warm"] .cmp-more { font-family:"Patrick Hand", "Segoe Print", cursive; font-size:1rem; color:#5a3e28; }
+#compareView .cmp-tab, html[data-theme] #compareView .cmp-tab { background:transparent; background-image:none; color:inherit; border:1px solid rgba(127,127,127,.35); box-shadow:none; text-shadow:none; font-weight:600; }
+#compareView .cmp-tab.on, html[data-theme] #compareView .cmp-tab.on { background:#b5522a; border-color:#b5522a; color:#fff; }
+html[data-theme="warm"] #compareView .cmp-tab { color:#5a3e28; border-color:#d9c3a0; font-family:"Source Serif 4", serif; }
+html[data-theme="warm"] #compareView .cmp-tab.on { color:#fff; }
+html[data-theme="playful"] .cmp-wrap, html[data-theme="playful"] .cmp-panel { background:#fff; color:#3a2a4a; border-color:#f3d4e4; }
+html[data-theme="playful"] .cmp-kicker { color:#ff5e96; opacity:1; }
+html[data-theme="calm"] .cmp-kicker { color:#5eead4; opacity:1; }
+html[data-theme="bold"] .cmp-kicker { color:#f5c518; opacity:1; }
 </style>
 
 <style id="mobile-polish">
@@ -1655,6 +1710,7 @@ html #micStatus:empty { min-height: 0 !important; margin: 0; }
     <button id="addItemBtn">Add</button>
   </div>
   <div id="micStatus" style="text-align:center;font-size:13px;color:#888;min-height:18px;"></div>
+  <section id="compareView" hidden aria-label="Compare personalities"></section>
 
   <div class="controls">
     <input id="catInput" placeholder="Name a new page...">
@@ -2495,7 +2551,7 @@ function renderWelcome(step) {
       card.innerHTML = `<div class="ob-dots">${[1,2,3,4,5].map(() => '<span class="on"></span>').join('')}</div><div class="ob-title">Got it ✨</div>
         <div class="ob-sub">${w ? 'I’ll keep “' + obEsc(w) + '” in mind.' : 'All set.'} Now get it out of your head.</div>
         <div class="set-label ob-voice-label">Last one (optional): how should I talk to you?</div>
-        <div class="ob-sub ob-voice-sub">Tap one to hear how I sound. Warm is the default, and you can change it anytime in Settings.</div>
+        <div class="ob-sub ob-voice-sub">Real is the default: straight talk, a little annoying, always on your side (clean unless you turn cussing on). Tap another to hear how it sounds. You can change it anytime in Settings.</div>
         <div id="obVoice">${voiceStyleHTML('obVoice')}</div>
         <div class="ob-actions"><button type="button" id="obClose">Start dumping</button></div>`;
       wireVoiceStyle($('obVoice'));
@@ -2628,15 +2684,18 @@ function initProfileUI() {
 // Uses var/function only: render() and maybeShowNudge() can run before this block finishes loading.
 var FRIEND_COPY = /*FRIEND_COPY_START*/{
   gentle: {
-    sample: ["No pressure at all. I'm here whenever you're ready."],
-    weeklyBig: ["You finished {n} things this week. That's really lovely to see.", "{n} things done this week. Be proud of that, quietly or loudly.", "Look how much you carried this week: {n} things done. Well done, you."],
-    weeklyMid: ["{n} things done this week. Every one of them counts.", "You got {n} things done. That's real progress.", "{n} done this week. Gentle and steady is a good way to go."],
-    weeklySmall: ["{n} {things} done this week, and that's okay. Small steps are still steps.", "You finished {n} this week. That counts, truly.", "{n} done. Some weeks are lighter, and that's fine."],
-    weeklyNone: ["Quiet week? That's okay. Rest counts too. Want to pick one small thing for this week?", "Nothing checked off this week, and that's alright. A fresh page is waiting whenever you are.", "Some weeks are just for getting through. Want to choose one gentle thing to start with?"],
-    weeklyLetGo: ["You also let go of {n}. Making space is kind to yourself.", "{n} let go. That's a good kind of tidying."],
-    weeklyOpen: ["{n} still on the page, no rush.", "{n} still waiting, whenever you're ready."],
+    sample: ["No pressure at all. I'm here whenever you're ready, like a cozy sweater with opinions."],
+    addAck: ["Got it. “{item}” is safe with me.", "Tucked away: “{item}”. One less thing to carry around in your head.", "Noted, gently. “{item}” is on the page now."],
+    nudgeItem: ["Whenever you're ready, “{item}” is still here. It's very patient.", "Just a soft thought: “{item}” might feel lighter once it's done."],
+    firstStep: ["If “{item}” feels like a lot, what's the tiniest first step? Two minutes totally counts.", "Not sure about “{item}” yet? That's okay. Tap Not sure and we'll look again in a few days."],
+    weeklyBig: ["You finished {n} things this week. That's really lovely to see.", "{n} things done this week. Be proud of that, quietly or loudly.", "{n} things done. I'll be over here, quietly cheering."],
+    weeklyMid: ["{n} things done this week. Every one of them counts.", "You got {n} things done. That's real progress, and it looks good on you.", "{n} done this week. Slow and steady has a pretty good track record."],
+    weeklySmall: ["{n} {things} done this week, and that's okay. Small steps are still steps.", "You finished {n} this week. That counts, truly.", "{n} done. Some weeks are lighter. Those count too."],
+    weeklyNone: ["Quiet week? That's okay. Rest counts too. Want to pick one small thing for this week?", "Nothing checked off this week, and that's alright. The list will keep, I promise.", "Some weeks are just for getting through. Want to choose one gentle thing to start with?"],
+    weeklyLetGo: ["You also let go of {n}. Making space is kind to yourself.", "{n} let go. Your list can breathe a little now."],
+    weeklyOpen: ["{n} still on the page, no rush.", "{n} still waiting, patiently. No rush."],
     weeklyAsk: ["Anything you'd like to carry into next week? Only if you want to.", "Is there anything you'd like to bring along into next week?"],
-    weeklyGood: ["Lovely. See you next week.", "Sounds good. I'm here whenever you need me."],
+    weeklyGood: ["Lovely. See you next week.", "Sounds good. I'll be right here, being a notebook."],
     weeklyFocus: ["Got it. {n} gentle focus {things} for the week, marked with a ★.", "Starred {n} for this week. One at a time is plenty."],
     weeklyNotNow: ["That's okay. It's in Settings whenever you'd like it.", "No problem at all. I'll check in next week."],
     driftTitle: ["Just a soft thought", "A gentle check-in"],
@@ -2648,27 +2707,30 @@ var FRIEND_COPY = /*FRIEND_COPY_START*/{
     biggerSaved: ["Thank you for sharing that. I'll keep it in mind.", "That's a lovely thing to work toward. I'll hold onto it."],
     biggerNotNow: ["Of course. It's in Settings if you ever want it.", "That's perfectly fine. I won't ask again."],
     nudgeTitle: ["A little note", "Just a soft note"],
-    nudgeDueOne: ["Just a soft reminder: “{item}” is due. No stress.", "Whenever you get a moment: “{item}” is due."],
+    nudgeDueOne: ["Just a soft reminder: “{item}” is due. No stress.", "Whenever you get a moment: “{item}” is due. It asked nicely."],
     nudgeDueMany: ["{n} things are due. Take them one at a time.", "There are {n} things due. No rush, one by one."],
     nudgeTracker: ["{list} so far. Every bit helps.", "Gentle tracker check: {list}."],
     nudgeOpenWhy: ["Still here for “{why}”. {n} {things} waiting, whenever you're ready.", "Holding onto “{why}” for you. {n} {things} on the page."],
-    nudgeOpen: ["{n} {things} in the dump, whenever you're ready.", "I'm keeping {n} {things} safe for you."],
-    nudgeClear: ["All clear. I'm here when something new comes up.", "Nothing waiting. Enjoy the quiet."],
+    nudgeOpen: ["{n} {things} in the dump, whenever you're ready.", "I'm keeping {n} {things} safe for you. All cozy."],
+    nudgeClear: ["All clear. Enjoy the quiet, you earned it.", "Nothing waiting. Enjoy the quiet."],
     tailLight: ["No pressure.", "Only if it feels right."],
     tailStay: ["Maybe one small thing today?", "Even one tiny step today would be lovely."]
   },
   warm: {
-    sample: ["Look at you, 12 things done this week. That's a solid week."],
-    weeklyBig: ["Look at you, {n} things done this week. That's a solid week.", "{n} things off your plate this week. Not bad at all.", "Well, somebody showed up this week: {n} done. 🎉"],
-    weeklyMid: ["{n} things done this week. Steady wins it.", "{n} done this week. That counts, seriously.", "You knocked out {n} things. Nice work."],
-    weeklySmall: ["{n} {things} done this week. Hey, it's a start, and starts count.", "{n} done. Small weeks still move you forward.", "You got {n} done. Not every week has to be a big one."],
-    weeklyNone: ["Rough week? Happens. Want to pick just one thing to start fresh with?", "Quiet week on the list. No judgment, life gets busy. Want to pick one thing for this week?", "Nothing checked off this week, and that's okay. Fresh page, fresh start?"],
-    weeklyLetGo: ["You also let go of {n}. Honestly, that's a win too.", "Let go of {n}. Clearing space counts."],
-    weeklyOpen: ["{n} still hanging around.", "{n} still open."],
+    sample: ["Look at you, 12 things done this week. Don't let it go to your head. Okay, maybe a little."],
+    addAck: ["Got it! “{item}” is on the list. Out of your head, onto the page.", "Added “{item}”. See? That didn't hurt.", "“{item}”, noted. Your brain says thanks."],
+    nudgeItem: ["Hey, “{item}” is still sitting there. Want to knock it out before it gets comfortable?", "Friendly nudge: “{item}”. Future you is already sending a thank-you card."],
+    firstStep: ["Stuck on “{item}”? Just do the first five minutes. That's the whole trick.", "Not sure about “{item}”? Tap Not sure, no shame. I'll check back in a few days."],
+    weeklyBig: ["Look at you, {n} things done this week. Don't let it go to your head. Okay, maybe a little.", "{n} things off your plate this week. Your list is a little scared of you now.", "Well, somebody showed up this week: {n} done. 🎉"],
+    weeklyMid: ["{n} things done this week. Steady wins it, and you're steady.", "{n} done this week. That counts, seriously.", "You knocked out {n} things. Nice work. I'm telling everyone."],
+    weeklySmall: ["{n} {things} done this week. Hey, it's a start, and starts count.", "{n} done. Small week, but you still showed up for it.", "You got {n} done. Not every week has to be a movie montage."],
+    weeklyNone: ["Rough week? Happens to the best of us. Want to pick just one thing to start fresh with?", "Quiet week on the list. No judgment, life gets busy. Want to pick one thing for this week?", "Nothing checked off this week. The list missed you. Fresh page, fresh start?"],
+    weeklyLetGo: ["You also let go of {n}. Honestly, that's a win too.", "Let go of {n}. Saying “nope” counts as progress."],
+    weeklyOpen: ["{n} still hanging around, acting casual.", "{n} still open."],
     weeklyAsk: ["Anything to carry into next week?", "Anything you want to bring into next week?"],
     weeklyGood: ["Love it. See you next week.", "Nice. Onward."],
     weeklyFocus: ["Got it. ★ on {n} for this week.", "Starred {n}. That's your week, right there."],
-    weeklyNotNow: ["No worries. It's in Settings if you want it later.", "All good. Catch you next week."],
+    weeklyNotNow: ["No worries. It's in Settings if you want it later.", "All good. I'll pretend I didn't see that. Catch you next week."],
     driftTitle: ["Real talk", "Quick check-in", "Honest friend moment"],
     drift: ["Hey, real talk: we said {said} mattered, but I haven't seen {missing} this week. Still a goal, or should we rethink it?", "Noticed something: {said} has been quiet for a week. Life happens. Keep it, or change it up?", "Friend check: nothing for {said} in 7 days. Want to give it one small thing, or is it time to recalibrate?"],
     mute: ["Got it, I'll stop asking about {said}. You can undo that in Settings.", "Fair enough. No more check-ins about {said}."],
@@ -2678,86 +2740,98 @@ var FRIEND_COPY = /*FRIEND_COPY_START*/{
     biggerSaved: ["Love that. I'll keep an eye out for it.", "Got it. I'm in your corner on this one."],
     biggerNotNow: ["All good. If you ever want to, it's in Settings.", "No worries. I won't bug you about it again."],
     nudgeTitle: ["A note from me", "Hey, quick one"],
-    nudgeDueOne: ["Heads up: “{item}” is due.", "Just a nudge: “{item}” is due."],
-    nudgeDueMany: ["Heads up: {n} things are due.", "{n} things are due. One at a time."],
+    nudgeDueOne: ["Heads up: “{item}” is due. It's been very patient with you.", "Just a nudge: “{item}” is due."],
+    nudgeDueMany: ["Heads up: {n} things are due.", "{n} things are due. One at a time, you've got this."],
     nudgeTracker: ["Checking in: {list}.", "Quick tracker check: {list}."],
     nudgeOpenWhy: ["Still here for “{why}”. {n} {things} waiting when you're ready.", "Still heading toward “{why}”? {n} {things} in the dump."],
-    nudgeOpen: ["I'm still here. {n} {things} in the dump.", "{n} {things} waiting. Pick one when you're ready."],
-    nudgeClear: ["Nice and clear. I'm here when something new comes up.", "Clean slate. Enjoy it."],
+    nudgeOpen: ["I'm still here. {n} {things} in the dump, and they're getting chatty.", "{n} {things} waiting. Pick one when you're ready."],
+    nudgeClear: ["Nice and clear. Suspiciously clear. I'm proud of you.", "Clean slate. Enjoy it."],
     tailLight: ["No pressure, just a thought.", "Totally your call."],
     tailStay: ["One small thing today? You've got this.", "Let's not let it slip. One thing today?"]
   },
   drill: {
-    sample: ["On your feet. One thing, right now. Let's go."],
-    weeklyBig: ["{n} done this week. That's how it's done. Keep moving.", "{n} things down. Outstanding. Don't get comfy.", "{n} completed. Good work. Same again next week."],
-    weeklyMid: ["{n} done. Solid. Now push for more.", "{n} down this week. Decent. We go harder next week.", "{n} complete. Respectable. Keep the pace."],
-    weeklySmall: ["{n} done. It's a start. Next week we go again.", "{n} on the board. Build on it.", "{n} done. Not bad. Not finished either."],
-    weeklyNone: ["Zero done this week. It happens once. Pick one thing and start now.", "Rough week. Shake it off. Pick one target and go.", "Nothing checked off. Reset. One thing, today."],
-    weeklyLetGo: ["Dropped {n} dead weight. Good call.", "Cut {n}. Lighter pack, faster march."],
-    weeklyOpen: ["{n} still open. They won't do themselves.", "{n} on the list. Eyes on them."],
-    weeklyAsk: ["What's the mission for next week?", "Pick your targets for next week."],
-    weeklyGood: ["Good. Dismissed.", "Copy that. Move out."],
-    weeklyFocus: ["{n} targets locked. ★ Execute.", "Locked in {n}. No excuses."],
-    weeklyNotNow: ["Fine. It's in Settings when you're ready to report.", "Noted. Back next week."],
-    driftTitle: ["Attention", "Status check"],
-    drift: ["You said {said} mattered. Seven days, and I haven't seen {missing}. Still a goal, or are we changing orders?", "Seven days quiet on {said}. You set this goal. Recommit or rethink it.", "Report: zero activity on {said} this week. Fix it or change the plan."],
+    sample: ["On your feet, recruit! One thing, right now. The list does not do itself!"],
+    addAck: ["“{item}”: logged! Congratulations, it's a mission now!", "Copy that! “{item}” is on the board. Do not keep it waiting!", "Received, recruit! “{item}” is officially your problem now!"],
+    nudgeItem: ["“{item}” is still on the board, soldier! Did I stutter?!", "Eyes front! “{item}”! It is not going to handle itself!"],
+    firstStep: ["“{item}” too big? Then break it down! First step, two minutes, GO!", "Unsure about “{item}”? Tap Not sure, then decide in three days. Indecision is not a strategy, recruit!"],
+    weeklyBig: ["{n} done this week! Outstanding! Don't get comfortable, recruit!", "{n} things down! I'd shed a tear if I were allowed to. Same again next week!", "{n} completed. That's how it's done. Now drop and give me {n} more!"],
+    weeklyMid: ["{n} done. Solid. Now push for more!", "{n} down this week. Decent. Next week we go harder!", "{n} complete. Respectable. Keep the pace, soldier!"],
+    weeklySmall: ["{n} done. It's a start. Next week we go again!", "{n} on the board. That's a warm-up, not a workout!", "{n} done. Not bad. Not finished either!"],
+    weeklyNone: ["Zero done this week?! Unacceptable! ...Fine. Pick one thing and start now.", "Rough week. Shake it off, soldier! Pick one target and go!", "Nothing checked off. Reset. One thing, today. Hup!"],
+    weeklyLetGo: ["Dropped {n} dead weight. Good call!", "Cut {n}. Lighter pack, faster march!"],
+    weeklyOpen: ["{n} still open. That will not do itself, recruit!", "{n} on the list. Eyes front!"],
+    weeklyAsk: ["What's the mission for next week?!", "Pick your targets for next week, recruit!"],
+    weeklyGood: ["Good. Dismissed!", "Copy that. Move out!"],
+    weeklyFocus: ["{n} targets locked. ★ Execute!", "Locked in {n}. No excuses!"],
+    weeklyNotNow: ["Fine. It's in Settings when you're ready to report.", "Noted. I'll be back next week. I always come back."],
+    driftTitle: ["Attention!", "Status check!"],
+    drift: ["You said {said} mattered! Seven days, and I haven't seen {missing}. Still a goal, or are we changing orders?", "Seven days quiet on {said}. You set this goal, soldier. Recommit or rethink it!", "Report: zero activity on {said} this week. Fix it or change the plan!"],
     mute: ["Understood. {said} is off the radar. Settings if you change your mind.", "Copy. No more reports on {said}."],
-    addFor: ["Good. Next item goes to {goal}. Make it count.", "Next item is for {goal}. Go."],
+    addFor: ["Good. Next item goes to {goal}. Make it count!", "Next item is for {goal}. Go!"],
     biggerTitle: ["What's the mission?"],
     biggerBody: ["Name one thing you're working toward. I'll make sure you don't lose sight of it.", "Every soldier needs an objective. What's yours?"],
-    biggerSaved: ["Mission logged. I'll be watching.", "Objective set. Now we work."],
+    biggerSaved: ["Mission logged. I'll be watching. Always watching.", "Objective set. Now we work!"],
     biggerNotNow: ["Fine. Settings, when you're ready.", "At ease. I won't ask again."],
-    nudgeTitle: ["Listen up", "Status check"],
-    nudgeDueOne: ["“{item}” is due. Handle it.", "Due now: “{item}”. Move."],
-    nudgeDueMany: ["{n} things due. Get after them.", "{n} items due. Knock them out."],
-    nudgeTracker: ["Status: {list}. Close the gap.", "Tracker report: {list}. Finish strong."],
-    nudgeOpenWhy: ["You're working toward “{why}”. {n} {things} on the list. Move.", "“{why}” doesn't happen by itself. {n} {things} waiting."],
-    nudgeOpen: ["{n} {things} on the list. Pick one. Go.", "{n} {things} open. Start with one."],
-    nudgeClear: ["List is clear. Outstanding. Stay ready.", "All clear. Good work."],
-    tailLight: ["Your call.", "When you're ready."],
-    tailStay: ["Today. Let's go.", "No more waiting. Move."],
+    nudgeTitle: ["Listen up!", "Status check!"],
+    nudgeDueOne: ["“{item}” is due. Handle it!", "Due now: “{item}”. Move, move, move!"],
+    nudgeDueMany: ["{n} things due. Get after them!", "{n} items due. Knock them out!"],
+    nudgeTracker: ["Status: {list}. Close the gap!", "Tracker report: {list}. Finish strong!"],
+    nudgeOpenWhy: ["You're working toward “{why}”. {n} {things} on the list. Move!", "“{why}” doesn't happen by itself. {n} {things} waiting!"],
+    nudgeOpen: ["{n} {things} on the list. Pick one. Go!", "{n} {things} open. Start with one. That's an order!"],
+    nudgeClear: ["List is clear. Outstanding! Stay ready!", "All clear. I'm almost impressed. Almost."],
+    tailLight: ["Your call, recruit.", "When you're ready. Be ready soon."],
+    tailStay: ["Today. Let's go!", "No more waiting. Move!"],
     cuss: {
-      sample: ["On your feet. One thing, right now. Let's fucking go."],
-      weeklyBig: ["{n} done this week. Hell yes. Keep moving.", "{n} things down. Damn good work. Same again next week."],
-      weeklyNone: ["Zero done this week. Shit happens. Pick one thing and start now.", "Rough damn week. Shake it off. One target. Go."],
-      weeklyAsk: ["What's the damn mission for next week?", "Pick your targets. Let's get shit done next week."],
-      drift: ["Seven days, nothing on {said}. Damn it, you set this goal. Recommit or rethink it.", "{said}: no movement in a week. Let's get our shit together on it or change the plan. Your call."],
-      nudgeOpen: ["{n} {things} on the list. Pick one. Let's fucking go.", "{n} {things} open. Get your ass moving on one."],
-      tailStay: ["Today. Let's fucking go.", "No more waiting. Get shit done."]
+      sample: ["On your feet, recruit! One thing, right now. Let's fucking go!"],
+      addAck: ["“{item}”: logged! Now get your ass on it!", "Copy that! “{item}” is on the damn board!"],
+      nudgeItem: ["“{item}” is still sitting there, soldier! Get your ass on it!", "“{item}”! It is not going to handle its damn self!"],
+      firstStep: ["“{item}” too big? Break that shit down! First step, two minutes, GO!"],
+      weeklyBig: ["{n} done this week! Hell yes! Keep moving!", "{n} things down! Damn good work. Same again next week!"],
+      weeklyNone: ["Zero done this week?! Shit happens. Once. Pick one thing and start now!", "Rough damn week. Shake it off! One target. Go!"],
+      weeklyAsk: ["What's the damn mission for next week?!", "Pick your targets. We get shit done next week!"],
+      drift: ["Seven days, nothing on {said}. Damn it, you set this goal. Recommit or rethink it!", "{said}: no movement in a week. Get your shit together on it or change the plan. Your call!"],
+      nudgeOpen: ["{n} {things} on the list. Pick one. Let's fucking go!", "{n} {things} open. Get your ass moving on one!"],
+      tailStay: ["Today. Let's fucking go!", "No more waiting. Get shit done!"]
     }
   },
   real: {
-    sample: ["Hey, yeah, I'm gonna be annoying, but you're going to get stuff done and be the person you want to be, so let's go."],
-    weeklyBig: ["Okay, {n} things done this week?? Who even are you. Love this.", "{n} done. You actually did the thing. Proud of you, not even joking.", "Look at you go, {n} things done. Keep this energy."],
-    weeklyMid: ["{n} done this week. Not bad at all, I see you.", "{n} things handled. That's real. Let's keep it rolling.", "{n} done. Solid. We're building something here."],
+    sample: ["Hey. Yeah, I'm gonna be annoying, but you're going to get stuff done and be the person you want to be. So let's go."],
+    addAck: ["Got it. “{item}” is on the list. Now it's my problem too.", "“{item}”, added. Yeah, I'm gonna bring this up again.", "Added “{item}”. Look at you, writing stuff down like an adult."],
+    nudgeItem: ["So… “{item}”. Still on the list. Still yours. Ten minutes, let's go.", "Hey, “{item}” isn't going to do itself, and I'm definitely not doing it.", "Real talk: “{item}” has been sitting there long enough. Knock it out and come brag to me."],
+    firstStep: ["“{item}” feels big? Cool. What's the first ten-minute piece? Do that. Done.", "Not sure about “{item}”? Tap Not sure. In three days you're deciding, though. I'll be there. Watching."],
+    weeklyBig: ["{n} things done this week? Who even are you. Don't answer, keep going.", "{n} done. You actually did the thing. Proud of you, and I'm not even being nice.", "{n} things done. Okay, show-off. Same again next week."],
+    weeklyMid: ["{n} done this week. Not bad. I see you.", "{n} things handled. That's real. Let's keep it rolling.", "{n} done. Solid. Not legendary, but solid."],
     weeklySmall: ["{n} done. Not your biggest week, but you showed up, and that matters.", "{n} {things} done. Hey, we take those.", "{n} done. Okay, okay. Next week we turn it up."],
-    weeklyNone: ["Yeah, nothing got checked off this week. It happens. Pick one thing and let's get you rolling again.", "Rough week, huh? I get it. Want to pick just one thing to start fresh?", "Zero this week. I'm not gonna pretend that's the plan forever, but it's fine for now. One thing?"],
+    weeklyNone: ["Yeah, nothing got checked off this week. Bold strategy. Pick one thing and let's get you rolling again.", "Zero this week. I'm not gonna pretend that's the plan, but it's fine for now. One thing?", "Rough week, huh? I get it. The list didn't go anywhere, though. One thing?"],
     weeklyLetGo: ["Also let go of {n}. Honestly? Good. Not everything deserves your time.", "You let {n} go. Smart. Less noise."],
-    weeklyOpen: ["{n} still sitting there looking at you.", "{n} still open. Just saying."],
-    weeklyAsk: ["So what are we carrying into next week?", "What's actually getting done next week?"],
-    weeklyGood: ["Love it. Talk next week.", "Cool. I'll be here."],
-    weeklyFocus: ["Okay, {n} starred. Those are happening. ★", "{n} locked in. I'm holding you to it."],
-    weeklyNotNow: ["Fine, fine. It's in Settings when you're ready.", "Okay, skipping it. I'll be back next week though."],
+    weeklyOpen: ["{n} still sitting there, staring at you.", "{n} still open. Just saying."],
+    weeklyAsk: ["So what are we actually carrying into next week?", "What's getting done next week? For real this time."],
+    weeklyGood: ["Cool. Talk next week. I'll be annoying again then.", "Love it. I'll be here."],
+    weeklyFocus: ["Okay, {n} starred. Those are happening. ★", "{n} locked in. I'm holding you to it. Like, a lot."],
+    weeklyNotNow: ["Fine, fine. It's in Settings. I'll act like I'm not hurt.", "Okay, skipping it. I'll be back next week, though. I always come back."],
     driftTitle: ["Okay, real talk", "Yeah, I'm gonna say it"],
     drift: ["Hey, yeah, I'm gonna be annoying: you said {said} mattered, and I haven't seen {missing} all week. Still the goal, or are we changing it?", "Not judging, just noticing: {said} has been dead quiet for a week. You still want this? Because I think you do.", "Real talk, because I care: I haven't seen {missing} in 7 days. Want to throw one thing on the list for {said} right now?"],
-    mute: ["Got it, I'll drop the {said} thing. Undo's in Settings if you change your mind.", "Fair. I'll stop bringing up {said}."],
+    mute: ["Got it, I'll drop the {said} thing. Undo's in Settings if you miss me nagging.", "Fair. I'll stop bringing up {said}."],
     addFor: ["Yes. Next thing you add is for {goal}. Go.", "Love it. Whatever you add next counts for {goal}."],
     biggerTitle: ["Okay, what are we working toward?"],
     biggerBody: ["Tell me one thing you actually want. I'll be the friend who keeps bringing it up.", "What's the one thing you keep saying you'll do? Tell me, and I'll keep you honest."],
     biggerSaved: ["Love it. I'm gonna keep bugging you about it.", "Noted. You're stuck with me on this one."],
     biggerNotNow: ["Fine, I'll leave it. It's in Settings if you change your mind.", "Okay, okay. I won't ask again."],
     nudgeTitle: ["Hey you", "Real quick"],
-    nudgeDueOne: ["“{item}” is due. Just saying.", "So… “{item}” is due. You got this."],
-    nudgeDueMany: ["{n} things are due. Let's knock one out.", "{n} things due. Pick the easiest and go."],
+    nudgeDueOne: ["“{item}” is due. Just saying. Loudly.", "So… “{item}” is due. You've got this. You also don't have a choice."],
+    nudgeDueMany: ["{n} things are due. Let's knock one out.", "{n} things due. Pick the easiest and go. I won't tell."],
     nudgeTracker: ["{list}. You know you want to finish that.", "Tracker check: {list}. Close it out."],
     nudgeOpenWhy: ["Remember “{why}”? {n} {things} waiting. Let's go.", "You said “{why}”. {n} {things} on the list. I believe you."],
-    nudgeOpen: ["{n} {things} in the dump. Pick one, let's go.", "{n} {things} waiting on you. Just one."],
-    nudgeClear: ["List's clear. Look at you.", "Nothing waiting. Who are you right now?"],
-    tailLight: ["No big deal, just saying.", "Up to you, friend."],
+    nudgeOpen: ["{n} {things} in the dump. Pick one, let's go.", "{n} {things} waiting on you. Not getting any younger over there."],
+    nudgeClear: ["List's clear. Look at you. Who are you right now?", "Nothing waiting. Weird flex, but okay."],
+    tailLight: ["No big deal, just saying.", "Up to you. I'm just the friend who says it."],
     tailStay: ["Seriously, one thing today. Let's go.", "You told me to stay on you, so: today."],
     cuss: {
-      sample: ["Hey, yeah, I'm gonna be annoying, but you're going to get shit done and be the person you want to be, so let's fucking go."],
-      weeklyBig: ["{n} things done this week? Hell yes. Proud of you.", "Damn, {n} done. You're actually doing it."],
+      sample: ["Hey. Yeah, I'm gonna be annoying, but you're going to get shit done and be the person you want to be. So let's fucking go."],
+      addAck: ["Got it. “{item}” is on the list. Now let's get shit done.", "“{item}”, added. Yeah, I'm gonna be annoying about this one. Damn right."],
+      nudgeItem: ["So… “{item}”. Still sitting there. Get your shit together and knock it out.", "“{item}” isn't going to do itself, and I'm sure as hell not doing it."],
+      firstStep: ["“{item}” feels big? Screw it, do the first ten minutes. That's it. Let's fucking go."],
+      weeklyBig: ["{n} things done this week? Hell yes. Who even are you.", "Damn, {n} done. You're actually doing it."],
       weeklyNone: ["Yeah, kind of a shit week. It happens. Pick one thing and let's get you rolling again.", "Nothing checked off. Hell, we all have those. One thing?"],
       weeklyAsk: ["So what shit are we getting done next week?", "What's actually getting done next week? For real this time, damn it."],
       drift: ["Hey, yeah, I'm gonna be annoying: you said {said} mattered and I haven't seen {missing} all damn week. Still the goal, or are we changing it?", "Real talk: {said} has been dead quiet for 7 days. You want this. Let's get some shit done for it."],
@@ -2767,11 +2841,13 @@ var FRIEND_COPY = /*FRIEND_COPY_START*/{
   }
 }/*FRIEND_COPY_END*/;
 var FRIEND_DAY = 86400000;
+// 2026-11-19: Real (clean, cussing off) is the default for anyone who hasn't picked. A saved pick always wins.
+var DEFAULT_VOICE_STYLE = 'real';
 var VOICE_STYLES = [
-  { id: 'gentle', name: 'Gentle', desc: 'Soft, zero pressure' },
-  { id: 'warm', name: 'Warm', desc: 'Friendly and honest' },
-  { id: 'drill', name: 'Drill Sergeant', desc: 'Short, tough love' },
-  { id: 'real', name: 'Real', desc: 'Your best friend, straight talk' }
+  { id: 'gentle', name: 'Gentle', desc: 'Soft, a little playful' },
+  { id: 'warm', name: 'Warm', desc: 'Friendly, light teasing' },
+  { id: 'drill', name: 'Drill Sergeant', desc: 'Loud, tough love' },
+  { id: 'real', name: 'Real', desc: 'Your best friend. Blunt, funny' }
 ];
 var GOAL_INFO = {
   'More present': { said: 'being more present', missing: 'any unplugged time or real hangouts', kw: ['present', 'unplug', 'phone', 'dinner', 'date night', 'friend', 'hang', 'mindful', 'meditat', 'walk', 'kids', 'family'] },
@@ -2812,7 +2888,7 @@ function fSet(k, v) {
 function voiceStyle() {
   var s = null;
   try { s = localStorage.getItem('bd-voice-style'); } catch (e) {}
-  return VOICE_STYLES.some(function (v) { return v.id === s; }) ? s : 'warm';
+  return VOICE_STYLES.some(function (v) { return v.id === s; }) ? s : DEFAULT_VOICE_STYLE;
 }
 function setVoiceStyle(s) { try { localStorage.setItem('bd-voice-style', s); } catch (e) {} }
 function cussAllowed(style) { return style === 'drill' || style === 'real'; }
@@ -2831,9 +2907,11 @@ function friendPool(type, style, cuss) {
   return pool || [''];
 }
 // One line of friend copy, picked by a stable seed (same week/day = same wording), params HTML-escaped.
-function friendLine(type, params, seed) {
-  var pool = friendPool(type);
-  var t = pool[friendHash(String(seed || '') + '|' + type + '|' + voiceStyle()) % pool.length];
+function friendLine(type, params, seed) { return friendLineAs(voiceStyle(), cussOn(), type, params, seed); }
+function friendLineAs(style, cuss, type, params, seed) {
+  if (!cussAllowed(style)) cuss = false;
+  var pool = friendPool(type, style, !!cuss);
+  var t = pool[friendHash(String(seed || '') + '|' + type + '|' + style) % pool.length];
   params = params || {};
   if (params.n != null && params.things == null) params.things = Number(params.n) === 1 ? 'thing' : 'things';
   var out = t.replace(/\{(\w+)\}/g, function (m, k) { return params[k] != null ? obEsc(params[k]) : m; });
@@ -3232,6 +3310,7 @@ function friendSettingsHTML(p) {
   var muted = (p.mutedGoals || []).filter(function (g) { return friendGoals().indexOf(g) >= 0 || true; });
   var goals = friendGoalsOf(p);
   return '<div class="set-label">How I talk to you</div>' + voiceStyleHTML('setVoice') +
+    '<div class="fc-prev"><button type="button" class="secondary" id="setCompare">Compare personalities</button></div>' +
     '<div class="set-label">Goal check-ins</div>' +
     '<label class="fc-toggle"><input type="checkbox" id="setCheckins" ' + (p.checkins ? 'checked' : '') + '> <span>Let me point out when things drift from your goals</span></label>' +
     '<div class="set-note fc-note">Off unless you turn it on. At most once a week, always a question.' + (goals.length ? '' : ' Add a goal above first.') + ((p.nudge || 'light') === 'off' ? ' Paused while nudges are Off.' : '') + '</div>' +
@@ -3245,6 +3324,8 @@ function friendSettingsHTML(p) {
 }
 function wireFriendSettings(panel) {
   wireVoiceStyle(panel);
+  var cmp = panel.querySelector('#setCompare');
+  if (cmp) cmp.onclick = function () { closeSettings(); openCompare({ scroll: true }); };
   panel.querySelectorAll('.fc-unmute').forEach(function (b) {
     b.onclick = function () { unmuteGoal(b.dataset.goal); var row = b.closest('.fc-muted-row'); if (row) row.remove(); setStatus('I’ll check in about that again'); };
   });
@@ -3263,6 +3344,143 @@ function friendAllLines(style, cuss) {
 }
 try { window.__friend = { maybeShowFriend: maybeShowFriend, showWeekly: showWeekly, showCheckin: showCheckin, showBigger: showBigger, driftGoal: driftGoal, weeklyDue: weeklyDue, recapKey: recapKey, goalActivityMs: goalActivityMs, friendLine: friendLine, allLines: friendAllLines, copy: function () { return FRIEND_COPY; }, pending: function () { return pendingWhyGoal; } }; } catch (e) {}
 // ===== end Friend features =====
+// ===== Compare personalities (2026-11-19) =====
+// One app, four voices: type or say something in the normal dump box, it's added to your list ONCE,
+// and each panel shows how Gentle / Warm / Drill Sergeant / Real would react. Panels are previews only:
+// they read FRIEND_COPY through friendLineAs(), so every copy or logic edit shows up in all four.
+// Open from Settings → Compare personalities, or with ?compare=1 in the link.
+var compareState = null;
+function compareIsOpen() { var el = document.getElementById('compareView'); return !!(el && !el.hidden); }
+function compareTarget() {
+  if (!compareState) return null;
+  var it = compareState.itemId != null ? items.find(function (i) { return String(i.id) === String(compareState.itemId) && !i.deleted; }) : null;
+  if (it) return it;
+  // Nothing added yet while open: react to the newest open item on the list, if any.
+  var open = items.filter(function (i) { return !i.deleted && !i.ghosted && !i.letGo; })
+    .sort(function (a, b) { return itemCreatedMs(b) - itemCreatedMs(a); });
+  return open[0] || null;
+}
+function compareTail(style, cuss, seed) {
+  var l = friendLevel();
+  if (l === 'light') return ' ' + friendLineAs(style, cuss, 'tailLight', {}, seed);
+  if (l === 'stay') return ' ' + friendLineAs(style, cuss, 'tailStay', {}, seed);
+  return '';
+}
+// Everything one personality would say right now (used by the panels and by the checks).
+function compareLines(style, cuss, it) {
+  var L = function (type, params, seed) { return friendLineAs(style, cuss, type, params, seed); };
+  var out = {};
+  if (it) {
+    var seed = String(it.id);
+    out.addAck = L('addAck', { item: it.text }, seed);
+    out.nudgeItem = L('nudgeItem', { item: it.text }, seed);
+    out.firstStep = L('firstStep', { item: it.text }, seed);
+  }
+  var now = bdNow(), key = recapKey(now), st = weeklyStats(now), n = st.done.length;
+  var wType = n >= 8 ? 'weeklyBig' : n >= 3 ? 'weeklyMid' : n >= 1 ? 'weeklySmall' : 'weeklyNone';
+  out.weeklyTitle = L(wType, { n: n }, key);
+  var wl = [];
+  if (st.letGo.length) wl.push(L('weeklyLetGo', { n: st.letGo.length }, key));
+  if (st.open.length) wl.push(L('weeklyOpen', { n: st.open.length }, key));
+  if (n) wl.push(L('weeklyAsk', {}, key));
+  out.weeklyMore = wl.join(' ');
+  var today = ymd(new Date(now));
+  var dueNow = items.filter(function (i) { return !i.deleted && !i.ghosted && i.due && dayDiff(i.due, new Date(now)) <= 0; });
+  var w = whyText(profile);
+  out.checkinTitle = L('nudgeTitle', {}, today);
+  var msg, clear = false;
+  if (dueNow.length === 1) msg = L('nudgeDueOne', { item: dueNow[0].text }, today);
+  else if (dueNow.length > 1) msg = L('nudgeDueMany', { n: dueNow.length }, today);
+  else if (st.open.length) msg = w ? L('nudgeOpenWhy', { why: w, n: st.open.length }, today) : L('nudgeOpen', { n: st.open.length }, today);
+  else { msg = L('nudgeClear', {}, today); clear = true; }
+  out.checkin = msg + (clear ? '' : compareTail(style, cuss, today));
+  return out;
+}
+function comparePanelHTML(v, it, using) {
+  var cuss = !!(compareState.cuss[v.id]) && cussAllowed(v.id);
+  var x = compareLines(v.id, cuss, it);
+  var waiting = '<span class="cmp-wait">Type or say something above.</span>';
+  var blk = function (kicker, kind, html) { return '<div class="cmp-block"><div class="cmp-kicker">' + kicker + '</div><div class="cmp-line" data-kind="' + kind + '">' + html + '</div></div>'; };
+  return '<article class="cmp-panel' + (using ? ' cmp-using' : '') + '" data-style="' + v.id + '" id="cmp-' + v.id + '">' +
+    '<header class="cmp-head"><div class="cmp-name">' + v.name + '</div><div class="cmp-desc">' + v.desc + '</div>' +
+    (using ? '<span class="cmp-badge">In use</span>' : '') + '</header>' +
+    (cussAllowed(v.id) ? '<label class="cmp-cuss"><input type="checkbox" class="cmp-cuss-box" data-style="' + v.id + '"' + (cuss ? ' checked' : '') + '> <span>Cussing</span></label>' : '<div class="cmp-cuss cmp-clean">Always clean</div>') +
+    blk('When you add it', 'addAck', it ? x.addAck : waiting) +
+    blk('Nudge about it', 'nudgeItem', it ? x.nudgeItem : waiting) +
+    blk('First step / not sure', 'firstStep', it ? x.firstStep : waiting) +
+    '<div class="cmp-block cmp-card" data-kind="weekly"><div class="cmp-kicker">Weekly card · How’d it go?</div><div class="cmp-title">' + x.weeklyTitle + '</div>' +
+      (x.weeklyMore ? '<div class="cmp-more">' + x.weeklyMore + '</div>' : '') + '</div>' +
+    '<div class="cmp-block cmp-card" data-kind="checkin"><div class="cmp-kicker">Check-in · ' + x.checkinTitle + '</div><div class="cmp-line">' + x.checkin + '</div></div>' +
+    '<button type="button" class="secondary cmp-use" data-style="' + v.id + '"' + (using ? ' disabled' : '') + '>' + (using ? '✓ Using ' + v.name : 'Use ' + v.name) + '</button>' +
+    '</article>';
+}
+function renderCompare() {
+  var el = document.getElementById('compareView');
+  if (!el || !compareState) return;
+  var it = compareTarget();
+  var cur = voiceStyle();
+  var keepScroll = el.querySelector('.cmp-grid') ? el.querySelector('.cmp-grid').scrollLeft : 0;
+  el.innerHTML = '<div class="cmp-wrap">' +
+    '<div class="cmp-top"><div><div class="cmp-h">Compare personalities</div>' +
+    '<div class="cmp-note">Type or say something in the box above. It goes on your list once, and all four show how they’d react. Previews only.</div></div>' +
+    '<button type="button" class="secondary cmp-x" id="cmpClose" aria-label="Close compare">✕</button></div>' +
+    '<div class="cmp-target">' + (it ? 'Reacting to: <strong>' + esc(it.text) + '</strong>' : 'Nothing on the list yet.') + '</div>' +
+    '<div class="cmp-tabs" role="tablist">' + VOICE_STYLES.map(function (v) { return '<button type="button" class="cmp-tab' + (v.id === compareState.tab ? ' on' : '') + '" data-style="' + v.id + '">' + v.name.replace('Drill Sergeant', 'Drill') + '</button>'; }).join('') + '</div>' +
+    '<div class="cmp-grid">' + VOICE_STYLES.map(function (v) { return comparePanelHTML(v, it, v.id === cur); }).join('') + '</div></div>';
+  var grid = el.querySelector('.cmp-grid');
+  grid.scrollLeft = keepScroll;
+  el.querySelector('#cmpClose').onclick = closeCompare;
+  el.querySelectorAll('.cmp-cuss-box').forEach(function (b) {
+    b.onchange = function () { compareState.cuss[b.dataset.style] = b.checked; renderCompare(); };
+  });
+  el.querySelectorAll('.cmp-use').forEach(function (b) {
+    b.onclick = function () {
+      var s = b.dataset.style;
+      setVoiceStyle(s);
+      if (cussAllowed(s)) try { localStorage.setItem('bd-voice-cuss', compareState.cuss[s] ? '1' : '0'); } catch (e) {}
+      renderCompare(); maybeShowNudge();
+      var v = VOICE_STYLES.find(function (x) { return x.id === s; });
+      setStatus('Your friend is now ' + (v ? v.name : s) + '.');
+    };
+  });
+  el.querySelectorAll('.cmp-tab').forEach(function (t) {
+    t.onclick = function () {
+      compareState.tab = t.dataset.style;
+      var p = el.querySelector('#cmp-' + t.dataset.style);
+      if (p) grid.scrollTo({ left: p.offsetLeft - grid.offsetLeft - 4, behavior: 'smooth' });
+      el.querySelectorAll('.cmp-tab').forEach(function (x) { x.classList.toggle('on', x === t); });
+    };
+  });
+  grid.onscroll = function () {
+    var best = null, bd = Infinity;
+    grid.querySelectorAll('.cmp-panel').forEach(function (p) { var d = Math.abs(p.offsetLeft - grid.offsetLeft - grid.scrollLeft); if (d < bd) { bd = d; best = p; } });
+    if (best && best.dataset.style !== compareState.tab) {
+      compareState.tab = best.dataset.style;
+      el.querySelectorAll('.cmp-tab').forEach(function (x) { x.classList.toggle('on', x.dataset.style === compareState.tab); });
+    }
+  };
+}
+function openCompare(opts) {
+  opts = opts || {};
+  var el = document.getElementById('compareView');
+  if (!el) return;
+  if (!compareState) compareState = { itemId: null, cuss: { drill: false, real: false }, tab: 'gentle' };
+  el.hidden = false;
+  renderCompare();
+  if (opts.scroll) try { el.scrollIntoView({ block: 'nearest' }); } catch (e) {}
+}
+function closeCompare() {
+  var el = document.getElementById('compareView');
+  if (el) { el.hidden = true; el.innerHTML = ''; }
+}
+window.__bdCompareOnAdd = function (it) {
+  if (!compareState || !compareIsOpen()) return;
+  compareState.itemId = it.id;
+  renderCompare();
+};
+try { window.__bdCompare = { open: openCompare, close: closeCompare, render: renderCompare, lines: compareLines, isOpen: compareIsOpen, state: function () { return compareState; } }; } catch (e) {}
+if (/[?&]compare=1(?:&|$)/.test(location.search || '')) setTimeout(function () { openCompare(); }, 0);
+// ===== end Compare personalities =====
 
 // ===== end PREVIEW =====
 
@@ -3834,6 +4052,7 @@ function addItem(text, opts) {
   if (opts.place === 'end') items.push(it);
   else items.unshift(it);
   lastAddedId = it.id;
+  if (typeof window.__bdCompareOnAdd === 'function') { try { window.__bdCompareOnAdd(it); } catch (e) {} }
   if (!opts.keepInput) { itemInput.value = ''; autoGrowInput(); }
   save(); render();
   revealCurrentCat({ scroll: true });
