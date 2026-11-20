@@ -1833,31 +1833,19 @@ html.nb-notebook[data-theme="warm"] body {
   }
 }
 
-/* ---- Top controls: Pages + back ---- */
-.nb-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  margin: 0 0 8px;
-  min-height: 36px;
-  position: relative;
-  z-index: 4;
+/* Top Pages / Back / page-name row is gone. Contents lives on the right-edge tabs.
+   “Your why” stays in its original spot under the subtitle, Front page only. */
+html.nb-notebook .nb-topbar,
+html.nb-notebook .nb-contents-btn,
+html.nb-notebook .nb-back,
+html.nb-notebook .nb-page-label { display: none !important; }
+html.nb-notebook[data-nb-page="front"] #whyLine {
+  text-align: left;
+  margin: 0 0 10px !important;
   min-width: 0;
   max-width: 100%;
 }
-/* Pages stays on the right; Why (when on) shares this row and can shrink with an ellipsis. */
-.nb-topbar .nb-contents-btn {
-  margin-left: auto;
-  flex: 0 0 auto;
-}
-.nb-topbar #whyLine {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin: 0 !important;
-  text-align: left;
-}
-.nb-topbar #whyEdit {
+html.nb-notebook[data-nb-page="front"] #whyEdit {
   display: block;
   max-width: 100%;
   overflow: hidden;
@@ -1865,6 +1853,7 @@ html.nb-notebook[data-theme="warm"] body {
   white-space: nowrap;
   text-align: left;
   box-sizing: border-box;
+  padding-left: 0;
 }
 .nb-contents-btn,
 .nb-back {
@@ -1909,14 +1898,12 @@ html.nb-notebook[data-theme="warm"] body {
   vertical-align: middle;
   box-shadow: 0 0 0 1px rgba(90, 60, 20, 0.15);
 }
-html[data-nb-page="front"] .nb-page-label { display: none !important; }
-html[data-nb-page="front"] .nb-back { display: none !important; }
-html.nb-notebook:not([data-nb-page="front"]) .nb-topbar #whyLine { display: none !important; }
+html.nb-notebook:not([data-nb-page="front"]) #whyLine { display: none !important; }
 
 /* ---- Index tabs along the right edge ---- */
 .nb-tabs {
   position: absolute;
-  top: 92px;
+  top: 78px;
   right: 0;
   z-index: 6;
   display: flex;
@@ -1927,7 +1914,7 @@ html.nb-notebook:not([data-nb-page="front"]) .nb-topbar #whyLine { display: none
   pointer-events: auto;
 }
 @media (min-width: 720px) {
-  .nb-tabs { right: -18px; width: 28px; top: 110px; }
+  .nb-tabs { right: -18px; width: 28px; top: 96px; }
 }
 .nb-tab {
   position: relative;
@@ -1959,10 +1946,18 @@ html.nb-notebook:not([data-nb-page="front"]) .nb-topbar #whyLine { display: none
   overflow: hidden;
   text-shadow: 0 0 3px rgba(251, 246, 236, 0.9);
 }
+
 .nb-tab[data-page="front"] { background: #fbf6ec; }
+.nb-tab[data-page="contents"] { background: #f3e6d0; }
 .nb-tab[data-page="settings"] { background: #efe3cf; }
 .nb-tab[data-page="more"] { background: #eadcc6; height: 36px; }
 .nb-tab[data-page="more"] > span { transform: none; font-size: 1.1rem; letter-spacing: 0.12em; }
+.nb-tab[data-page="contents"].is-open {
+  right: 2px;
+  box-shadow: -2px 1px 4px rgba(90, 60, 20, 0.12);
+  border-color: rgba(90, 60, 20, 0.28);
+  z-index: 1;
+}
 .nb-tab.is-on {
   right: 2px;
   box-shadow: -2px 1px 4px rgba(90, 60, 20, 0.12);
@@ -2422,6 +2417,7 @@ html.nb-notebook .nb-tab {
   padding: 0 !important;
 }
 html[data-theme="warm"] .nb-tab[data-page="front"] { background: #fbf6ec !important; }
+html[data-theme="warm"] .nb-tab[data-page="contents"] { background: #f3e6d0 !important; }
 html[data-theme="warm"] .nb-tab[data-page="settings"] { background: #efe3cf !important; }
 html[data-theme="warm"] .nb-toc-close,
 html.nb-notebook .nb-toc-close {
@@ -6921,23 +6917,6 @@ render();
   function ensureChrome() {
     if ($("nbTabs")) return;
     var body = document.body;
-    var top = document.createElement("div");
-    top.className = "nb-topbar";
-    top.id = "nbTopbar";
-    top.innerHTML = '<button type="button" class="nb-back" id="nbBack" hidden>← Front page</button>' +
-      '<div class="nb-page-label" id="nbPageLabel"></div>' +
-      '<button type="button" class="nb-contents-btn" id="nbContentsBtn" aria-haspopup="dialog" aria-controls="nbToc">Pages</button>';
-    var sub = document.querySelector(".subtitle");
-    var when = $("pageWhen");
-    var anchor = sub || when || document.querySelector("h1");
-    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(top, anchor.nextSibling);
-    else body.insertBefore(top, body.firstChild);
-
-    var why = $("whyLine");
-    if (why && $("nbContentsBtn") && why.parentNode !== top) {
-      top.insertBefore(why, $("nbContentsBtn"));
-    }
-
     var tabs = document.createElement("nav");
     tabs.id = "nbTabs";
     tabs.className = "nb-tabs";
@@ -6981,8 +6960,6 @@ render();
     ghost.setAttribute("aria-hidden", "true");
     body.appendChild(ghost);
 
-    $("nbContentsBtn").addEventListener("click", function () { nbOpenToc(); });
-    $("nbBack").addEventListener("click", function () { nbGo(FRONT); });
     bd.addEventListener("click", function () { nbCloseToc(); });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") { if (!$("nbToc").hidden) { e.preventDefault(); nbCloseToc(); } }
@@ -6996,13 +6973,18 @@ render();
     var overflow = cats.length > MAX_CAT_TABS;
     var shown = overflow ? cats.slice(0, MAX_CAT_TABS) : cats;
     var html = "";
+    var tocOpen = $("nbToc") && !$("nbToc").hidden;
     function tab(id, label, color) {
-      var on = nbPage === id ? " is-on" : "";
+      var isPage = id !== "contents" && id !== "more";
+      var on = (isPage && nbPage === id) ? " is-on" : "";
+      if (id === "contents" && tocOpen) on += " is-open";
       var style = color ? ' style="background:' + color + ';"' : "";
-      return '<button type="button" class="nb-tab' + on + '" data-page="' + escAttr(id) + '"' + style +
-        ' aria-current="' + (nbPage === id ? "page" : "false") + '" title="' + escAttr(label) + '"><span>' + escHtml(label) + "</span></button>";
+      var extra = id === "contents" ? ' id="nbContentsTab" aria-haspopup="dialog" aria-controls="nbToc" aria-expanded="' + (tocOpen ? "true" : "false") + '"' : "";
+      return '<button type="button" class="nb-tab' + on + '" data-page="' + escAttr(id) + '"' + style + extra +
+        ' aria-current="' + (isPage && nbPage === id ? "page" : "false") + '" title="' + escAttr(label) + '"><span>' + escHtml(label) + "</span></button>";
     }
     html += tab(FRONT, "Front", "");
+    html += tab("contents", "Contents", "");
     shown.forEach(function (c) { html += tab(c.name, shortLabel(c.name), c.color || "#e0d2bc"); });
     if (overflow) html += tab("more", "···", "");
     html += tab(SETTINGS, "Settings", "");
@@ -7010,7 +6992,7 @@ render();
     nav.querySelectorAll(".nb-tab").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var id = btn.getAttribute("data-page");
-        if (id === "more") nbOpenToc();
+        if (id === "contents" || id === "more") nbOpenToc();
         else nbGo(id);
       });
     });
@@ -7071,13 +7053,19 @@ render();
     renderToc();
     $("nbToc").hidden = false;
     $("nbTocBackdrop").hidden = false;
-    try { $("nbContentsBtn").setAttribute("aria-expanded", "true"); } catch (e) {}
+    syncContentsTab(true);
   }
   function nbCloseToc() {
     var toc = $("nbToc"), bd = $("nbTocBackdrop");
     if (toc) toc.hidden = true;
     if (bd) bd.hidden = true;
-    try { $("nbContentsBtn").setAttribute("aria-expanded", "false"); } catch (e) {}
+    syncContentsTab(false);
+  }
+  function syncContentsTab(open) {
+    var btn = $("nbContentsTab") || document.querySelector('.nb-tab[data-page="contents"]');
+    if (!btn) return;
+    btn.classList.toggle("is-open", !!open);
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
   function syncPageLock() {
@@ -7127,20 +7115,6 @@ render();
   }
 
   function syncTopbar() {
-    var back = $("nbBack");
-    var label = $("nbPageLabel");
-    var pages = $("nbContentsBtn");
-    if (back) back.hidden = nbPage === FRONT;
-    if (pages) pages.hidden = false;
-    if (label) {
-      if (nbPage === FRONT) label.innerHTML = "";
-      else if (nbPage === SETTINGS) label.textContent = "Settings";
-      else {
-        var c = typeof findCat === "function" ? findCat(nbPage) : null;
-        var pip = c && c.color ? '<span class="nb-pip" style="background:' + c.color + ';"></span>' : "";
-        label.innerHTML = pip + escHtml(nbPage);
-      }
-    }
     document.documentElement.setAttribute("data-nb-page", nbPage);
     document.documentElement.classList.toggle("nb-simple", isSimple() && nbPage === FRONT);
   }
