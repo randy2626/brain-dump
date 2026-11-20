@@ -2550,6 +2550,129 @@ html.nb-notebook #trackerStrip .strip-bit strong {
   font-weight: 600;
 }
 
+
+/* ---- Quick capture (Warm) ---- */
+#bdCapture {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+#bdCapture[hidden] { display: none !important; }
+#bdCapture .bd-cap-back {
+  position: absolute;
+  inset: 0;
+  background: rgba(60, 40, 15, 0.28);
+  pointer-events: auto;
+}
+#bdCapture .bd-cap-sheet {
+  position: relative;
+  pointer-events: auto;
+  width: min(520px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px - env(safe-area-inset-bottom, 0px));
+  margin: 0 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: #f4ead8;
+  color: #2b2118;
+  border-radius: 20px 20px 16px 16px;
+  box-shadow: 0 16px 40px rgba(60, 40, 15, 0.28);
+  padding: 22px 22px 20px;
+  overflow: auto;
+  font-family: "Patrick Hand", Caveat, cursive;
+}
+#bdCapture .bd-cap-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  color: #5a3e28;
+  cursor: pointer;
+}
+#bdCapture h2 {
+  margin: 4px 36px 6px 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2b2118;
+}
+#bdCapture .bd-cap-sub {
+  margin: 0 0 18px;
+  font-size: 1.15rem;
+  color: #5a3e28;
+  line-height: 1.35;
+}
+#bdCapture .bd-cap-mic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 18px;
+}
+#bdCapture .bd-cap-mic-btn {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  border: none;
+  background: #eef3e8;
+  color: #1f2a1c;
+  box-shadow: 0 0 0 4px #5d7a55, 0 4px 14px rgba(40,70,30,0.2);
+  font-size: 48px;
+  cursor: pointer;
+  line-height: 1;
+}
+#bdCapture .bd-cap-mic-btn.listening {
+  background: #f8d4d1;
+  box-shadow: 0 0 0 4px #b13a32, 0 4px 14px rgba(177,58,50,0.25);
+}
+#bdCapture .bd-cap-mic-label {
+  font-size: 1.1rem;
+  color: #5a3e28;
+}
+#bdCapture .bd-cap-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+#bdCapture #bdCapInput {
+  flex: 1;
+  min-height: 48px;
+  border: 1px solid rgba(90,60,20,0.22);
+  border-radius: 12px;
+  background: #fffaf1;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 1.15rem;
+  color: #2b2118;
+  resize: none;
+}
+#bdCapture #bdCapAdd {
+  min-width: 64px;
+  border: none;
+  border-radius: 12px;
+  background: #b5522a;
+  color: #fffaf1;
+  font: inherit;
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 0 14px;
+}
+#bdCapture .bd-cap-status {
+  min-height: 1.3em;
+  margin: 10px 0 0;
+  font-size: 1.05rem;
+  color: #5a3e28;
+}
+#bdCapture .bd-cap-tip {
+  margin: 12px 0 0;
+  font-size: 1rem;
+  color: #7a5a3a;
+  line-height: 1.35;
+}
 </style>
 </head>
 <body data-theme="warm" data-tracker-place="strip">
@@ -2707,10 +2830,32 @@ let collapsed = JSON.parse(localStorage.getItem('bd-collapsed') || '{}');
 
 // ---- Subcategories (category.parent = parent category name; missing/'' = top level) ----
 const MAX_DEPTH = 3;
-function findCat(name) { return categories.find(c => c.name === name) || null; }
+const UNSORTED = 'Unsorted';
+const UNSORTED_COLOR = '#d4c4ae';
+function isUnsortedName(name) {
+  return String(name || '').trim().toLowerCase() === 'unsorted';
+}
+function getUnsortedCat() {
+  const existing = categories.find(c => isUnsortedName(c.name) && !c.parent) || categories.find(c => isUnsortedName(c.name));
+  if (existing) return existing;
+  return { name: UNSORTED, color: UNSORTED_COLOR, builtin: true };
+}
+function unsortedHasItems() {
+  return (items || []).some(i => !i.deleted && !i.letGo && isUnsortedName(i.category));
+}
+function findCat(name) {
+  const exact = categories.find(c => c.name === name);
+  if (exact) return exact;
+  if (isUnsortedName(name)) return getUnsortedCat();
+  return null;
+}
 function findCatCI(name) {
   const n = String(name || '').trim().toLowerCase();
-  return n ? (categories.find(c => c.name.toLowerCase() === n) || null) : null;
+  if (!n) return null;
+  const real = categories.find(c => c.name.toLowerCase() === n);
+  if (real) return real;
+  if (n === 'unsorted') return getUnsortedCat();
+  return null;
 }
 function parentOf(name) { const c = findCat(name); return (c && c.parent) || ''; }
 function childrenOf(name) {
@@ -2803,6 +2948,11 @@ function orderedCats(extraNames) {
 function placeCategory(name, parentName, afterItem) {
   name = String(name || '').trim().replace(/[\s.,!?…]+$/g, '').trim();
   if (!name) return { error: 'Type a name first' };
+  if (isUnsortedName(name)) {
+    if (parentName) return { error: '“Unsorted” is a built-in page' };
+    return { cat: getUnsortedCat(), created: false };
+  }
+  if (parentName && isUnsortedName(parentName)) return { error: "You can't nest under Unsorted" };
   let pName = '';
   if (parentName) {
     const parent = findCatCI(parentName);
@@ -2862,8 +3012,9 @@ function save() {
 function setStatus(msg) { micStatus.textContent = msg || ''; }
 
 function updateSelect() {
-  const opts = orderedCats().filter(o => findCat(o.name)).map(o => `<option value="${o.name}">${'\u00a0\u00a0\u00a0'.repeat(o.depth - 1)}${o.depth > 1 ? '↳ ' : ''}${o.name}</option>`).join('');
-  catSelect.innerHTML = '<option value="">No category</option>' + opts;
+  const opts = orderedCats().filter(o => findCat(o.name) && !isUnsortedName(o.name)).map(o => `<option value="${o.name}">${'\u00a0\u00a0\u00a0'.repeat(o.depth - 1)}${o.depth > 1 ? '↳ ' : ''}${o.name}</option>`).join('');
+  const uOpt = (unsortedHasItems() || isUnsortedName(currentCat)) ? '<option value="Unsorted">Unsorted</option>' : '';
+  catSelect.innerHTML = '<option value="">No category</option>' + uOpt + opts;
   catSelect.value = currentCat || '';
   // Also update move dropdown
   const moveSel = $('moveSelectedTo');
@@ -2873,6 +3024,7 @@ function updateSelect() {
   }
 }
 function getColor(name) {
+  if (isUnsortedName(name)) return (categories.find(c => isUnsortedName(c.name)) || {}).color || UNSORTED_COLOR;
   return (categories.find(c => c.name === name) || {}).color || '#ffffff';
 }
 
@@ -4424,7 +4576,7 @@ function isReorderableHeader(el) {
   if (page && page !== 'front') return false;
   const name = el.dataset.cat;
   if (el.dataset.depth && el.dataset.depth !== '1') return false;
-  if (!name || ['Finished', 'Recently Deleted', 'Let go', 'Uncategorized'].includes(name)) return false;
+  if (!name || ['Finished', 'Recently Deleted', 'Let go', 'Uncategorized', 'Unsorted'].includes(name) || isUnsortedName(name)) return false;
   return !!findCat(name) && !parentOf(name);
 }
 function parseDragPayload(raw) {
@@ -4763,7 +4915,7 @@ function render() {
         if (shouldShowCat(k.name)) inner += catBlockHTML(k.name, depth + 1);
       });
     });
-    if (name !== 'Uncategorized') {
+    if (name !== 'Uncategorized' && !isUnsortedName(name)) {
       trailingKids(name, itemIds).forEach(k => {
         if (shouldShowCat(k.name)) inner += catBlockHTML(k.name, depth + 1);
       });
@@ -4781,26 +4933,26 @@ function render() {
   function catBlockHTML(name, depth) {
     const arr = groups[name] || [];
     const isCollapsed = collapsed[name] && !q;
-    const col = name === 'Uncategorized' ? '#666' : getColor(name);
+    const col = (name === 'Uncategorized' || isUnsortedName(name)) ? (isUnsortedName(name) ? getColor(UNSORTED) : '#666') : getColor(name);
     const isCat = !!findCat(name);
     const subCls = depth > 1 ? 'sub' : '';
     const indent = depth > 1 ? `margin-left:${(depth - 1) * 16}px;` : '';
     const desc = isCat ? descendantsOf(name) : [];
     const hiddenSubCount = isCollapsed && desc.length ? visible.filter(i => desc.includes(i.category)).length : 0;
     const subHint = isCollapsed && desc.length ? `<span class="sub-hint">+${desc.length} sub${desc.length === 1 ? '' : 's'}${hiddenSubCount ? ', ' + hiddenSubCount + ' more' : ''}</span>` : '';
-    const addSub = isCat && depth < MAX_DEPTH ? `<button class="add-sub" data-cat="${attrName(name)}" title="Add a subcategory inside ${attrName(name)}">+ sub</button>` : '';
+    const addSub = isCat && depth < MAX_DEPTH && !isUnsortedName(name) ? `<button class="add-sub" data-cat="${attrName(name)}" title="Add a subcategory inside ${attrName(name)}">+ sub</button>` : '';
     const onFront = !document.documentElement.getAttribute('data-nb-page') || document.documentElement.getAttribute('data-nb-page') === 'front';
-    const dragCat = onFront && depth === 1 && isCat ? ' draggable="true" data-drag="cat"' : '';
+    const dragCat = onFront && depth === 1 && isCat && !isUnsortedName(name) ? ' draggable="true" data-drag="cat"' : '';
     const bullet = depth > 1 ? `<span class="cat-dot nb-bullet" data-cat="${attrName(name)}" style="color:${col}" title="Change color">•</span>` : '';
     const colorDot = depth > 1 ? '' : `<span class="cat-dot" data-cat="${attrName(name)}" style="width:16px;height:16px;border-radius:50%;background:${col};display:inline-block;margin-left:8px;cursor:pointer;"></span>`;
     let block = `<div class="group-header ${subCls} ${name === currentCat ? 'current' : ''}" data-cat="${attrName(name)}" data-depth="${depth}"${dragCat} style="${indent}">
       <span class="arrow" data-cat="${attrName(name)}" title="Double-click to collapse">${isCollapsed ? '▶' : '▼'}</span>
       ${bullet}
-      <span class="cat-name" data-cat="${attrName(name)}" title="Click to rename">${name}</span>
+      <span class="cat-name" data-cat="${attrName(name)}" title="${isUnsortedName(name) ? '' : 'Click to rename'}">${name}</span>
       ${catCountHTML(arr)}${subHint}
       ${colorDot}
       ${addSub}
-      ${name === 'Uncategorized' ? '' : `<button class="del-cat" data-cat="${attrName(name)}" title="Delete category" style="background:#ef4444;border:none;color:white;border-radius:50%;width:20px;height:20px;font-size:11px;margin-left:6px;cursor:pointer;padding:0;">✕</button><button type="button" class="cat-menu" data-cat="${attrName(name)}" aria-label="Category options">⋯</button>`}
+      ${(name === 'Uncategorized' || isUnsortedName(name)) ? '' : `<button class="del-cat" data-cat="${attrName(name)}" title="Delete category" style="background:#ef4444;border:none;color:white;border-radius:50%;width:20px;height:20px;font-size:11px;margin-left:6px;cursor:pointer;padding:0;">✕</button><button type="button" class="cat-menu" data-cat="${attrName(name)}" aria-label="Category options">⋯</button>`}
     </div>
       <div class="group-items ${subCls} ${isCollapsed ? 'collapsed' : ''}" data-for="${attrName(name)}" style="${indent}">`;
     block += isCollapsed ? itemsOnlyHTML(name) : catInnerHTML(name, depth);
@@ -4810,15 +4962,20 @@ function render() {
 
   let html = '';
   const tree = orderedCats(Object.keys(groups));
+  const uIdx = tree.findIndex(o => o && isUnsortedName(o.name));
+  if (uIdx > 0) {
+    const u = tree.splice(uIdx, 1)[0];
+    tree.unshift(u);
+  }
   tree.push({ name: 'Uncategorized', depth: 1 });
   tree.forEach(({ name, depth }) => {
     const arr = groups[name] || [];
-    if (name !== 'Uncategorized' && parentOf(name)) return;
+    if (name !== 'Uncategorized' && !isUnsortedName(name) && parentOf(name)) return;
     if (name === 'Uncategorized' && !arr.length && !categories.length) return;
-    if (name === 'Uncategorized' && !arr.length) return;
-    if (name !== 'Uncategorized' && !q && ancestorsOf(name).some(a => collapsed[a])) return;
-    if (!shouldShowCat(name) && name !== 'Uncategorized') return;
-    html += catBlockHTML(name, name === 'Uncategorized' ? 1 : depthOf(name));
+    if ((name === 'Uncategorized' || isUnsortedName(name)) && !arr.length) return;
+    if (name !== 'Uncategorized' && !isUnsortedName(name) && !q && ancestorsOf(name).some(a => collapsed[a])) return;
+    if (!shouldShowCat(name) && name !== 'Uncategorized' && !isUnsortedName(name)) return;
+    html += catBlockHTML(name, (name === 'Uncategorized' || isUnsortedName(name)) ? 1 : depthOf(name));
   });
 
   const ghosted = visible.filter(i => i.ghosted);
@@ -5018,6 +5175,11 @@ function showColorPicker(catName) {
 addCatBtn.onclick = () => {
   const name = catInput.value.trim();
   if (!name) return;
+  if (typeof isUnsortedName === 'function' && isUnsortedName(name)) {
+    catInput.value = '';
+    setStatus('Unsorted is a built-in page for quick captures.');
+    return;
+  }
   const segs = name.split('>').map(x => x.trim()).filter(Boolean);
   if (name.includes('>') && segs.length >= 2) {
     // "AccuLynx > Estimates > White's Estimate": first part is used as-is, the rest nest under it.
@@ -5090,7 +5252,7 @@ function addItem(text, opts) {
     id: Date.now() + Math.random(),
     text: parsedDue.due ? parsedDue.text : text,
     category: cat,
-    color: cat ? getColor(cat) : '#ffffff',
+    color: cat ? (isUnsortedName(cat) ? '#ffffff' : getColor(cat)) : '#ffffff',
     ghosted: false, finishedAt: null, due: parsedDue.due ? parsedDue.due.toISOString() : null, deleted: false, selected: false,
     createdAt: bdNow()
   };
@@ -5289,7 +5451,7 @@ listEl.addEventListener('click', e => {
     e.stopPropagation();
     e.preventDefault();
     const oldName = t.dataset.cat;
-    if (!oldName || ['Uncategorized','Finished','Recently Deleted','Let go'].includes(oldName)) return;
+    if (!oldName || ['Uncategorized','Finished','Recently Deleted','Let go','Unsorted'].includes(oldName) || isUnsortedName(oldName)) return;
     const input = document.createElement('input');
     input.type = 'text';
     input.value = oldName;
@@ -5348,7 +5510,7 @@ listEl.addEventListener('dblclick', function(e) {
 
   if (catNameSpan) {
     const oldName = catNameSpan.dataset.cat;
-    if (!oldName || oldName === 'Uncategorized' || oldName === 'Finished' || oldName === 'Recently Deleted' || oldName === 'Let go') return;
+    if (!oldName || oldName === 'Uncategorized' || oldName === 'Finished' || oldName === 'Recently Deleted' || oldName === 'Let go' || isUnsortedName(oldName)) return;
     const input = document.createElement('input');
     input.type = 'text';
     input.value = oldName;
@@ -5723,6 +5885,7 @@ function resetMicUI(clearStatus) {
   micBtn.textContent = '🎤';
   micBtn.classList.remove('listening');
   if (clearStatus) setStatus('');
+  if (typeof syncCaptureMicUI === 'function') try { syncCaptureMicUI(); } catch (e) {}
 }
 
 // Friendly, non-blocking messages for speech errors (no popups).
@@ -6037,6 +6200,136 @@ function setItemDue(item, days) {
   item.due = d.toISOString();
 }
 
+
+// ---- Quick capture routing ----
+let captureOpen = false;
+let lastDestName = '';
+try { lastDestName = localStorage.getItem('bd-last-dest') || ''; } catch (e) {}
+
+function destMatches(name) {
+  const n = typeof normalizeName === 'function' ? normalizeName(name) : String(name || '').toLowerCase().trim();
+  if (!n) return [];
+  const out = categories.filter(c => (typeof normalizeName === 'function' ? normalizeName(c.name) : String(c.name).toLowerCase()) === n);
+  if (n === 'unsorted' && !out.some(c => isUnsortedName(c.name))) out.push(getUnsortedCat());
+  return out;
+}
+
+function pickRecentDest(matches) {
+  if (!matches || !matches.length) return null;
+  if (lastDestName) {
+    const hit = matches.find(c => c.name === lastDestName);
+    if (hit) return hit;
+  }
+  let best = matches[0], bestT = -1;
+  matches.forEach(c => {
+    (items || []).forEach(it => {
+      if (it.deleted || it.letGo) return;
+      if (it.category === c.name) {
+        const t = it.createdAt || 0;
+        if (t >= bestT) { bestT = t; best = c; }
+      }
+    });
+  });
+  return best;
+}
+
+// Look up dest across top-level categories AND sub-categories (exact, case-insensitive).
+// Unique match wins. Multiple: prefer a top-level; else most recently used.
+// allowCreate: only when nothing matches anywhere, make a new top-level page.
+function resolveCaptureDest(name, allowCreate) {
+  const matches = destMatches(name);
+  if (matches.length === 1) return { cat: matches[0], how: 'unique' };
+  if (matches.length > 1) {
+    const tops = matches.filter(c => !c.parent);
+    if (tops.length === 1) return { cat: tops[0], how: 'toplevel' };
+    if (tops.length > 1) return { cat: pickRecentDest(tops), how: 'recent' };
+    return { cat: pickRecentDest(matches), how: 'recent' };
+  }
+  if (allowCreate && String(name || '').trim()) {
+    const r = placeCategory(String(name).trim(), '');
+    if (r && r.cat) return { cat: r.cat, how: 'created' };
+  }
+  return { cat: getUnsortedCat(), how: 'unsorted' };
+}
+
+function parseAddToDest(raw, opts) {
+  opts = opts || {};
+  const t = String(raw || '').trim();
+  if (!t) return null;
+  let m = t.match(/^(?:please[, ]+)?(?:add|put)\s+(.+?)\s+(?:to|in|into)\s+(.+)$/i);
+  if (m) return { text: m[1].trim(), dest: m[2].trim().replace(/[\s.,!?…]+$/g, ''), explicit: true };
+  if (opts.allowBareTo) {
+    m = t.match(/^(.+?)\s+to\s+(.+)$/i);
+    if (m) {
+      const dest = m[2].trim().replace(/[\s.,!?…]+$/g, '');
+      if (dest && destMatches(dest).length) return { text: m[1].trim(), dest, explicit: false };
+    }
+  }
+  return null;
+}
+
+function rememberDest(name) {
+  if (!name || isUnsortedName(name)) return;
+  lastDestName = name;
+  try { localStorage.setItem('bd-last-dest', name); } catch (e) {}
+}
+
+function captureToast(dest, how) {
+  dest = dest || getUnsortedCat();
+  const parent = dest && dest.name && typeof parentOf === 'function' ? parentOf(dest.name) : '';
+  let msg;
+  if (!dest || isUnsortedName(dest.name)) {
+    msg = 'Tossed it in Unsorted.';
+  } else if (parent) {
+    msg = 'Got it — in ' + dest.name + ' (under ' + parent + ').';
+    if (how === 'recent') msg = 'Got it — in ' + dest.name + ' (under ' + parent + '). That’s the one you used last.';
+  } else {
+    msg = 'Got it — in ' + dest.name + '.';
+    if (how === 'toplevel') msg = 'Got it — in ' + dest.name + ' (the main page).';
+    else if (how === 'created') msg = 'Got it — in ' + dest.name + '. I made that page.';
+    else if (how === 'recent') msg = 'Got it — in ' + dest.name + '. That’s the one you used last.';
+  }
+  showVoiceToast(msg, null, 4500);
+  setStatus(msg);
+  const cap = $('bdCapStatus');
+  if (cap) cap.textContent = msg;
+  return msg;
+}
+
+function fileCapturedItem(text, destName, opts) {
+  opts = opts || {};
+  text = String(text || '').trim();
+  if (!text) return null;
+  let dest = null, how = 'unsorted';
+  if (destName) {
+    const r = resolveCaptureDest(destName, opts.allowCreate !== false && opts.explicit !== false);
+    dest = r.cat;
+    how = r.how;
+    if (opts.allowCreate === false && how === 'created') {
+      dest = getUnsortedCat();
+      how = 'unsorted';
+    }
+  } else {
+    dest = getUnsortedCat();
+    how = 'unsorted';
+  }
+  const catName = dest && dest.name ? dest.name : UNSORTED;
+  const it = addItem(text, { category: catName });
+  if (it) rememberDest(catName);
+  captureToast(dest, how);
+  return it;
+}
+
+function handleCaptureText(raw) {
+  const parsed = parseAddToDest(raw, { allowBareTo: true });
+  if (parsed && parsed.text) {
+    return fileCapturedItem(parsed.text, parsed.dest, { allowCreate: !!parsed.explicit, explicit: parsed.explicit });
+  }
+  let text = String(raw || '').trim();
+  text = text.replace(/^(?:please[, ]+)?(?:add|put)\s+/i, '').trim() || text;
+  return fileCapturedItem(text, null, { allowCreate: false });
+}
+
 function applyCommand(cleanedRaw) {
   const t = cleanedRaw.toLowerCase().replace(/[\s.,!?…]+$/g, '').trim();
   if (!t) return true;
@@ -6201,6 +6494,14 @@ function applyCommand(cleanedRaw) {
     return true;
   }
 
+  // “add X to Ideas” / “put X in Home” — file to a matching cat or sub (or create a top-level page).
+  // Bare “X to Ideas” is handled only while quick capture is open, so ordinary sentences stay items.
+  const cap = parseAddToDest(cleanedRaw, { allowBareTo: !!captureOpen });
+  if (cap && cap.text) {
+    fileCapturedItem(cap.text, cap.dest, { allowCreate: cap.explicit, explicit: cap.explicit });
+    return true;
+  }
+
   return false;
 }
 
@@ -6239,6 +6540,12 @@ function handleVoice(raw) {
   }
 
   if (applyCommand(cleaned.raw)) return;
+
+  if (captureOpen) {
+    handleCaptureText(cleaned.raw);
+    if (userWantsListening) setStatus('Listening…');
+    return;
+  }
 
   const chunks = splitVoiceParts(cleaned.raw);
   const parts = [];
@@ -6378,17 +6685,83 @@ function maybeShowMicTip() {
   setTimeout(() => showVoiceToast(msg, null, 9000), 600);
 }
 
-micBtn.onclick = () => {
-  if (!recognition) return setStatus(UNSUPPORTED_VOICE_MSG);
-  if (userWantsListening || listening) {
-    userWantsListening = false;
-    fatalVoiceError = false;
-    if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
-    flushVoiceBuffer();
-    try { recognition.stop(); } catch (err) {}
-    resetMicUI(true);
-    return;
+let micReadyThisSession = false;
+let micStream = null;
+const MIC_EXPLAIN_KEY = 'bd-mic-explainer';
+
+function micExplainerSeen() {
+  try { return !!localStorage.getItem(MIC_EXPLAIN_KEY); } catch (e) { return true; }
+}
+function markMicExplainerSeen() {
+  try { localStorage.setItem(MIC_EXPLAIN_KEY, '1'); } catch (e) {}
+}
+async function queryMicPermission() {
+  try {
+    if (navigator.permissions && navigator.permissions.query) {
+      const st = await navigator.permissions.query({ name: 'microphone' });
+      return st && st.state ? st.state : 'unknown';
+    }
+  } catch (e) {}
+  return 'unknown';
+}
+// Reuse one getUserMedia + SpeechRecognition setup per visit. Don't re-request
+// if this session already got the mic, or if the permission is already granted.
+async function ensureMicAccess() {
+  if (micReadyThisSession) return { ok: true, state: 'granted' };
+  const state = await queryMicPermission();
+  if (state === 'granted') {
+    micReadyThisSession = true;
+    return { ok: true, state };
   }
+  if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+    return { ok: true, state, skipped: true };
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    micReadyThisSession = true;
+    micStream = stream;
+    // Keep the permission, drop the live tracks so the tab isn't stuck "recording"
+    // while we aren't listening. The SpeechRecognition object is reused below.
+    try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+    micStream = null;
+    return { ok: true, state: 'granted' };
+  } catch (err) {
+    return { ok: false, state, err };
+  }
+}
+function captureMicExplainerText() {
+  if (IS_IOS) {
+    return IS_STANDALONE
+      ? 'Your phone may ask to use the mic. Allow it once for this visit — we won’t keep asking in here.'
+      : 'Your browser may ask to use the mic. Allow it — we won’t keep asking in this visit. (Safari in a regular tab can still re-prompt; the home-screen app is more reliable.)';
+  }
+  return 'Your browser may ask to use the mic. Allow it once — we won’t keep asking in this visit.';
+}
+
+function syncCaptureMicUI() {
+  const btn = $('bdCapMic');
+  const label = $('bdCapMicLabel');
+  if (!btn) return;
+  const on = !!(userWantsListening || listening);
+  btn.classList.toggle('listening', on);
+  btn.textContent = on ? '⏹' : '🎤';
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  if (label) label.textContent = on ? 'Listening… tap to stop' : 'Tap to start the mic';
+}
+
+function stopMic() {
+  userWantsListening = false;
+  fatalVoiceError = false;
+  if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+  flushVoiceBuffer();
+  try { if (recognition) recognition.stop(); } catch (err) {}
+  resetMicUI(true);
+  syncCaptureMicUI();
+}
+
+function startMic() {
+  if (!recognition) { setStatus(UNSUPPORTED_VOICE_MSG); return false; }
+  if (userWantsListening || listening) return true;
   fatalVoiceError = false;
   networkVoiceErrors = 0;
   quickEnds = 0;
@@ -6400,17 +6773,175 @@ micBtn.onclick = () => {
   listening = true;
   micBtn.textContent = '⏹';
   micBtn.classList.add('listening');
+  syncCaptureMicUI();
   try {
     recognition.start();
     setStatus('Listening…');
+    const cap = $('bdCapStatus');
+    if (cap) cap.textContent = 'Listening…';
+    return true;
   } catch (err) {
     const msg = String((err && err.message) || err);
-    if (/already started|InvalidState/i.test(msg)) { setStatus('Listening…'); return; }
+    if (/already started|InvalidState/i.test(msg)) { setStatus('Listening…'); return true; }
     userWantsListening = false;
     resetMicUI(false);
+    syncCaptureMicUI();
     setStatus("Couldn't start the mic. Tap it again in a second.");
+    const cap = $('bdCapStatus');
+    if (cap) cap.textContent = "Couldn't start the mic. Tap the big button.";
+    return false;
   }
+}
+
+async function startMicWithPermission() {
+  const state = await queryMicPermission();
+  const skipExplainer = state === 'granted' || micReadyThisSession || micExplainerSeen();
+  if (!skipExplainer && captureOpen) {
+    const tip = $('bdCapTip');
+    if (tip) { tip.hidden = false; tip.textContent = captureMicExplainerText(); }
+    markMicExplainerSeen();
+  } else if (state === 'granted' || micReadyThisSession) {
+    const tip = $('bdCapTip');
+    if (tip) tip.hidden = true;
+  }
+  const access = await ensureMicAccess();
+  if (!access.ok && access.state === 'denied') {
+    const msg = voiceErrorInfo('not-allowed').msg;
+    setStatus(msg);
+    const cap = $('bdCapStatus');
+    if (cap) cap.textContent = msg;
+    syncCaptureMicUI();
+    return false;
+  }
+  return startMic();
+}
+
+function toggleMic() {
+  if (!recognition) return setStatus(UNSUPPORTED_VOICE_MSG);
+  if (userWantsListening || listening) stopMic();
+  else startMicWithPermission();
+}
+
+function ensureCaptureUI() {
+  if ($('bdCapture')) return $('bdCapture');
+  const wrap = document.createElement('div');
+  wrap.id = 'bdCapture';
+  wrap.hidden = true;
+  wrap.setAttribute('role', 'dialog');
+  wrap.setAttribute('aria-modal', 'true');
+  wrap.setAttribute('aria-labelledby', 'bdCapTitle');
+  wrap.innerHTML = '<div class="bd-cap-back" data-cap-close="1"></div>' +
+    '<div class="bd-cap-sheet">' +
+    '<button type="button" class="bd-cap-close" data-cap-close="1" aria-label="Close capture">✕</button>' +
+    '<h2 id="bdCapTitle">Quick capture</h2>' +
+    '<p class="bd-cap-sub">Say it or type it. I’ll put it where you tell me, or in Unsorted.</p>' +
+    '<div class="bd-cap-mic">' +
+    '<button type="button" class="bd-cap-mic-btn" id="bdCapMic" aria-label="Start microphone">🎤</button>' +
+    '<div class="bd-cap-mic-label" id="bdCapMicLabel">Tap to start the mic</div>' +
+    '</div>' +
+    '<div class="bd-cap-row">' +
+    '<textarea id="bdCapInput" rows="2" placeholder="add milk to Ideas" enterkeyhint="enter"></textarea>' +
+    '<button type="button" id="bdCapAdd">Add</button>' +
+    '</div>' +
+    '<div class="bd-cap-status" id="bdCapStatus"></div>' +
+    '<p class="bd-cap-tip" id="bdCapTip" hidden></p>' +
+    '</div>';
+  document.body.appendChild(wrap);
+  wrap.addEventListener('click', ev => {
+    if (ev.target && ev.target.getAttribute && ev.target.getAttribute('data-cap-close')) closeCapture();
+  });
+  $('bdCapMic').onclick = () => toggleMic();
+  $('bdCapAdd').onclick = () => submitCaptureInput();
+  $('bdCapInput').addEventListener('keydown', ev => {
+    if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); submitCaptureInput(); }
+  });
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape' && captureOpen) { ev.preventDefault(); closeCapture(); }
+  });
+  return wrap;
+}
+
+function submitCaptureInput() {
+  const el = $('bdCapInput');
+  const text = el ? el.value.trim() : '';
+  if (!text) return;
+  handleCaptureText(text);
+  if (el) el.value = '';
+}
+
+function isCaptureUrl() {
+  try { return /[?&]capture=1(?:&|$)/.test(location.search || ''); } catch (e) { return false; }
+}
+function isCompareUrlMain() {
+  try { return /[?&]compare=1(?:&|$)/.test(location.search || ''); } catch (e) { return false; }
+}
+
+function openCapture(opts) {
+  opts = opts || {};
+  if (isCompareUrlMain()) return;
+  ensureCaptureUI();
+  const el = $('bdCapture');
+  el.hidden = false;
+  captureOpen = true;
+  document.documentElement.classList.add('bd-capturing');
+  syncCaptureMicUI();
+  const input = $('bdCapInput');
+  if (opts.focusInput && input) input.focus();
+  if (opts.autoStart) {
+    startMicWithPermission().then(function (ok) {
+      if (!ok) {
+        const label = $('bdCapMicLabel');
+        if (label) label.textContent = 'Tap the mic to start';
+      }
+    }).catch(function () {
+      const label = $('bdCapMicLabel');
+      if (label) label.textContent = 'Tap the mic to start';
+    });
+  }
+}
+
+function closeCapture() {
+  captureOpen = false;
+  document.documentElement.classList.remove('bd-capturing');
+  const el = $('bdCapture');
+  if (el) el.hidden = true;
+  if (userWantsListening || listening) stopMic();
+  if (isCaptureUrl()) {
+    try {
+      const u = new URL(location.href);
+      u.searchParams.delete('capture');
+      history.replaceState({}, '', u.pathname + u.search + u.hash);
+    } catch (e) {}
+  }
+}
+
+function maybeOpenCaptureFromUrl() {
+  if (isCaptureUrl() && !isCompareUrlMain()) openCapture({ autoStart: true });
+}
+
+micBtn.onclick = () => toggleMic();
+
+document.addEventListener('keydown', ev => {
+  if (ev.altKey || ev.repeat) return;
+  const space = ev.code === 'Space' || ev.key === ' ' || ev.key === 'Spacebar';
+  if (!space || !ev.shiftKey || !(ev.ctrlKey || ev.metaKey)) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  openCapture({ autoStart: true });
+}, true);
+
+window.__bdCapture = {
+  open: openCapture,
+  close: closeCapture,
+  isOpen: function () { return !!captureOpen; },
+  submit: handleCaptureText,
+  startMic: startMicWithPermission,
+  resolve: resolveCaptureDest
 };
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', maybeOpenCaptureFromUrl);
+else maybeOpenCaptureFromUrl();
+
 
 (function initVoicePause() {
   const el = $('voicePause');
@@ -6978,11 +7509,23 @@ render();
     return !x.friend && !x.checkins && !x.weekly && !x.trackers && !x.goals && !x.looks;
   }
   function topLevelCats() {
+    var list;
     if (typeof orderedCats === "function") {
-      return orderedCats().filter(function (o) { return o.depth === 1 && typeof findCat === "function" && findCat(o.name); })
+      list = orderedCats().filter(function (o) { return o.depth === 1 && typeof findCat === "function" && findCat(o.name); })
         .map(function (o) { return findCat(o.name); });
+    } else {
+      list = (categories || []).filter(function (c) { return c && !c.parent; });
     }
-    return (categories || []).filter(function (c) { return c && !c.parent; });
+    var hasU = typeof unsortedHasItems === "function" && unsortedHasItems();
+    list = list.filter(function (c) { return !(c && c.name && String(c.name).toLowerCase() === "unsorted") || hasU; });
+    if (hasU && !list.some(function (c) { return c && String(c.name).toLowerCase() === "unsorted"; })) {
+      list.unshift(typeof getUnsortedCat === "function" ? getUnsortedCat() : { name: "Unsorted", color: "#d4c4ae" });
+    } else if (hasU) {
+      var u = list.filter(function (c) { return c && String(c.name).toLowerCase() === "unsorted"; });
+      var rest = list.filter(function (c) { return !(c && String(c.name).toLowerCase() === "unsorted"); });
+      list = u.concat(rest);
+    }
+    return list;
   }
   function pageIds() {
     return [FRONT].concat(topLevelCats().map(function (c) { return c.name; })).concat([SETTINGS]);
