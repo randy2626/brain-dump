@@ -1966,111 +1966,174 @@ html.nb-notebook:not([data-nb-page="front"]) #whyLine { display: none !important
 }
 .nb-tab:focus { outline: 2px solid rgba(181, 82, 42, 0.45); outline-offset: 1px; }
 
-/* ---- Page turn: instant book flip from the right edge around the spine ---- */
+/* ---- Page turn: instant start, curled paper around the spine ---- */
 .nb-flip-ghost {
   position: fixed;
   inset: 0;
   z-index: 8;
-  background: #f4ead8;
+  background: transparent;
+  perspective: 1800px;
+  perspective-origin: 0% 50%;
   transform-origin: left center;
   pointer-events: none;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 0;
-  box-shadow: 14px 0 28px rgba(90, 60, 20, 0.22);
-  will-change: transform, opacity;
+  will-change: opacity;
 }
 .nb-flip-ghost[hidden] { display: none !important; }
-.nb-flip-ghost img,
-.nb-flip-ghost canvas { display: block; width: 100%; }
-.nb-flip-ghost::after {
-  content: "";
-  position: absolute;
-  top: 0; right: 0; bottom: 0;
-  width: 36px;
-  pointer-events: none;
-  background: linear-gradient(to right, transparent, rgba(90, 60, 20, 0.18));
-}
 html.nb-flip-back .nb-flip-ghost {
+  perspective-origin: 100% 50%;
   transform-origin: right center;
-  box-shadow: -14px 0 28px rgba(90, 60, 20, 0.22);
-}
-html.nb-flip-back .nb-flip-ghost::after {
-  right: auto; left: 0;
-  background: linear-gradient(to left, transparent, rgba(90, 60, 20, 0.18));
-}
-html.nb-flipping .nb-flip-ghost,
-html.nb-turning .nb-flip-ghost {
-  transition: transform 300ms cubic-bezier(0.22, 0.7, 0.15, 1), opacity 300ms ease;
-}
-html.nb-flip-fwd.nb-flipping .nb-flip-ghost,
-html.nb-turning-out .nb-flip-ghost {
-  transform: perspective(1600px) rotateY(-108deg);
-  opacity: 0.35;
-}
-html.nb-flip-back.nb-flipping .nb-flip-ghost {
-  transform: perspective(1600px) rotateY(108deg);
-  opacity: 0.35;
-}
-html.nb-midturn .nb-flip-ghost,
-html.nb-midturn #nbFlipGhost,
-html.nb-midturn.nb-flipping .nb-flip-ghost,
-html.nb-midturn.nb-flip-fwd .nb-flip-ghost,
-html.nb-midturn.nb-turning .nb-flip-ghost {
-  transition: none !important;
-  transform: perspective(1600px) rotateY(-62deg) !important;
-  opacity: 0.96;
-  box-shadow: 18px 0 32px rgba(90, 60, 20, 0.28);
-}
-html.nb-midturn.nb-flip-back .nb-flip-ghost,
-html.nb-midturn.nb-flip-back.nb-flipping .nb-flip-ghost {
-  transform-origin: right center;
-  transform: perspective(1600px) rotateY(62deg) !important;
-  box-shadow: -18px 0 32px rgba(90, 60, 20, 0.28);
 }
 html.nb-fade .nb-flip-ghost {
   transition: opacity 160ms linear;
   transform: none;
   opacity: 0;
 }
+.nb-under-shadow {
+  position: absolute;
+  inset: 0 0 0 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(to left, rgba(70, 45, 12, 0.34), rgba(70, 45, 12, 0.12) 42%, transparent 78%);
+  transform-origin: left center;
+  opacity: 0;
+}
+html.nb-flip-back .nb-under-shadow {
+  background: linear-gradient(to right, rgba(70, 45, 12, 0.34), rgba(70, 45, 12, 0.12) 42%, transparent 78%);
+  transform-origin: right center;
+}
+html.nb-curl-land .nb-under-shadow {
+  animation: nbUnderShadow var(--nb-land, 500ms) cubic-bezier(0.23, 0.12, 0.28, 1) both;
+}
+html.nb-midturn .nb-under-shadow {
+  animation: none;
+  opacity: 0.62;
+  transform: scaleX(0.72);
+}
+@keyframes nbUnderShadow {
+  0% { opacity: 0; transform: scaleX(0.12); }
+  38% { opacity: 0.7; transform: scaleX(0.62); }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+.nb-curl {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+.nb-curl-strip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow: visible;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.nb-curl-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #f4ead8;
+  backface-visibility: hidden;
+  box-shadow: 2px 0 8px rgba(90, 60, 20, 0.10);
+}
+html.nb-flip-back .nb-curl-clip {
+  box-shadow: -2px 0 8px rgba(90, 60, 20, 0.10);
+}
+.nb-curl-strip.is-edge .nb-curl-clip {
+  box-shadow: 10px 0 22px rgba(70, 45, 12, 0.28);
+}
+html.nb-flip-back .nb-curl-strip.is-edge .nb-curl-clip {
+  box-shadow: -10px 0 22px rgba(70, 45, 12, 0.28);
+}
+.nb-curl-face {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+.nb-curl-shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    rgba(255, 250, 240, 0.08) 0%,
+    rgba(255, 250, 240, 0.32) 28%,
+    rgba(90, 60, 20, 0.05) 52%,
+    rgba(70, 45, 12, 0.22) 82%,
+    rgba(70, 45, 12, 0.08) 100%);
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+html.nb-flip-back .nb-curl-shine {
+  background: linear-gradient(270deg,
+    rgba(255, 250, 240, 0.08) 0%,
+    rgba(255, 250, 240, 0.32) 28%,
+    rgba(90, 60, 20, 0.05) 52%,
+    rgba(70, 45, 12, 0.22) 82%,
+    rgba(70, 45, 12, 0.08) 100%);
+}
+html.nb-curl-land .nb-curl-shine {
+  animation: nbCurlShine var(--nb-land, 500ms) cubic-bezier(0.23, 0.12, 0.28, 1) both;
+}
+@keyframes nbCurlShine {
+  0% { opacity: 0.2; }
+  40% { opacity: 0.7; }
+  100% { opacity: 0.15; }
+}
+html.nb-midturn .nb-curl-shine { opacity: 0.72; }
 .nb-riffle {
   position: fixed;
   inset: 0;
   z-index: 9;
   pointer-events: none;
-  overflow: hidden;
+  overflow: visible;
+  perspective: 1800px;
+  perspective-origin: 100% 50%;
 }
-.nb-riffle i {
+.nb-riffle.back { perspective-origin: 0% 50%; }
+.nb-riffle-page {
   position: absolute;
-  top: 6%;
+  top: 4%;
   right: 0;
-  width: 16px;
-  height: 88%;
-  background: #fbf6ec;
-  border-left: 1px solid rgba(90, 60, 20, 0.18);
-  box-shadow: -4px 0 10px rgba(90, 60, 20, 0.12);
+  width: 42px;
+  height: 92%;
+  transform-style: preserve-3d;
   transform-origin: left center;
-  animation: nbRiffle 70ms ease-in both;
 }
-.nb-riffle.back i {
+.nb-riffle.back .nb-riffle-page {
   right: auto;
   left: 0;
-  border-left: none;
-  border-right: 1px solid rgba(90, 60, 20, 0.18);
   transform-origin: right center;
-  animation-name: nbRiffleBack;
 }
-@keyframes nbRiffle {
-  from { transform: perspective(1600px) rotateY(0deg); opacity: 1; }
-  to { transform: perspective(1600px) rotateY(-92deg); opacity: 0.25; }
+.nb-riffle-page i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28%;
+  background: linear-gradient(to right, #fbf6ec, #efe3cc 70%, #e6d5b4);
+  border-left: 1px solid rgba(90, 60, 20, 0.14);
+  box-shadow: 2px 0 8px rgba(90, 60, 20, 0.12);
+  transform-origin: left center;
+  backface-visibility: hidden;
 }
-@keyframes nbRiffleBack {
-  from { transform: perspective(1600px) rotateY(0deg); opacity: 1; }
-  to { transform: perspective(1600px) rotateY(92deg); opacity: 0.25; }
+.nb-riffle.back .nb-riffle-page i {
+  border-left: none;
+  border-right: 1px solid rgba(90, 60, 20, 0.14);
+  background: linear-gradient(to left, #fbf6ec, #efe3cc 70%, #e6d5b4);
+  box-shadow: -2px 0 8px rgba(90, 60, 20, 0.12);
+  transform-origin: right center;
 }
 @media (prefers-reduced-motion: reduce) {
   html.nb-flipping .nb-flip-ghost,
   html.nb-turning .nb-flip-ghost,
-  .nb-riffle i { animation: none !important; transition: opacity 160ms linear !important; transform: none !important; }
+  .nb-riffle-page,
+  .nb-riffle-page i,
+  .nb-curl-strip,
+  .nb-under-shadow,
+  .nb-curl-shine { animation: none !important; transition: opacity 160ms linear !important; transform: none !important; }
 }
 
 /* ---- Contents panel ---- */
@@ -5000,6 +5063,9 @@ if ($('addingTo')) $('addingTo').onclick = () => {
 // Typed and voiced adds always create a new item, even if another item already
 // has the same text (“invoice”, “estimate”). Never pull or move an existing
 // item from here. Moving is by drag, or the explicit voice command “move X to Y”.
+// Exception: a due-date phrase attaches the date to an existing item only when
+// the leftover name is an exact match (case/whitespace-insensitive). Partial
+// matches like “invoice for Blank due tomorrow” vs “invoice” create a new item.
 function addItem(text, opts) {
   opts = opts || {};
   text = (text || itemInput.value).trim();
@@ -5007,6 +5073,19 @@ function addItem(text, opts) {
   const cat = opts.category !== undefined ? opts.category : currentCat;
   const looksLikeTracker = !!parseTrackerPhrase(text);
   const parsedDue = looksLikeTracker ? { text, due: null } : parseDuePhrase(text, new Date());
+  if (parsedDue.due && typeof findItemByExactText === 'function') {
+    const existing = findItemByExactText(parsedDue.text);
+    if (existing) {
+      existing.due = parsedDue.due.toISOString();
+      existing.dueText = parsedDue.phrase;
+      lastAddedId = existing.id;
+      if (!opts.keepInput) { itemInput.value = ''; autoGrowInput(); }
+      save(); render();
+      revealCurrentCat({ scroll: true });
+      setStatus('Due set · ' + dueLabel(existing.due) + ' (tap the tag to change)');
+      return existing;
+    }
+  }
   const it = {
     id: Date.now() + Math.random(),
     text: parsedDue.due ? parsedDue.text : text,
@@ -5919,8 +5998,9 @@ function ensureCategory(name, color) {
   return c;
 }
 
-// Used only by explicit voice commands (move X to Y, give X a deadline, “X due tomorrow”).
-// Do not use this to hijack a typed or voiced add.
+// Used only by explicit voice commands (move X to Y). Do not use this to hijack
+// a typed or voiced add, and do not use it to attach due dates (those need an
+// exact leftover-name match — see findItemByExactText).
 function findItemByText(q) {
   const n = normalizeName(q);
   if (!n) return null;
@@ -5936,6 +6016,19 @@ function findItemByText(q) {
   if (last && cands.includes(last)) return last;
   cands.sort((a, b) => Math.abs(normalizeName(a.text).length - n.length) - Math.abs(normalizeName(b.text).length - n.length));
   return cands[0];
+}
+
+// Due-date phrases attach to an existing item only on an exact name match
+// (case/whitespace-insensitive). No fuzzy or partial matching.
+function findItemByExactText(q) {
+  const n = normalizeName(q);
+  if (!n) return null;
+  const live = items.filter(i => !i.deleted && normalizeName(i.text) === n);
+  if (!live.length) return null;
+  const last = typeof getLastAdded === 'function' ? getLastAdded() : null;
+  if (last && live.includes(last)) return last;
+  live.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  return live[0];
 }
 
 function setItemDue(item, days) {
@@ -6053,7 +6146,7 @@ function applyCommand(cleanedRaw) {
   m = t.match(/^give\s+(.+?)\s+a\s+deadline\s+of\s+(\d+)\s+days?$/) || stripVoiceWrap(t).match(/^give\s+(.+?)\s+a\s+deadline\s+of\s+(\d+)\s+days?$/);
   if (m) {
     const days = +m[2];
-    let target = findItemByText(m[1]);
+    let target = findItemByExactText(m[1]);
     if (!target) {
       const nameMatch = cleanedRaw.match(/give\s+(.+?)\s+a\s+deadline\s+of\s+\d+\s+days?/i);
       const created = addItem((nameMatch ? nameMatch[1] : m[1]).trim());
@@ -6094,7 +6187,7 @@ function applyCommand(cleanedRaw) {
 
   m = t.match(/^(.+)\s+due tomorrow$/);
   if (m) {
-    let target = findItemByText(m[1]);
+    let target = findItemByExactText(m[1]);
     if (!target) {
       const nameMatch = cleanedRaw.match(/^(.+)\s+due tomorrow$/i);
       addItem((nameMatch ? nameMatch[1] : m[1]).trim());
@@ -7210,8 +7303,75 @@ render();
       ghost.style.opacity = "";
     }
     document.querySelectorAll(".nb-riffle").forEach(function (n) { n.remove(); });
-    document.documentElement.classList.remove("nb-turning", "nb-turning-out", "nb-turning-in", "nb-midturn", "nb-flipping", "nb-flip-fwd", "nb-flip-back", "nb-fade");
+    document.documentElement.classList.remove("nb-turning", "nb-turning-out", "nb-turning-in", "nb-midturn", "nb-flipping", "nb-flip-fwd", "nb-flip-back", "nb-fade", "nb-curl-land");
     flipping = false;
+  }
+  var CURL_STRIPS = 8;
+  var CURL_EASE = "cubic-bezier(0.23, 0.12, 0.28, 1)";
+  function curlWorldAngle(i, n, dir, kind) {
+    var t = n <= 1 ? 0 : i / (n - 1);
+    var sign = dir === "back" ? 1 : -1;
+    if (kind === "mid") return sign * (72 - 34 * t);
+    return sign * (112 - 12 * t);
+  }
+  function curlRelAngles(n, dir, kind) {
+    var rel = [];
+    var prev = 0;
+    for (var i = 0; i < n; i++) {
+      var w = curlWorldAngle(i, n, dir, kind);
+      rel.push(w - prev);
+      prev = w;
+    }
+    return rel;
+  }
+  function buildCurl(ghost, dir) {
+    var n = CURL_STRIPS;
+    var src = ghost.firstChild;
+    ghost.innerHTML = "";
+    var under = document.createElement("div");
+    under.className = "nb-under-shadow";
+    under.setAttribute("aria-hidden", "true");
+    ghost.appendChild(under);
+    var curl = document.createElement("div");
+    curl.className = "nb-curl";
+    curl.setAttribute("aria-hidden", "true");
+    var W = ghost.clientWidth || window.innerWidth || 390;
+    var stripW = W / n;
+    var strips = [];
+    var parent = curl;
+    for (var i = 0; i < n; i++) {
+      var strip = document.createElement("div");
+      strip.className = "nb-curl-strip" + (i === n - 1 ? " is-edge" : "");
+      strip.style.width = (stripW + 0.6) + "px";
+      strip.style.transform = "rotateY(0deg)";
+      strip.style.transition = "none";
+      if (dir === "back") {
+        strip.style.transformOrigin = "right center";
+        if (i === 0) { strip.style.right = "0"; strip.style.left = "auto"; }
+        else { strip.style.right = "100%"; strip.style.left = "auto"; }
+      } else {
+        strip.style.transformOrigin = "left center";
+        strip.style.left = i === 0 ? "0" : "100%";
+      }
+      var clip = document.createElement("div");
+      clip.className = "nb-curl-clip";
+      var face = document.createElement("div");
+      face.className = "nb-curl-face";
+      face.style.width = W + "px";
+      var slice = dir === "back" ? (n - 1 - i) : i;
+      face.style.left = (-slice * stripW) + "px";
+      if (src) face.appendChild(src.cloneNode(true));
+      clip.appendChild(face);
+      var shine = document.createElement("div");
+      shine.className = "nb-curl-shine";
+      clip.appendChild(shine);
+      strip.appendChild(clip);
+      parent.appendChild(strip);
+      parent = strip;
+      strips.push(strip);
+    }
+    ghost.appendChild(curl);
+    return strips;
   }
   function startBookFlip(dir, opts) {
     opts = opts || {};
@@ -7223,43 +7383,93 @@ render();
     root.classList.add("nb-flipping");
     root.classList.add(dir === "back" ? "nb-flip-back" : "nb-flip-fwd");
     ghost.style.transition = "none";
-    ghost.style.transformOrigin = dir === "back" ? "right center" : "left center";
-    ghost.style.transform = "perspective(1600px) rotateY(0deg)";
+    ghost.style.transform = "none";
     ghost.style.opacity = "1";
-    void ghost.offsetWidth;
-    if (opts.freezeMid) {
-      root.classList.add("nb-midturn", "nb-turning");
-      return 0;
-    }
     if (opts.reduced) {
       root.classList.add("nb-fade");
       ghost.style.transition = "opacity 160ms linear";
       ghost.style.opacity = "0";
       return 160;
     }
-    var land = 300;
+    var strips = buildCurl(ghost, dir);
+    ghost.style.background = "transparent";
+    ghost.style.backgroundImage = "none";
+    void ghost.offsetWidth;
+    if (opts.freezeMid) {
+      root.classList.add("nb-midturn", "nb-turning");
+      var midRel = curlRelAngles(strips.length, dir, "mid");
+      for (var mi = 0; mi < strips.length; mi++) {
+        strips[mi].style.transition = "none";
+        strips[mi].style.transform = "rotateY(" + midRel[mi] + "deg)";
+      }
+      return 0;
+    }
+    var land = 480;
     var riffleMs = 0;
+    var stagger = 8;
     if (opts.riffle) {
       var flicks = Math.min(4, Math.max(2, opts.flicks || 3));
-      riffleMs = flicks * 70;
+      var each = flicks >= 4 ? 80 : 90;
+      riffleMs = flicks * each;
+      land = Math.max(300, 700 - riffleMs);
       var box = document.createElement("div");
       box.className = "nb-riffle" + (dir === "back" ? " back" : "");
       box.setAttribute("aria-hidden", "true");
-      for (var i = 0; i < flicks; i++) {
-        var sliver = document.createElement("i");
-        sliver.style.animationDelay = (i * 70) + "ms";
-        box.appendChild(sliver);
+      for (var r = 0; r < flicks; r++) {
+        var page = document.createElement("div");
+        page.className = "nb-riffle-page";
+        page.style.animationDelay = (r * each) + "ms";
+        for (var s = 0; s < 5; s++) {
+          var sliver = document.createElement("i");
+          sliver.style.left = dir === "back" ? "auto" : (s * 22) + "%";
+          sliver.style.right = dir === "back" ? (s * 22) + "%" : "auto";
+          sliver.style.zIndex = String(s + 1);
+          var startAng = 0;
+          var endAng = dir === "back" ? (88 - s * 10) : -(88 - s * 10);
+          sliver.style.transformOrigin = dir === "back" ? "right center" : "left center";
+          sliver.style.animation = "none";
+          sliver.style.transition = "transform " + each + "ms " + CURL_EASE + " " + (r * each + s * 8) + "ms, opacity " + each + "ms linear " + (r * each) + "ms";
+          sliver.style.transform = "rotateY(" + startAng + "deg)";
+          sliver.style.opacity = "1";
+          sliver.setAttribute("data-end", String(endAng));
+          page.appendChild(sliver);
+        }
+        box.appendChild(page);
       }
       document.body.appendChild(box);
-      land = Math.min(500 - riffleMs, 300);
+      void box.offsetWidth;
+      box.querySelectorAll("i").forEach(function (sliver) {
+        sliver.style.transform = "rotateY(" + sliver.getAttribute("data-end") + "deg)";
+        sliver.style.opacity = "0.15";
+      });
     }
-    var total = riffleMs + land;
+    var n = strips.length;
+    var total = riffleMs + land + (n ? (n - 1) * stagger : 0);
+    if (total > 700 && opts.riffle) {
+      stagger = 6;
+      total = riffleMs + land + (n ? (n - 1) * stagger : 0);
+      if (total > 700) {
+        land = Math.max(280, 700 - riffleMs - (n ? (n - 1) * stagger : 0));
+        total = riffleMs + land + (n ? (n - 1) * stagger : 0);
+      }
+    }
     function landPage() {
-      ghost.style.transition = "transform " + land + "ms cubic-bezier(0.22, 0.7, 0.15, 1), opacity " + land + "ms ease";
-      ghost.style.transform = dir === "back"
-        ? "perspective(1600px) rotateY(108deg)"
-        : "perspective(1600px) rotateY(-108deg)";
-      ghost.style.opacity = "0.35";
+      ghost.style.setProperty("--nb-land", land + "ms");
+      root.classList.add("nb-curl-land");
+      var midRel = curlRelAngles(n, dir, "mid");
+      var endRel = curlRelAngles(n, dir, "end");
+      for (var i = 0; i < n; i++) {
+        if (strips[i].animate) {
+          strips[i].animate([
+            { transform: "rotateY(0deg)" },
+            { transform: "rotateY(" + midRel[i] + "deg)", offset: 0.42 },
+            { transform: "rotateY(" + endRel[i] + "deg)" }
+          ], { duration: land, delay: i * stagger, easing: CURL_EASE, fill: "forwards" });
+        } else {
+          strips[i].style.transition = "transform " + land + "ms " + CURL_EASE + " " + (i * stagger) + "ms";
+          strips[i].style.transform = "rotateY(" + endRel[i] + "deg)";
+        }
+      }
     }
     if (riffleMs) setTimeout(landPage, riffleMs);
     else landPage();
