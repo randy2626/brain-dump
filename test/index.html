@@ -200,16 +200,17 @@ S.removeItem=function(x){return r.call(this,k.call(this,x));};})();</script>
   html[data-theme="bold"] .group-header.working,
   html[data-theme="bold"] .group-items.working,
   html[data-theme="bold"] .item.working { outline-color: rgba(245,197,24,0.55); }
-  #addingTo {
-    display: inline-flex; align-items: center; gap: 4px;
-    margin: 0 0 8px; padding: 6px 12px; max-width: 100%;
-    min-height: 32px; border-radius: 999px;
-    border: 1px solid rgba(127,127,127,0.35);
-    background: rgba(127,127,127,0.08); color: inherit;
-    font: inherit; font-size: 13px; font-weight: 600;
-    box-shadow: none; cursor: pointer; text-align: left;
+  /* The “Adding to:” pill is hidden: the category dropdown under the dump box already shows where new things go. */
+  #addingTo,
+  #addingTo[hidden] {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
   }
-  #addingTo[hidden] { display: none !important; }
   html[data-theme="warm"] #addingTo { border-color: rgba(181,82,42,0.35); background: rgba(224,176,137,0.28); }
   html[data-theme="playful"] #addingTo { border-color: rgba(255,94,150,0.4); background: rgba(255,94,150,0.1); }
   html[data-theme="calm"] #addingTo { border-color: rgba(94,234,212,0.35); background: rgba(94,234,212,0.1); }
@@ -2383,7 +2384,7 @@ html.nb-notebook #trackerStrip .strip-bit strong {
     Due: “set a deadline of 3 days”, “due tomorrow”, “give call mom a deadline of 5 days”.<br>
     “scratch that”, “delete the last 2” or “delete the last two items”, “correction”.<br>
     Drag items between categories (on a phone, an item’s ⋯ → Move to… works too). Click color circle to change category color.<br>
-    <em>Preview:</em> end an item with a day — “call mom Friday”, “pay rent by the 1st”, “taxes next week” — and it gets a small due tag (tap it to change or clear). Search filters everything as you type. Trackers: “4 books this month”, tap the card to check one off. Tap a category or an item to choose where you’re adding — the “Adding to:” label above the box stays in sync with the dropdown (tap the label to clear). Tap an item, then “+ sub” on that item, to nest a subcategory right under it. An item’s ⋯ holds Not done, Delete, Due date, and + sub. Not done is kind: Keep it, Let it go, or Not sure — no need to explain. Not sure puts a ? on the item; after a few days we’ll ask you to decide: Do it, or Let it go.
+    <em>Preview:</em> end an item with a day — “call mom Friday”, “pay rent by the 1st”, “taxes next week” — and it gets a small due tag (tap it to change or clear). Search filters everything as you type. Trackers: “4 books this month”, tap the card to check one off. Tap a category or an item to choose where you’re adding — the dropdown under the box shows where new things go (pick No category to clear). Tap an item, then “+ sub” on that item, to nest a subcategory right under it. An item’s ⋯ holds Not done, Delete, Due date, and + sub. Not done is kind: Keep it, Let it go, or Not sure — no need to explain. Not sure puts a ? on the item; after a few days we’ll ask you to decide: Do it, or Let it go.
   </div>
   <div id="settings"></div>
 
