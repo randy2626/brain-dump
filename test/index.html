@@ -4997,6 +4997,9 @@ if ($('addingTo')) $('addingTo').onclick = () => {
   clearWorkingSpot();
 };
 
+// Typed and voiced adds always create a new item, even if another item already
+// has the same text (“invoice”, “estimate”). Never pull or move an existing
+// item from here. Moving is by drag, or the explicit voice command “move X to Y”.
 function addItem(text, opts) {
   opts = opts || {};
   text = (text || itemInput.value).trim();
@@ -5916,6 +5919,8 @@ function ensureCategory(name, color) {
   return c;
 }
 
+// Used only by explicit voice commands (move X to Y, give X a deadline, “X due tomorrow”).
+// Do not use this to hijack a typed or voiced add.
 function findItemByText(q) {
   const n = normalizeName(q);
   if (!n) return null;
