@@ -92,7 +92,9 @@ S.removeItem=function(x){return r.call(this,k.call(this,x));};})();</script>
   @media (max-width: 480px) { .add-sub { min-height: 30px; padding: 4px 10px; } }
   .empty { text-align: center; color: #666; padding: 40px 0; }
   #howTo { display: none; background: #1a1a22; border-radius: 14px; padding: 14px; margin-bottom: 16px; font-size: 14px; line-height: 1.55; }
-  .color-picker { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #1e1e28; padding: 18px; border-radius: 16px; z-index: 1000; text-align: center; border: 1px solid #444; }
+  .color-picker { position: fixed; top: auto; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); background: #1e1e28; padding: 12px 14px; border-radius: 14px; z-index: 80; text-align: center; border: 1px solid #444; width: min(320px, calc(100vw - 28px)); box-shadow: 0 10px 28px rgba(0,0,0,.28); }
+  .color-picker .cp-title { margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+  .color-picker .swatch { width: 28px; height: 28px; margin: 3px; }
   .swatch { width: 34px; height: 34px; border-radius: 50%; display: inline-block; margin: 5px; cursor: pointer; border: 3px solid #555; }
 
   /* PREVIEW: due tags, search, trackers */
@@ -303,7 +305,7 @@ S.removeItem=function(x){return r.call(this,k.call(this,x));};})();</script>
   html[data-theme="calm"] .cat-count.all-done { color: #5eead4; background: rgba(94,234,212,0.14); }
   html[data-theme="bold"] .cat-count.all-done { color: #161410; background: #f5c518; }
   /* Fix 5: color picker sits near the top so the keyboard can't cover it */
-  @media (max-width: 480px) { .color-picker { top: 16px; transform: translateX(-50%); } }
+  @media (max-width: 480px) { .color-picker { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); } }
 </style>
 <style>
 
@@ -670,10 +672,10 @@ html[data-theme="warm"] #howTo {
 }
 html[data-theme="warm"] .color-picker {
   background: #fffaf1;
-  padding: 18px 20px;
+  padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid #d7c3a4;
-  box-shadow: 0 18px 40px rgba(60,40,15,0.22);
+  box-shadow: 0 10px 24px rgba(60,40,15,0.18);
   color: #2b2118;
 }
 html[data-theme="warm"] .swatch { border: 3px solid #cbb99a; }
@@ -1752,7 +1754,7 @@ html[data-theme="warm"] { padding: calc(10px + env(safe-area-inset-top, 0px)) ca
 @media (max-width: 480px) {
   html[data-theme="warm"] { padding: calc(8px + env(safe-area-inset-top, 0px)) calc(7px + env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) calc(7px + env(safe-area-inset-left, 0px)); }
   .cat-sheet { top: calc(16px + env(safe-area-inset-top, 0px)); }
-  .color-picker { top: calc(16px + env(safe-area-inset-top, 0px)); }
+  .color-picker { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); top: auto; }
   .due-sheet { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
 }
 /* Fix 8: dump box sits right under the title; quiet status line under it */
@@ -2673,6 +2675,103 @@ html.nb-notebook #trackerStrip .strip-bit strong {
   color: #7a5a3a;
   line-height: 1.35;
 }
+
+/* v24: one new-page control (Enter to add); hide the duplicate button */
+#addCatBtn { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); clip-path: inset(50%); white-space: nowrap; border: 0; padding: 0; margin: 0; }
+.controls { position: relative; }
+
+/* v24: quieter Delete at the bottom of the item sheet */
+.item-sheet .sheet-delete {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 8px;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #b42318 !important;
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 36px;
+  text-align: center;
+  filter: none !important;
+}
+.item-sheet .sheet-delete:hover, .item-sheet .sheet-delete:focus {
+  background: rgba(180,35,24,0.08) !important;
+  color: #91150d !important;
+}
+
+/* v24: more-actions menu */
+#moreActions { min-width: 44px; }
+#moreMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 40;
+  min-width: 180px;
+  background: #fffaf1;
+  border: 1px solid #d7c3a4;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(60,40,15,0.16);
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+}
+#moreMenu.open { display: flex; }
+#moreMenu button { width: 100%; justify-content: flex-start; text-align: left; margin: 0; }
+.finish-row { position: relative; }
+
+/* v24: Add to Home Screen tip */
+#installTip {
+  display: none;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  background: rgba(255,250,241,0.95);
+  border: 1px solid rgba(181,82,42,0.28);
+  border-radius: 12px;
+  color: #3a2718;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+}
+#installTip.is-on { display: flex; align-items: flex-start; gap: 10px; }
+#installTip .install-tip-text { flex: 1; }
+#installTip .install-tip-dismiss {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 0;
+  color: #7a4a28;
+  font-size: 16px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  box-shadow: none;
+  filter: none;
+}
+html[data-nb-page="settings"] #installTip { display: none !important; }
+
+/* v24: compact the chrome on phones so the first item arrives sooner */
+@media (max-width: 480px) {
+  html[data-theme="warm"] h1 { margin: 2px 0 0 !important; }
+  html[data-theme="warm"] #pageWhen { margin: 0 !important; min-height: 0 !important; }
+  html[data-theme="warm"] .subtitle { display: none !important; }
+  html[data-theme="warm"] .input-area { margin-bottom: 6px !important; gap: 6px; }
+  html[data-theme="warm"] textarea#itemInput { min-height: 48px; padding-top: 8px; padding-bottom: 8px; }
+  html[data-theme="warm"] .controls,
+  html[data-theme="warm"] .finish-row { margin-bottom: 6px !important; gap: 6px; }
+  html[data-theme="warm"] .finish-row { flex-wrap: nowrap; }
+  html[data-theme="warm"] .finish-row #catSelect { flex: 1 1 auto; min-width: 0; }
+  html[data-theme="warm"] .search-row { margin-bottom: 6px !important; }
+  html[data-theme="warm"] #searchInput { padding: 7px 12px; }
+  html[data-theme="warm"] #micStatus { min-height: 0; }
+  html[data-theme="warm"] #micStatus:empty { display: none; }
+}
+
+/* v24 import confirm sheet */
+.import-sheet .ask-actions { flex-wrap: wrap; }
+.import-sheet .ask-actions button { flex: 1 1 40%; }
+
 </style>
 </head>
 <body data-theme="warm" data-tracker-place="strip">
@@ -2705,23 +2804,28 @@ html.nb-notebook #trackerStrip .strip-bit strong {
   <div id="whyPending" hidden aria-live="polite"></div>
   <div class="input-area">
     <textarea id="itemInput" placeholder="What's rattling around up there?" spellcheck="true" rows="2"></textarea>
-    <button id="micBtn">🎤</button>
-    <button id="addItemBtn">Add</button>
+    <button id="micBtn" type="button" aria-label="Start voice capture">🎤</button>
+    <button id="addItemBtn" type="button" aria-label="Add item">Add</button>
   </div>
   <div id="micStatus" style="text-align:center;font-size:13px;color:#888;min-height:18px;"></div>
   <section id="compareView" hidden aria-label="Compare personalities"></section>
 
   <div class="controls">
-    <input id="catInput" placeholder="Name a new page...">
-    <button id="addCatBtn">Add Category</button>
+    <input id="catInput" placeholder="New page (press Enter)" aria-label="Name a new page, then press Enter">
+    <button id="addCatBtn" type="button" tabindex="-1" aria-hidden="true">Add page</button>
   </div>
   <div class="finish-row">
-    <select id="catSelect"><option value="">No category</option></select>
-    <button id="howToToggle" class="secondary">How to</button>
+    <select id="catSelect" aria-label="Add new items to"><option value="">No category</option></select>
     <button id="selectBtn" class="secondary">Select</button>
-    <button id="exportBtn" class="secondary">Export</button>
     <button id="settingsBtn" class="secondary" aria-label="Settings">⚙<span class="btn-word"> Settings</span></button>
+    <button type="button" id="moreActions" class="secondary" aria-label="More actions" aria-haspopup="true" aria-expanded="false">⋯</button>
+    <div id="moreMenu" hidden>
+      <button id="howToToggle" class="secondary">How to</button>
+      <button id="exportBtn" class="secondary">Download backup</button>
+    </div>
   </div>
+  <div id="installTip" role="status"></div>
+  <input type="file" id="importFile" accept=".json,application/json,text/plain" hidden aria-hidden="true">
   <div id="howTo" style="display:none;" role="dialog" aria-label="How to">
     <div class="howto-head"><strong>How it works</strong><button type="button" class="howto-close secondary" aria-label="Close how-to">✕</button></div>
     <div class="voice-opts">
@@ -2734,16 +2838,15 @@ html.nb-notebook #trackerStrip .strip-bit strong {
         <option value="2500">2.5s</option>
       </select>
     </div>
-    <strong>Talk or type freely.</strong> Umms ignored.<br>
-    Split: “next”, comma, or a pause (see Voice pause at the top of this panel; default 1.5s).<br>
-    New tasks also start on “I have to”, “I need to”, “I should”, and similar — those words are left off the item.<br>
-    Category: type above + Enter, or say “category personal”.<br>
-    Subcategory: tap “+ sub” on a category, type “Work &gt; Clients &gt; Smith” above, or say “subcategory clients” (goes inside the current one) or “subcategory clients under work”. Up to 3 levels.<br>
-    “make category work red”, “move buy milk to personal”, “scratch that move it to ideas”.<br>
-    Due: “set a deadline of 3 days”, “due tomorrow”, “give call mom a deadline of 5 days”.<br>
-    “scratch that”, “delete the last 2” or “delete the last two items”, “correction”.<br>
-    Drag items between categories (on a phone, an item’s ⋯ → Move to… works too). Click color circle to change category color.<br>
-    <em>Preview:</em> end an item with a day — “call mom Friday”, “pay rent by the 1st”, “taxes next week” — and it gets a small due tag (tap it to change or clear). Search filters everything as you type. Trackers: “4 books this month”, tap the card to check one off. Tap a category or an item to choose where you’re adding — the dropdown under the box shows where new things go (pick No category to clear). Tap an item, then “+ sub” on that item, to nest a subcategory right under it. An item’s ⋯ holds Not done, Delete, Due date, and + sub. Not done is kind: Keep it, Let it go, or Not sure — no need to explain. Not sure puts a ? on the item; after a few days we’ll ask you to decide: Do it, or Let it go.
+    <ul class="howto-steps" style="margin:8px 0 0;padding:0 0 0 1.15em;">
+      <li>Type or tap the mic and say what’s on your mind. Just get it out.</li>
+      <li>The dropdown under the box is where the next item goes. Pick “No category” if you don’t want a page yet.</li>
+      <li>Type “add milk to Ideas” to file it on that page (it’ll make the page if it’s new). Or type a page name in the box below and press Enter.</li>
+      <li>Tap ✓ when you’re done. An item’s ⋯ lets you edit, set a date, move it, or delete it (you can undo a delete).</li>
+      <li>Drag an item onto another page to move it. On a phone, ⋯ → Move to… does the same.</li>
+      <li>When you talk, a pause, “next,” or a comma starts a new thought. “Move buy milk to Home” files something you’ve already added.</li>
+      <li>Add this to your Home Screen so your notes stay put on this device.</li>
+    </ul>
   </div>
   <div id="settings"></div>
 
@@ -3393,9 +3496,9 @@ const THEME_META = {
   warm: {
     color: '#f4ead8',
     subtitle: "A little notebook for whatever's rattling around.",
-    catPh: 'Name a new page...',
+    catPh: 'New page (press Enter)',
     itemPh: "What's rattling around up there?",
-    empty: '<div class="empty"><div class="empty-emoji">✎</div><div class="empty-title">A blank page, just for you.</div><div class="empty-sub">Type or talk. I\'ll keep it safe.</div></div>'
+    empty: '<div class="empty"><div class="empty-emoji">✎</div><div class="empty-title">A blank page, just for you.</div><div class="empty-sub">Type or talk. Saved on this device.</div></div>'
   },
   playful: {
     color: '#fff7fb',
@@ -4872,7 +4975,7 @@ function render() {
 
   function itemHTML(it) {
     const due = dueTagHTML(it);
-    const fin = it.finishedAt ? `<span class="meta" style="color:#166534;background:rgba(255,255,255,0.85);padding:1px 5px;border-radius:4px;">done ${it.finishedAt}</span>` : '';
+    const fin = it.finishedAt ? `<span class="meta" style="color:#166534;background:rgba(255,255,255,0.85);padding:1px 5px;border-radius:4px;">done ${formatFinishedAt(it.finishedAt)}</span>` : '';
     const yet = (it.notYet && !it.ghosted) ? `<span class="not-yet-tag">not yet</span>` : '';
     const ask = (it.unsure && !it.ghosted) ? `<span class="unsure-tag" title="Not sure yet">?</span>` : '';
     const parent = it.category || '';
@@ -4894,7 +4997,7 @@ function render() {
         <div class="item-text"><span class="main">${esc(it.text)}</span> ${due}${yet}${ask}${focusTagHTML(it)}${fin}${whyLineHTML(it)}${hint}${decide}</div>
         ${subBtn}
         ${menu}
-        ${!it.ghosted ? `<button class="done" data-id="${it.id}" style="background:#22c55e;border:none;color:#fff;border-radius:50%;width:28px;height:28px;">✓</button>` : ''}
+        ${!it.ghosted ? `<button type="button" class="done" data-id="${it.id}" aria-label="Mark done" style="background:#22c55e;border:none;color:#fff;border-radius:50%;width:28px;height:28px;">✓</button>` : ''}
       </div>`;
   }
 
@@ -4923,9 +5026,17 @@ function render() {
     return inner;
   }
 
-  function catCountHTML(arr) {
-    const total = (arr || []).length;
-    const doneN = (arr || []).filter(i => i.ghosted).length;
+  function treeItems(name) {
+    const names = new Set([name].concat(typeof descendantsOf === 'function' ? descendantsOf(name) : []));
+    return visible.filter(i => names.has(i.category));
+  }
+
+  function catCountHTML(arr, name) {
+    const list = (name && name !== 'Uncategorized' && name !== 'Finished' && name !== 'Recently Deleted' && name !== 'Let go')
+      ? treeItems(name)
+      : (arr || []);
+    const total = list.length;
+    const doneN = list.filter(i => i.ghosted).length;
     const allDone = total > 0 && doneN === total;
     return `<span class="cat-count${allDone ? ' all-done' : ''}" title="${doneN} of ${total} done">${doneN}/${total}</span>`;
   }
@@ -4940,16 +5051,16 @@ function render() {
     const desc = isCat ? descendantsOf(name) : [];
     const hiddenSubCount = isCollapsed && desc.length ? visible.filter(i => desc.includes(i.category)).length : 0;
     const subHint = isCollapsed && desc.length ? `<span class="sub-hint">+${desc.length} sub${desc.length === 1 ? '' : 's'}${hiddenSubCount ? ', ' + hiddenSubCount + ' more' : ''}</span>` : '';
-    const addSub = isCat && depth < MAX_DEPTH && !isUnsortedName(name) ? `<button class="add-sub" data-cat="${attrName(name)}" title="Add a subcategory inside ${attrName(name)}">+ sub</button>` : '';
+    const addSub = isCat && depth < MAX_DEPTH && !isUnsortedName(name) ? `<button type="button" class="add-sub" data-cat="${attrName(name)}" title="Add a subcategory inside ${attrName(name)}" aria-label="Add a subcategory inside ${attrName(name)}">+ sub</button>` : '';
     const onFront = !document.documentElement.getAttribute('data-nb-page') || document.documentElement.getAttribute('data-nb-page') === 'front';
     const dragCat = onFront && depth === 1 && isCat && !isUnsortedName(name) ? ' draggable="true" data-drag="cat"' : '';
     const bullet = depth > 1 ? `<span class="cat-dot nb-bullet" data-cat="${attrName(name)}" style="color:${col}" title="Change color">•</span>` : '';
     const colorDot = depth > 1 ? '' : `<span class="cat-dot" data-cat="${attrName(name)}" style="width:16px;height:16px;border-radius:50%;background:${col};display:inline-block;margin-left:8px;cursor:pointer;"></span>`;
     let block = `<div class="group-header ${subCls} ${name === currentCat ? 'current' : ''}" data-cat="${attrName(name)}" data-depth="${depth}"${dragCat} style="${indent}">
-      <span class="arrow" data-cat="${attrName(name)}" title="Double-click to collapse">${isCollapsed ? '▶' : '▼'}</span>
+      <span class="arrow" data-cat="${attrName(name)}" title="Double-click to collapse" role="button" aria-label="${isCollapsed ? 'Expand' : 'Collapse'} ${attrName(name)}">${isCollapsed ? '▶' : '▼'}</span>
       ${bullet}
       <span class="cat-name" data-cat="${attrName(name)}" title="${isUnsortedName(name) ? '' : 'Click to rename'}">${name}</span>
-      ${catCountHTML(arr)}${subHint}
+      ${catCountHTML(arr, name)}${subHint}
       ${colorDot}
       ${addSub}
       ${(name === 'Uncategorized' || isUnsortedName(name)) ? '' : `<button class="del-cat" data-cat="${attrName(name)}" title="Delete category" style="background:#ef4444;border:none;color:white;border-radius:50%;width:20px;height:20px;font-size:11px;margin-left:6px;cursor:pointer;padding:0;">✕</button><button type="button" class="cat-menu" data-cat="${attrName(name)}" aria-label="Category options">⋯</button>`}
@@ -4982,11 +5093,11 @@ function render() {
   if (ghosted.length) {
     html += `<div class="group-header" data-cat="Finished" style="opacity:.7;margin-top:28px;"><span class="arrow" data-cat="Finished">▼</span> Finished (${ghosted.length})</div><div class="group-items" data-for="Finished">`;
     ghosted.forEach(it => {
-      const fin = it.finishedAt ? `<span class="meta" style="color:#166534;background:rgba(255,255,255,0.85);padding:1px 5px;border-radius:4px;">done ${it.finishedAt}</span>` : '';
+      const fin = it.finishedAt ? `<span class="meta" style="color:#166534;background:rgba(255,255,255,0.85);padding:1px 5px;border-radius:4px;">done ${formatFinishedAt(it.finishedAt)}</span>` : '';
       html += `<div class="item ghosted" draggable="true" data-id="${it.id}" style="background:${it.color||'#1e1e28'};color:#111;opacity:0.75;">
         <div class="item-text"><span class="main">${esc(it.text)}</span> ${fin}</div>
         ${!selectMode ? `<button type="button" class="item-menu" data-id="${it.id}" aria-label="Item actions">⋯</button>` : ''}
-        <button class="undo" data-id="${it.id}" title="Mark not done" style="background:#3b82f6;border:none;color:white;border-radius:50%;width:26px;height:26px;font-size:14px;">↩</button>
+        <button type="button" class="undo" data-id="${it.id}" title="Mark not done" aria-label="Mark not done" style="background:#3b82f6;border:none;color:white;border-radius:50%;width:26px;height:26px;font-size:14px;">↩</button>
       </div>`;
     });
     html += '</div>';
@@ -5130,11 +5241,19 @@ function render() {
   }
 }
 
-function showColorPicker(catName) {
+function closeColorPicker() {
   document.querySelectorAll('.color-picker').forEach(p => p.remove());
+  document.removeEventListener('pointerdown', _cpOutside, true);
+  document.removeEventListener('keydown', _cpEsc, true);
+}
+let _cpOutside = null, _cpEsc = null;
+function showColorPicker(catName) {
+  closeColorPicker();
   const div = document.createElement('div');
   div.className = 'color-picker';
-  div.innerHTML = `<div style="margin-bottom:10px;font-weight:600;">Color for “${catName}”</div>`;
+  div.setAttribute('role', 'dialog');
+  div.setAttribute('aria-label', 'Change color for ' + catName);
+  div.innerHTML = `<div class="cp-title">Color for “${esc(catName)}”</div>`;
   PALETTE.forEach(col => {
     const s = document.createElement('div');
     s.className = 'swatch';
@@ -5156,9 +5275,10 @@ function showColorPicker(catName) {
       items.forEach(it => { if (it.category === catName) it.color = col; });
       save(); render();
       if (conflict) {
-        div.querySelector('div').textContent = `${conflict.name} uses this color — pick another?`;
-        div.querySelector('div').style.color = '#f59e0b';
-      } else div.remove();
+        const title = div.querySelector('.cp-title') || div.querySelector('div');
+        title.textContent = `${conflict.name} uses this color — pick another?`;
+        title.style.color = '#f59e0b';
+      } else closeColorPicker();
     };
     div.appendChild(s);
   });
@@ -5166,10 +5286,20 @@ function showColorPicker(catName) {
   skip.textContent = 'Done';
   skip.className = 'secondary';
   skip.style.marginTop = '10px';
-  skip.onclick = () => div.remove();
+  skip.onclick = () => closeColorPicker();
   div.appendChild(document.createElement('br'));
   div.appendChild(skip);
   document.body.appendChild(div);
+  _cpOutside = ev => {
+    if (!div.isConnected) { closeColorPicker(); return; }
+    if (div.contains(ev.target)) return;
+    closeColorPicker();
+  };
+  _cpEsc = ev => { if (ev.key === 'Escape') { ev.preventDefault(); closeColorPicker(); } };
+  setTimeout(() => {
+    document.addEventListener('pointerdown', _cpOutside, true);
+    document.addEventListener('keydown', _cpEsc, true);
+  }, 0);
 }
 
 addCatBtn.onclick = () => {
@@ -5199,21 +5329,21 @@ addCatBtn.onclick = () => {
       parent = r.cat.name;
     }
     catInput.value = '';
-    if (last) { currentCat = last.name; workingItemId = null; }
+    workingItemId = null;
     save();
     render();
     if (last) showColorPicker(last.name);
-    setStatus(problem ? problem : ('Adding to ' + catPath(last.name) + movedNote));
+    setStatus(problem ? problem : ('Added “' + catPath(last.name) + '”' + movedNote + '. Dropdown still points where it did.'));
     return;
   }
   if (!categories.find(c => c.name === name)) categories.push({ name, color: PALETTE[categories.length % PALETTE.length] });
-  currentCat = name;
   workingItemId = null;
   catInput.value = '';
   save();
   render();
   if (lastPointerType !== 'mouse' || matchMedia('(pointer: coarse)').matches) catInput.blur();
   showColorPicker(name);
+  setStatus('Added “' + name + '”. Dropdown still points where it did.');
 };
 catInput.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); addCatBtn.click(); } };
 catSelect.onchange = () => { workingItemId = null; currentCat = catSelect.value; save(); render(); revealCurrentCat({ scroll: true }); };
@@ -5275,6 +5405,15 @@ addItemBtn.addEventListener('pointerdown', () => { addKeepsFocus = document.acti
 addItemBtn.addEventListener('mousedown', e => { if (document.activeElement === itemInput) e.preventDefault(); });
 // Mobile fix 8: after a typed add, a quiet "✓ Added: …" line right under the box (unless something else was just said there)
 function addTypedItem() {
+  const raw = (itemInput.value || '').trim();
+  if (raw && typeof parseAddToDest === 'function') {
+    const parsed = parseAddToDest(raw, { allowBareTo: false });
+    if (parsed && parsed.explicit && parsed.text) {
+      itemInput.value = '';
+      if (typeof autoGrowInput === 'function') autoGrowInput();
+      return fileCapturedItem(parsed.text, parsed.dest, { allowCreate: true, explicit: true });
+    }
+  }
   const before = micStatus.textContent;
   const it = addItem();
   if (it && micStatus.textContent === before) setStatus('✓ Added: ' + shortQuote(it.text));
@@ -5343,7 +5482,7 @@ listEl.addEventListener('click', e => {
     const it = items.find(i => i.id == itemEl.dataset.id);
     if (!it) return;
     it.ghosted = true;
-    it.finishedAt = new Date().toLocaleString();
+    it.finishedAt = new Date(bdNow()).toISOString();
     it.doneAt = bdNow();
     clearUnsure(it);
     save(); render();
@@ -5530,6 +5669,18 @@ listEl.addEventListener('dblclick', function(e) {
       if (ev.key === 'Escape') render();
     });
     e.stopPropagation();
+    return;
+  }
+
+  const itemMain = e.target.closest('.item .main') || e.target.closest('.item .item-text');
+  if (itemMain) {
+    const itemEl = itemMain.closest('.item');
+    const it = itemEl && items.find(i => String(i.id) === String(itemEl.dataset.id));
+    if (it && !it.deleted && !it.letGo) {
+      e.preventDefault();
+      e.stopPropagation();
+      startItemEdit(it);
+    }
   }
 });
 
@@ -5604,6 +5755,21 @@ const UNSURE_DECIDE_MS = 3 * 24 * 60 * 60 * 1000;
 let lastUnsurePromptId = null;
 function bdNow() {
   return (typeof window !== 'undefined' && typeof window.__bdNow === 'number') ? window.__bdNow : Date.now();
+}
+function formatFinishedAt(val) {
+  if (val == null || val === '') return '';
+  let n = typeof val === 'number' ? val : Date.parse(val);
+  if (isNaN(n)) return String(val);
+  const d = new Date(n);
+  const now = new Date(bdNow());
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).replace(/\u202f/g, ' ').replace(/\s+/g, ' ').trim();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startThat = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startToday - startThat) / 86400000);
+  if (days === 0) return 'today ' + time;
+  if (days > 0 && days < 7) return d.toLocaleDateString('en-US', { weekday: 'short' });
+  if (d.getFullYear() === now.getFullYear()) return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 function unsureSinceMs(it) {
   if (!it || it.unsureSince == null || it.unsureSince === '') return 0;
@@ -5700,27 +5866,68 @@ function openItemSheet(id) {
   const canSub = canItemSub(it);
   const div = document.createElement('div');
   div.className = 'cat-sheet item-sheet';
-  const notDoneBtn = !it.ghosted ? `<button type="button" class="secondary" data-act="notdone">Not done</button>` : '';
+  const setDownBtn = !it.ghosted ? `<button type="button" class="secondary" data-act="notdone">Set this down</button>` : '';
+  const uncheckBtn = it.ghosted ? `<button type="button" class="secondary" data-act="uncheck">Not done</button>` : '';
   const subBtn = canSub ? `<button type="button" class="secondary" data-act="sub">+ sub</button>` : '';
   div.innerHTML = `<div class="cat-sheet-title">“${esc(it.text)}”</div>
-    ${notDoneBtn}
-    <button type="button" class="danger" data-act="delete">Delete</button>
+    <button type="button" class="secondary" data-act="edit">Edit</button>
     <div class="sheet-row"><button type="button" class="secondary" data-act="move">Move to…</button>${subBtn}</div>
     <div class="sheet-row"><button type="button" class="secondary" data-act="due">Due date</button><button type="button" class="secondary" data-act="why">${(it.why || it.whyGoal) ? 'Edit the why' : 'Add a why'}</button></div>
-    <button type="button" class="secondary" data-act="close">Close</button>`;
+    ${setDownBtn}${uncheckBtn}
+    <button type="button" class="secondary" data-act="close">Close</button>
+    <button type="button" class="sheet-delete" data-act="delete">Delete</button>`;
   div.addEventListener('click', ev => {
     const b = ev.target.closest('button'); if (!b) return;
     const act = b.dataset.act;
     closeCatSheet();
     if (act === 'sub' && canItemSub(it)) openSubInput(it.category, it.id);
-    else if (act === 'delete') { deleteItem(it); save(); render(); }
+    else if (act === 'delete') {
+      deleteItem(it); save(); render();
+      showVoiceToast('Deleted ' + shortQuote(it.text), () => { it.deleted = false; delete it.deletedAt; save(); render(); });
+    }
     else if (act === 'due') openDueSheet(it);
     else if (act === 'notdone') openKindSheet(it);
+    else if (act === 'uncheck') {
+      it.ghosted = false; it.finishedAt = null; delete it.doneAt; save(); render();
+      setStatus('Marked not done');
+    }
     else if (act === 'why') openWhySheet(it.id);
     else if (act === 'move') openMoveSheet(it.id);
+    else if (act === 'edit') startItemEdit(it);
   });
   document.body.appendChild(div);
   wireDismiss(div, closeCatSheet);
+}
+
+function startItemEdit(it) {
+  if (!it || it.deleted || it.letGo) return;
+  const itemEl = document.querySelector('.item[data-id="' + it.id + '"]');
+  const main = itemEl && itemEl.querySelector('.main');
+  if (!main) return;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = it.text;
+  input.setAttribute('aria-label', 'Edit item');
+  input.style.cssText = 'font: inherit; color: inherit; width: 100%; min-width: 0; padding: 2px 6px; border-radius: 6px; border: 2px solid #b5522a; background: rgba(255,250,241,0.95);';
+  main.style.display = 'none';
+  main.parentNode.insertBefore(input, main);
+  input.focus();
+  input.select();
+  let done = false;
+  const finish = (commit) => {
+    if (done) return;
+    done = true;
+    if (commit) {
+      const val = input.value.trim();
+      if (val && val !== it.text) { it.text = val; save(); }
+    }
+    render();
+  };
+  input.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') { ev.preventDefault(); ev.stopPropagation(); finish(true); }
+    if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); finish(false); }
+  });
+  input.addEventListener('blur', () => finish(true));
 }
 
 // Mobile fix 6: fingers can't always drag, so an item's ⋯ → Move to… lists every category (same result as a drag-drop).
@@ -5847,14 +6054,206 @@ document.querySelectorAll('.color-btn').forEach(btn => {
   };
 });
 
-$('exportBtn').onclick = () => {
-  const blob = new Blob([JSON.stringify({items, categories}, null, 2)], {type:'application/json'});
+function backupStamp() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
+function downloadBlob(name, text, type) {
+  const blob = new Blob([text], { type: type || 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'braindump-backup.json';
+  a.download = name;
   a.click();
+  setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch (e) {} }, 1000);
+}
+function exportJSONBackup() {
+  const payload = { app: 'Brain Dump', exportedAt: new Date().toISOString(), items: items, categories: categories };
+  downloadBlob('brain-dump-backup-' + backupStamp() + '.json', JSON.stringify(payload, null, 2), 'application/json');
   setStatus('Backup saved');
+}
+function exportPlainText() {
+  function lineFor(it, indent) {
+    const pad = indent || '';
+    let s = pad + (it.ghosted ? '✓ ' : '• ') + (it.text || '');
+    if (it.due) {
+      try { s += '  (due ' + (typeof dueLabel === 'function' ? dueLabel(it.due) : it.due) + ')'; } catch (e) { s += '  (due)'; }
+    }
+    if (it.ghosted) s += '  — done ' + formatFinishedAt(it.finishedAt || it.doneAt);
+    return s;
+  }
+  const seen = new Set();
+  const lines = [];
+  const when = new Date().toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  lines.push('Brain Dump — readable copy');
+  lines.push('Saved on this device · ' + when);
+  lines.push('');
+  const walk = (parent, depth) => {
+    const kids = categories.filter(c => (c.parent || '') === parent);
+    kids.forEach(c => {
+      const indent = '  '.repeat(depth);
+      const under = c.parent ? '  (under ' + c.parent + ')' : '';
+      lines.push(indent + c.name + under);
+      const mine = items.filter(it => !it.deleted && !it.letGo && it.category === c.name);
+      mine.forEach(it => { seen.add(it.id); lines.push(lineFor(it, indent + '  ')); });
+      walk(c.name, depth + 1);
+      lines.push('');
+    });
+  };
+  walk('', 0);
+  const loose = items.filter(it => !it.deleted && !it.letGo && !it.category && !seen.has(it.id));
+  if (loose.length) {
+    lines.push('No category');
+    loose.forEach(it => { seen.add(it.id); lines.push(lineFor(it, '  ')); });
+    lines.push('');
+  }
+  const unsorted = items.filter(it => !it.deleted && !it.letGo && isUnsortedName(it.category) && !seen.has(it.id));
+  if (unsorted.length) {
+    lines.push('Unsorted');
+    unsorted.forEach(it => { seen.add(it.id); lines.push(lineFor(it, '  ')); });
+    lines.push('');
+  }
+  const letgo = items.filter(it => it.letGo && !it.deleted);
+  if (letgo.length) {
+    lines.push('Let go');
+    letgo.forEach(it => lines.push(lineFor(it, '  ')));
+    lines.push('');
+  }
+  downloadBlob('brain-dump-' + backupStamp() + '.txt', lines.join('\n'), 'text/plain');
+  setStatus('Readable copy saved');
+}
+function itemStamp(it) {
+  return Number(it && (it.updatedAt || it.createdAt || it.doneAt || it.deletedAt) || 0);
+}
+function parseBackup(text) {
+  const data = JSON.parse(text);
+  const its = Array.isArray(data) ? data : (data.items || []);
+  const cats = Array.isArray(data) ? [] : (data.categories || data.cats || []);
+  if (!Array.isArray(its)) throw new Error('no items');
+  return { items: its, categories: Array.isArray(cats) ? cats : [] };
+}
+function mergeBackup(incoming) {
+  const byId = new Map();
+  items.forEach(it => byId.set(String(it.id), it));
+  (incoming.items || []).forEach(it => {
+    if (!it || it.id == null) {
+      it = Object.assign({}, it, { id: Date.now() + Math.random() });
+    }
+    const key = String(it.id);
+    const cur = byId.get(key);
+    if (!cur || itemStamp(it) >= itemStamp(cur)) byId.set(key, it);
+  });
+  items = [...byId.values()];
+  const byName = new Map();
+  categories.forEach(c => byName.set(String(c.name).toLowerCase(), c));
+  (incoming.categories || []).forEach(c => {
+    if (!c || !c.name) return;
+    const k = String(c.name).toLowerCase();
+    if (!byName.has(k)) { categories.push(c); byName.set(k, c); }
+  });
+  save(); render();
+}
+function replaceBackup(incoming) {
+  items = (incoming.items || []).slice();
+  categories = (incoming.categories || []).slice();
+  save(); render();
+}
+function offerImportFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let incoming;
+    try { incoming = parseBackup(String(reader.result || '')); }
+    catch (e) { setStatus("That file doesn't look like a Brain Dump backup."); return; }
+    document.querySelectorAll('.import-sheet').forEach(s => s.remove());
+    const div = document.createElement('div');
+    div.className = 'kind-sheet ask-sheet import-sheet';
+    div.setAttribute('role', 'dialog');
+    const n = (incoming.items || []).length;
+    div.innerHTML = '<div class="kind-title">Add these notes?</div>' +
+      '<div class="ask-body">' + n + ' item' + (n === 1 ? '' : 's') + ' in this file. Merge keeps what’s already on this device and skips duplicates. Replace throws out the current list and uses the file — that can’t be undone.</div>' +
+      '<div class="ask-actions">' +
+      '<button type="button" data-act="merge">Merge</button>' +
+      '<button type="button" class="secondary" data-act="replace">Replace</button>' +
+      '<button type="button" class="secondary" data-act="cancel">Cancel</button>' +
+      '</div>';
+    const finish = act => {
+      div.remove();
+      if (div._sheetDismiss) try { div._sheetDismiss(); } catch (e) {}
+      if (act === 'merge') { mergeBackup(incoming); setStatus('Merged the backup into this notebook.'); }
+      else if (act === 'replace') { replaceBackup(incoming); setStatus('Replaced this notebook with the backup.'); }
+    };
+    div.addEventListener('click', ev => {
+      const b = ev.target.closest('button'); if (!b) return;
+      finish(b.dataset.act);
+    });
+    document.body.appendChild(div);
+    if (typeof wireDismiss === 'function') wireDismiss(div, () => finish('cancel'));
+  };
+  reader.readAsText(file);
+}
+if ($('exportBtn')) $('exportBtn').onclick = () => exportJSONBackup();
+if ($('importFile')) $('importFile').onchange = ev => {
+  const f = ev.target.files && ev.target.files[0];
+  ev.target.value = '';
+  offerImportFile(f);
 };
+
+(function wireMoreMenu() {
+  const btn = $('moreActions');
+  const menu = $('moreMenu');
+  if (!btn || !menu) return;
+  const close = () => { menu.classList.remove('open'); menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+  const open = () => { menu.hidden = false; menu.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); };
+  btn.addEventListener('click', ev => {
+    ev.preventDefault(); ev.stopPropagation();
+    if (menu.classList.contains('open')) close(); else open();
+  });
+  document.addEventListener('pointerdown', ev => {
+    if (!menu.classList.contains('open')) return;
+    if (menu.contains(ev.target) || btn.contains(ev.target)) return;
+    close();
+  });
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && menu.classList.contains('open')) close(); });
+  if ($('howToToggle')) $('howToToggle').addEventListener('click', close);
+  if ($('exportBtn')) $('exportBtn').addEventListener('click', close);
+})();
+
+const INSTALL_TIP_KEY = 'bd-install-tip';
+function isStandaloneApp() {
+  try {
+    return !!((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone);
+  } catch (e) { return false; }
+}
+function installTipDue() {
+  if (isStandaloneApp()) return false;
+  try {
+    const last = +localStorage.getItem(INSTALL_TIP_KEY) || 0;
+    if (!last) return true;
+    return (Date.now() - last) >= 7 * 24 * 60 * 60 * 1000;
+  } catch (e) { return true; }
+}
+function dismissInstallTip() {
+  try { localStorage.setItem(INSTALL_TIP_KEY, String(Date.now())); } catch (e) {}
+  const el = $('installTip');
+  if (el) { el.classList.remove('is-on'); el.innerHTML = ''; }
+}
+function renderInstallTip() {
+  const el = $('installTip');
+  if (!el) return;
+  if (!installTipDue()) { el.classList.remove('is-on'); el.innerHTML = ''; return; }
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent || '') || (/Macintosh/.test(navigator.userAgent || '') && (navigator.maxTouchPoints || 0) > 1);
+  const text = ios
+    ? 'Add to Home Screen so your notes stay put. On iPhone: tap Share, then Add to Home Screen.'
+    : 'Add to Home Screen so your notes stay put. Your browser’s menu usually has an “Add to Home Screen” or “Install” option.';
+  el.innerHTML = '<div class="install-tip-text">' + text + '</div><button type="button" class="install-tip-dismiss" aria-label="Dismiss tip">✕</button>';
+  el.classList.add('is-on');
+  const d = el.querySelector('.install-tip-dismiss');
+  if (d) d.onclick = dismissInstallTip;
+}
+try { renderInstallTip(); } catch (e) {}
 
 // Voice
 let recognition = null;
@@ -5883,6 +6282,7 @@ const UNSUPPORTED_VOICE_MSG = 'Voice needs Chrome or Edge. This browser does not
 function resetMicUI(clearStatus) {
   listening = false;
   micBtn.textContent = '🎤';
+  micBtn.setAttribute('aria-label', 'Start voice capture');
   micBtn.classList.remove('listening');
   if (clearStatus) setStatus('');
   if (typeof syncCaptureMicUI === 'function') try { syncCaptureMicUI(); } catch (e) {}
@@ -6772,6 +7172,7 @@ function startMic() {
   userWantsListening = true;
   listening = true;
   micBtn.textContent = '⏹';
+  micBtn.setAttribute('aria-label', 'Stop listening');
   micBtn.classList.add('listening');
   syncCaptureMicUI();
   try {
@@ -7008,7 +7409,7 @@ function openCatSheet(name) {
   div.className = 'cat-sheet';
   div.innerHTML = `<div class="cat-sheet-title">${esc(typeof catPath === 'function' ? catPath(name) : name)}</div>
     <button type="button" class="secondary" data-act="rename">✏️ Rename</button>
-    <button type="button" class="secondary" data-act="color">🎨 Color</button>
+    <button type="button" class="secondary" data-act="color">Change color</button>
     ${canSub ? '<button type="button" class="secondary" data-act="sub">➕ Add subcategory</button>' : ''}
     <button type="button" class="danger" data-act="delete">🗑 Delete category</button>
     <button type="button" class="secondary" data-act="close">Close</button>`;
@@ -7447,7 +7848,7 @@ render();
   }
 })();
 
-// Live handwritten date/time on the Warm paper page (America/Chicago).
+// Live handwritten date/time on the Warm paper page (the device's local time zone).
 (function () {
   function fmt() {
     const el = document.getElementById('pageWhen');
@@ -7456,12 +7857,11 @@ render();
     if (!warm) { el.textContent = ''; return; }
     try {
       const now = (typeof window.__bdNow === 'number') ? new Date(window.__bdNow) : new Date();
-      const tz = { timeZone: 'America/Chicago' };
-      const day = now.toLocaleDateString('en-US', Object.assign({ weekday: 'short' }, tz));
-      const mon = now.toLocaleDateString('en-US', Object.assign({ month: 'short' }, tz));
-      const d = now.toLocaleDateString('en-US', Object.assign({ day: 'numeric' }, tz));
-      let t = now.toLocaleTimeString('en-US', Object.assign({ hour: 'numeric', minute: '2-digit', hour12: true }, tz));
-      t = t.replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
+      const day = now.toLocaleDateString('en-US', { weekday: 'short' });
+      const mon = now.toLocaleDateString('en-US', { month: 'short' });
+      const d = now.toLocaleDateString('en-US', { day: 'numeric' });
+      let t = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      t = t.replace(/\u202f/g, ' ').replace(/\s+/g, ' ').trim();
       el.textContent = day + ', ' + mon + ' ' + d + ' · ' + t;
     } catch (e) {}
   }
@@ -7622,7 +8022,7 @@ render();
       var style = color ? ' style="background:' + color + ';"' : "";
       var extra = id === "contents" ? ' id="nbContentsTab" aria-haspopup="dialog" aria-controls="nbToc" aria-expanded="' + (tocOpen ? "true" : "false") + '"' : "";
       return '<button type="button" class="nb-tab' + on + '" data-page="' + escAttr(id) + '"' + style + extra +
-        ' aria-current="' + (isPage && nbPage === id ? "page" : "false") + '" title="' + escAttr(label) + '"><span>' + escHtml(label) + "</span></button>";
+        ' aria-label="' + escAttr(label) + '" aria-current="' + (isPage && nbPage === id ? "page" : "false") + '" title="' + escAttr(label) + '"><span>' + escHtml(label) + "</span></button>";
     }
     html += tab(FRONT, "Front", "");
     html += tab("contents", "Contents", "");
@@ -8039,7 +8439,7 @@ render();
     var riffle = !reduced && dist >= 2;
     var animate = opts.animate !== false && from !== id && !opts.instant;
     nbCloseToc();
-    try { document.querySelectorAll(".color-picker").forEach(function (p) { /* leave if just opened */ }); } catch (e) {}
+    try { if (typeof closeColorPicker === "function") closeColorPicker(); else document.querySelectorAll(".color-picker").forEach(function (p) { p.remove(); }); } catch (e) {}
 
     var ms = 0;
     if (animate || opts.freezeMid) {
@@ -8182,10 +8582,13 @@ render();
         '<p class="nb-quiet">Example: if you say “call the accountant and—” and pause, 1.5 seconds usually waits for the rest instead of saving a half-thought.</p>' +
         "</section>";
       moreHtml += '<section class="nb-sec"><h2>Data</h2>' +
-        '<p class="nb-sec-lead">Your list lives on this device for now. Export makes a text copy you can save or share.</p>' +
-        '<div class="nb-actions"><button type="button" id="nbExport">Export my list</button>' +
-        '<button type="button" class="secondary" id="nbClearWhy">Clear my why</button></div>' +
-        '<p class="nb-quiet">Sync across phone and computer is coming later, once a sign-in is in place. An Import button will sit next to Export then.</p>' +
+        '<p class="nb-sec-lead">Saved on this device. It isn’t copied to your other phones or computers yet.</p>' +
+        '<div class="nb-actions">' +
+        '<button type="button" id="nbExport">Download backup (JSON)</button>' +
+        '<button type="button" class="secondary" id="nbExportText">Download a readable copy</button>' +
+        '<button type="button" class="secondary" id="nbImport">Import from a backup</button></div>' +
+        '<p class="nb-quiet">The JSON backup can be imported later if something goes missing. The readable copy is for you to keep or print.</p>' +
+        '<p class="nb-quiet" id="nbInstallHint"></p>' +
         "</section>";
       more.innerHTML = moreHtml;
       var pause = $("nbVoicePause");
@@ -8200,7 +8603,14 @@ render();
           try { localStorage.setItem("bd-voice-pause", pause.value); } catch (e) {}
         };
       }
-      if ($("nbExport")) $("nbExport").onclick = function () { if ($("exportBtn")) $("exportBtn").click(); };
+      if ($("nbExport")) $("nbExport").onclick = function () { if (typeof exportJSONBackup === "function") exportJSONBackup(); else if ($("exportBtn")) $("exportBtn").click(); };
+      if ($("nbExportText")) $("nbExportText").onclick = function () { if (typeof exportPlainText === "function") exportPlainText(); };
+      if ($("nbImport")) $("nbImport").onclick = function () { var inp = $("importFile"); if (inp) inp.click(); };
+      var hint = $("nbInstallHint");
+      if (hint) {
+        if (typeof isStandaloneApp === "function" && isStandaloneApp()) hint.textContent = "This is installed on your Home Screen — good. That’s the best way to keep notes on this device.";
+        else hint.textContent = "Add to Home Screen so your notes stay put.";
+      }
       if ($("nbClearWhy")) $("nbClearWhy").onclick = function () {
         if ($("setClear")) $("setClear").click();
         else if (typeof askSheet === "function") {
