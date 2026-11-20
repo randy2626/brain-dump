@@ -1674,6 +1674,645 @@ html #micStatus:empty { min-height: 0 !important; margin: 0; }
   html .item button.done::after, html .item button.item-menu::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
   html .item { gap: 8px; }
 }
+
+/* ===== TEST: notebook pages ===== */
+/* TEST: notebook pages chrome (Warm look). */
+
+html.nb-notebook {
+  /* Room for index tabs to peek off the paper's right edge, without losing notch padding. */
+}
+
+html.nb-notebook[data-theme="warm"] {
+  padding: calc(10px + env(safe-area-inset-top, 0px)) calc(22px + env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) calc(8px + env(safe-area-inset-left, 0px));
+}
+
+html.nb-notebook[data-theme="warm"] body {
+  overflow-x: visible;
+  padding-right: 36px;
+}
+
+@media (max-width: 480px) {
+  html.nb-notebook[data-theme="warm"] {
+    padding: calc(8px + env(safe-area-inset-top, 0px)) calc(8px + env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) calc(7px + env(safe-area-inset-left, 0px));
+  }
+  html.nb-notebook[data-theme="warm"] body {
+    overflow-x: visible;
+    padding: 14px 34px 48px 12px;
+  }
+}
+
+/* ---- Top controls: Pages + back ---- */
+.nb-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin: 0 0 8px;
+  min-height: 36px;
+  position: relative;
+  z-index: 4;
+  min-width: 0;
+  max-width: 100%;
+}
+/* Pages stays on the right; Why (when on) shares this row and can shrink with an ellipsis. */
+.nb-topbar .nb-contents-btn {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+.nb-topbar #whyLine {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 !important;
+  text-align: left;
+}
+.nb-topbar #whyEdit {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  box-sizing: border-box;
+}
+.nb-contents-btn,
+.nb-back {
+  font-family: Caveat, Caveat, "Patrick Hand", "Segoe Print", cursive;
+  font-weight: 400;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  background: transparent;
+  color: #7a4a28;
+  border: 1px solid rgba(181, 82, 42, 0.28);
+  border-radius: 999px;
+  padding: 4px 12px;
+  min-height: 36px;
+  box-shadow: none;
+  line-height: 1;
+}
+.nb-contents-btn:hover,
+.nb-back:hover,
+.nb-contents-btn:focus,
+.nb-back:focus {
+  filter: none;
+  background: rgba(224, 176, 137, 0.28);
+  color: #5a3018;
+}
+.nb-back[hidden],
+.nb-contents-btn[hidden] { display: none !important; }
+.nb-page-label {
+  font-family: Caveat, "Patrick Hand", "Segoe Print", cursive;
+  font-size: 1.2rem;
+  color: #7a4a28;
+  text-align: center;
+  flex: 1 1 auto;
+  min-height: 1.2em;
+  pointer-events: none;
+}
+.nb-page-label .nb-pip {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  box-shadow: 0 0 0 1px rgba(90, 60, 20, 0.15);
+}
+html[data-nb-page="front"] .nb-page-label { display: none !important; }
+html[data-nb-page="front"] .nb-back { display: none !important; }
+html.nb-notebook:not([data-nb-page="front"]) .nb-topbar #whyLine { display: none !important; }
+
+/* ---- Index tabs along the right edge ---- */
+.nb-tabs {
+  position: absolute;
+  top: 92px;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  width: 26px;
+  pointer-events: auto;
+}
+@media (min-width: 720px) {
+  .nb-tabs { right: -18px; width: 28px; top: 110px; }
+}
+.nb-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 76px;
+  padding: 0;
+  border: 1px solid rgba(90, 60, 20, 0.18);
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
+  background: #f3e6d0;
+  color: #2b2118;
+  box-shadow: -1px 1px 0 rgba(90, 60, 20, 0.06);
+  cursor: pointer;
+  font-weight: 400;
+  overflow: hidden;
+}
+.nb-tab > span {
+  font-family: Caveat, "Patrick Hand", "Segoe Print", cursive;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  pointer-events: none;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  max-height: 70px;
+  overflow: hidden;
+  text-shadow: 0 0 3px rgba(251, 246, 236, 0.9);
+}
+.nb-tab[data-page="front"] { background: #fbf6ec; }
+.nb-tab[data-page="settings"] { background: #efe3cf; }
+.nb-tab[data-page="more"] { background: #eadcc6; height: 36px; }
+.nb-tab[data-page="more"] > span { transform: none; font-size: 1.1rem; letter-spacing: 0.12em; }
+.nb-tab.is-on {
+  right: 2px;
+  box-shadow: -2px 1px 4px rgba(90, 60, 20, 0.12);
+  border-color: rgba(90, 60, 20, 0.28);
+  z-index: 1;
+}
+.nb-tab:focus { outline: 2px solid rgba(181, 82, 42, 0.45); outline-offset: 1px; }
+
+/* ---- Page turn ---- */
+.nb-flip-ghost {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  background: #f4ead8;
+  transform-origin: left center;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 0;
+  box-shadow: 10px 0 24px rgba(90, 60, 20, 0.18);
+}
+.nb-flip-ghost[hidden] { display: none !important; }
+.nb-flip-ghost img,
+.nb-flip-ghost canvas { display: block; width: 100%; }
+html.nb-turning .nb-flip-ghost {
+  transition: transform 0.48s ease-in-out, opacity 0.48s ease-in-out;
+}
+html.nb-turning-out .nb-flip-ghost,
+html.nb-midturn .nb-flip-ghost {
+  transform: perspective(1400px) rotateY(-32deg);
+  opacity: 0.88;
+}
+html.nb-turning-in #list,
+html.nb-turning-in #nbSettingsPage,
+html.nb-midturn #list,
+html.nb-midturn #nbSettingsPage {
+  animation: none;
+  transform-origin: left center;
+}
+html.nb-midturn #list,
+html.nb-midturn #nbSettingsPage {
+  transform: perspective(1400px) rotateY(16deg);
+  opacity: 0.95;
+}
+html.nb-turning-in #list,
+html.nb-turning-in #nbSettingsPage {
+  animation: nbPageIn 0.48s ease-in-out both;
+}
+@keyframes nbPageIn {
+  from { transform: perspective(1400px) rotateY(18deg); opacity: 0.35; }
+  to { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.nb-turning-in #list,
+  html.nb-turning-in #nbSettingsPage,
+  html.nb-turning .nb-flip-ghost { animation: none !important; transition: none !important; transform: none !important; }
+}
+
+/* ---- Contents panel ---- */
+.nb-toc-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(60, 40, 15, 0.22);
+}
+.nb-toc-backdrop[hidden] { display: none !important; }
+.nb-toc {
+  position: fixed;
+  z-index: 41;
+  left: 50%;
+  top: 12%;
+  transform: translateX(-50%);
+  width: min(360px, calc(100% - 28px));
+  max-height: min(72vh, 640px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #fbf6ec;
+  color: #2b2118;
+  border: 1px solid #e2d0b4;
+  border-radius: 8px 14px 10px 8px;
+  box-shadow: 1px 2px 0 rgba(90, 60, 20, 0.05), 0 16px 36px rgba(90, 60, 20, 0.18);
+  padding: 16px 16px 12px;
+}
+.nb-toc[hidden] { display: none !important; }
+.nb-toc-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.nb-toc-head h2 {
+  font-family: Caveat, "Patrick Hand", "Segoe Print", cursive;
+  font-size: 1.7rem;
+  font-weight: 400;
+  margin: 0;
+  color: #5a3018;
+}
+.nb-toc-close {
+  background: transparent;
+  color: #7a4a28;
+  border: 0;
+  box-shadow: none;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+}
+.nb-toc-note {
+  font-family: "Source Serif 4", serif;
+  font-size: 0.92rem;
+  color: #8a7058;
+  margin: 0 0 10px;
+}
+.nb-toc-list { list-style: none; margin: 0; padding: 0; }
+.nb-toc-list li { margin: 0; }
+.nb-toc-list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: #2b2118;
+  border: 0;
+  border-bottom: 1px solid rgba(140, 100, 55, 0.14);
+  border-radius: 0;
+  box-shadow: none;
+  padding: 9px 4px;
+  min-height: 44px;
+  font-weight: 400;
+}
+.nb-toc-list button:hover,
+.nb-toc-list button:focus { background: rgba(224, 176, 137, 0.22); filter: none; }
+.nb-toc-list .nb-toc-name {
+  font-family: Caveat, "Patrick Hand", "Segoe Print", cursive;
+  font-size: 1.22rem;
+  flex: 1 1 auto;
+}
+.nb-toc-list .nb-toc-count {
+  font-family: "Source Serif 4", serif;
+  font-size: 0.82rem;
+  color: #8a7058;
+  margin-left: auto;
+}
+.nb-toc-list .nb-pip {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px rgba(90, 60, 20, 0.16);
+}
+.nb-toc-list .is-sub { padding-left: 28px; }
+.nb-toc-list .is-sub .nb-toc-name { font-size: 1.08rem; color: #5a3e28; }
+.nb-toc-list .is-on .nb-toc-name { color: #b5522a; }
+
+/* ---- Settings page ---- */
+#nbSettingsPage[hidden] { display: none !important; }
+#nbSettingsPage {
+  position: relative;
+  z-index: 1;
+  padding: 4px 0 24px;
+}
+.nb-sec {
+  margin: 0 0 22px;
+  padding: 0 0 4px;
+}
+.nb-sec h2 {
+  font-family: Caveat, "Patrick Hand", "Segoe Print", cursive;
+  font-size: 1.45rem;
+  font-weight: 400;
+  color: #b5522a;
+  margin: 0 0 4px;
+  letter-spacing: 0.01em;
+}
+.nb-sec-lead {
+  font-family: "Source Serif 4", serif;
+  font-size: 0.95rem;
+  color: #7a5a3a;
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+.nb-switch-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(140, 100, 55, 0.14);
+}
+.nb-switch-row:last-child { border-bottom: 1px solid rgba(140, 100, 55, 0.14); }
+.nb-switch-text { flex: 1 1 auto; min-width: 0; }
+.nb-switch-name {
+  font-family: "Source Serif 4", serif;
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: #3a2718;
+  margin: 0 0 2px;
+}
+.nb-switch-help {
+  font-family: "Source Serif 4", serif;
+  font-size: 0.88rem;
+  color: #8a7058;
+  line-height: 1.35;
+  margin: 0;
+}
+.nb-switch {
+  flex: 0 0 auto;
+  position: relative;
+  width: 48px;
+  height: 28px;
+  margin-top: 2px;
+  cursor: pointer;
+}
+.nb-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 48px;
+  height: 28px;
+  margin: 0;
+  cursor: pointer;
+}
+.nb-switch span {
+  display: block;
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  background: #e0d2bc;
+  box-shadow: inset 0 0 0 1px rgba(90, 60, 20, 0.16);
+  position: relative;
+  transition: background 0.2s ease;
+}
+.nb-switch span::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fbf6ec;
+  box-shadow: 0 1px 3px rgba(90, 60, 20, 0.2);
+  transition: transform 0.2s ease;
+}
+.nb-switch input:checked + span { background: #5d7a55; }
+.nb-switch input:checked + span::after { transform: translateX(20px); }
+.nb-switch input:focus-visible + span { outline: 2px solid rgba(181, 82, 42, 0.45); outline-offset: 2px; }
+
+.nb-subpanel {
+  margin: 0 0 8px;
+  padding: 8px 10px 10px;
+  background: rgba(255, 250, 241, 0.7);
+  border: 1px dashed #e0d0b4;
+  border-radius: 8px;
+}
+.nb-subpanel[hidden] { display: none !important; }
+.nb-choice {
+  display: block;
+  padding: 8px 4px 8px;
+  border-bottom: 1px solid rgba(140, 100, 55, 0.10);
+  cursor: pointer;
+}
+.nb-choice:last-child { border-bottom: 0; }
+.nb-choice input { margin-right: 8px; vertical-align: middle; }
+.nb-choice-name {
+  font-family: "Source Serif 4", serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #3a2718;
+}
+.nb-choice-desc {
+  display: block;
+  font-size: 0.86rem;
+  color: #8a7058;
+  margin: 2px 0 0 22px;
+  line-height: 1.35;
+}
+.nb-choice-ex {
+  display: block;
+  font-family: Caveat, "Patrick Hand", "Segoe Print", cursive;
+  font-size: 1.08rem;
+  color: #5a3e28;
+  margin: 4px 0 0 22px;
+  line-height: 1.3;
+}
+.nb-choice.on .nb-choice-name { color: #b5522a; }
+.nb-field { margin: 8px 0; }
+.nb-field label, .nb-set-label {
+  display: block;
+  font-family: "Source Serif 4", serif;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #5a3e28;
+  margin: 0 0 4px;
+}
+.nb-field input, .nb-field textarea, .nb-field select {
+  width: 100%;
+  max-width: 100%;
+}
+.nb-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.nb-quiet { font-size: 0.86rem; color: #8a7058; margin: 6px 0 0; }
+
+/* Hide the old in-place settings panel; Settings is a page now. */
+html.nb-notebook:not([data-nb-page="settings"]) #settings { display: none !important; }
+html.nb-notebook[data-nb-page="settings"] #settings {
+  display: block !important;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 0 18px;
+}
+html.nb-notebook[data-nb-page="settings"] #settings .set-head { display: none; }
+html.nb-notebook:not(.nb-x-goals) #settings .set-block-goals { display: none !important; }
+html.nb-notebook:not(.nb-x-looks) #settings .set-block-looks { display: none !important; }
+html.nb-notebook:not(.nb-x-friend) #settings .set-block-friend { display: none !important; }
+html.nb-notebook.nb-compare-open .nb-tabs,
+html.nb-notebook.nb-compare-open .nb-topbar,
+html.nb-notebook.nb-compare-open #nbSettingsPage,
+html.nb-notebook.nb-compare-open #nbToc,
+html.nb-notebook.nb-compare-open #nbTocBackdrop { display: none !important; }
+
+/* Settings page: just the notebook chrome + settings content. */
+html[data-nb-page="settings"] #addingTo,
+html[data-nb-page="settings"] .input-area,
+html[data-nb-page="settings"] #micStatus,
+html[data-nb-page="settings"] .controls,
+html[data-nb-page="settings"] .finish-row,
+html[data-nb-page="settings"] #howTo,
+html[data-nb-page="settings"] #trackHint,
+html[data-nb-page="settings"] #trackers,
+html[data-nb-page="settings"] .toolbar,
+html[data-nb-page="settings"] #friendCard,
+html[data-nb-page="settings"] #nudgeCard,
+html[data-nb-page="settings"] #welcome,
+html[data-nb-page="settings"] #whyPending,
+html[data-nb-page="settings"] .search-row,
+html[data-nb-page="settings"] #list,
+html[data-nb-page="settings"] #whyLine {
+  display: none !important;
+}
+
+/* Category pages stay focused: no global extras sitting above the one category. */
+html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #trackers,
+html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #trackHint,
+html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) .search-row,
+html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #friendCard,
+html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #nudgeCard,
+html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #welcome,
+html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #whyLine {
+  display: none !important;
+}
+
+/* Simple mode (extras off): don't leave empty gaps from hidden cards. */
+html.nb-simple #whyLine,
+html.nb-simple #welcome,
+html.nb-simple #nudgeCard,
+html.nb-simple #friendCard,
+html.nb-simple #trackers,
+html.nb-simple #trackHint { display: none !important; }
+
+.nb-preview-mark { display: none !important; }
+
+html[data-theme="warm"] .nb-contents-btn,
+html[data-theme="warm"] .nb-back,
+html[data-theme="warm"] .nb-tabs,
+html[data-theme="warm"] .nb-topbar,
+html[data-theme="warm"] #nbSettingsPage,
+html[data-theme="warm"] .nb-preview-mark {
+  position: relative;
+  z-index: 1;
+}
+html[data-theme="warm"] .nb-tabs { position: absolute; z-index: 6; }
+
+
+/* Beat Warm's default terracotta buttons so notebook chrome stays quiet. */
+html[data-theme="warm"] .nb-contents-btn,
+html[data-theme="warm"] .nb-back,
+html.nb-notebook .nb-contents-btn,
+html.nb-notebook .nb-back {
+  background: rgba(255, 250, 241, 0.9) !important;
+  color: #7a4a28 !important;
+  border: 1px solid rgba(181, 82, 42, 0.32) !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+html[data-theme="warm"] .nb-contents-btn:hover,
+html[data-theme="warm"] .nb-back:hover,
+html[data-theme="warm"] .nb-contents-btn:focus,
+html[data-theme="warm"] .nb-back:focus {
+  background: rgba(224, 176, 137, 0.35) !important;
+  color: #5a3018 !important;
+  filter: none !important;
+}
+html[data-theme="warm"] .nb-tab,
+html.nb-notebook .nb-tab {
+  box-shadow: -1px 1px 0 rgba(90, 60, 20, 0.06) !important;
+  filter: none !important;
+  color: #2b2118 !important;
+  padding: 0 !important;
+}
+html[data-theme="warm"] .nb-tab[data-page="front"] { background: #fbf6ec !important; }
+html[data-theme="warm"] .nb-tab[data-page="settings"] { background: #efe3cf !important; }
+html[data-theme="warm"] .nb-toc-close,
+html.nb-notebook .nb-toc-close {
+  background: transparent !important;
+  color: #7a4a28 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+html[data-theme="warm"] .nb-toc-list button,
+html.nb-notebook .nb-toc-list button {
+  background: transparent !important;
+  color: #2b2118 !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(140, 100, 55, 0.14) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  padding: 9px 4px !important;
+  font-weight: 400 !important;
+}
+html[data-theme="warm"] .nb-toc-list button:hover,
+html[data-theme="warm"] .nb-toc-list button:focus {
+  background: rgba(224, 176, 137, 0.22) !important;
+  filter: none !important;
+}
+html[data-theme="warm"] .nb-toc-list .is-on .nb-toc-name,
+html[data-theme="warm"] .nb-toc-list .nb-toc-name { color: #2b2118; }
+html[data-theme="warm"] .nb-toc-list .is-on {
+  background: rgba(224, 176, 137, 0.28) !important;
+}
+html[data-theme="warm"] .nb-toc-list .is-on .nb-toc-name { color: #b5522a; }
+
+/* Mid-turn uses a screenshot of the outgoing page, not a DOM clone. */
+#nbFlipGhost {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  background: transparent;
+  overflow: visible;
+  pointer-events: none;
+  transform-origin: left center;
+  box-shadow: none;
+  border-radius: 0;
+}
+#nbFlipGhost img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+html.nb-midturn #nbFlipGhost {
+  transform: perspective(1200px) rotateY(-42deg);
+  box-shadow: 18px 0 32px rgba(90, 60, 20, 0.28);
+  opacity: 0.96;
+}
+
+/* Keep dump box, mic, Add, and item actions clear of the right-edge tabs. */
+html.nb-notebook .input-area,
+html.nb-notebook .controls,
+html.nb-notebook .finish-row,
+html.nb-notebook #list,
+html.nb-notebook #nbSettingsPage,
+html.nb-notebook #trackers,
+html.nb-notebook .search-row,
+html.nb-notebook #friendCard,
+html.nb-notebook #nudgeCard,
+html.nb-notebook #welcome {
+  position: relative;
+  z-index: 1;
+}
+html.nb-notebook #nbTabs { z-index: 6; }
+
+/* Friendly collapsed-tracker typography so a text name is readable. */
+html.nb-notebook #trackerStripText {
+  font-size: 13px;
+  letter-spacing: 0;
+}
+html.nb-notebook #trackerStrip .strip-bit strong {
+  font-weight: 600;
+}
+
 </style>
 </head>
 <body data-theme="warm" data-tracker-place="strip">
@@ -2570,16 +3209,22 @@ function openSettings() {
   const become = [...(p.become || [])];
   let nudge = p.nudge || 'light';
   panel.innerHTML = `<div class="set-head"><strong>Settings</strong><button type="button" class="secondary" id="setClose" aria-label="Close settings">✕</button></div>
+    <div class="set-block-goals">
     <div class="set-label">Who you want to become</div>
     <div class="ob-chips">${chipsHTML(become)}</div>
     <div class="ob-field"><input id="setBecome" placeholder="In your own words" value="${obEsc(p.becomeText || '')}"><button type="button" class="ob-mic" id="setBecomeMic" aria-label="Say it">🎤</button></div>
     <div class="set-label">What matters most right now</div>
     <div class="ob-field"><textarea id="setMatters" rows="2">${obEsc(p.matters || '')}</textarea><button type="button" class="ob-mic" id="setMattersMic" aria-label="Say it">🎤</button></div>
+    </div>
+    <div class="set-block-looks">
     <div class="set-label">Your look</div>
     ${looksHTML(currentTheme || 'warm', 'setLook')}
+    </div>
+    <div class="set-block-friend">
     <div class="set-label">Nudges <span class="set-note">(friendly notes in the app for now; phone notifications come after sync)</span></div>
     ${nudgeHTML(nudge, 'setNudge')}
     ${friendSettingsHTML(p)}
+    </div>
     <div class="ob-actions"><button type="button" id="setSave">Save</button><button type="button" class="secondary" id="setRerun">Run setup again</button><button type="button" class="secondary" id="setClear">Clear my why</button></div>`;
   panel.style.display = 'block';
   wireChips(panel, become);
@@ -5505,8 +6150,8 @@ render();
     el.innerHTML = trackers.map(t => {
       const done = t.count >= t.target;
       const streak = t.streak ? ` ${t.streak}d` : '';
-      const short = t.label.split(/\s+/)[0];
-      return `<span class="strip-bit${done ? ' done' : ''}"><strong>${esc(short)}</strong> ${t.count}/${t.target}${streak}</span>`;
+      const name = t.label;
+      return `<span class="strip-bit${done ? ' done' : ''}"><strong>${esc(name)}</strong> ${t.count}/${t.target}${streak}</span>`;
     }).join('<span class="strip-dot">·</span>');
   }
 
@@ -5718,6 +6363,776 @@ render();
   window.__bdUpdatePageWhen = fmt;
   fmt();
   setInterval(fmt, 15000);
+})();
+
+
+/* ===== TEST: notebook pages ===== */
+/* TEST: notebook pages, contents, and a Settings page with on/off extras. */
+(function () {
+  "use strict";
+  if (window.__bdNotebook) return;
+  function isCompareUrl() {
+    try { return /[?&]compare=1(?:&|$)/.test(location.search || ""); } catch (e) { return false; }
+  }
+  if (isCompareUrl()) return;
+
+  var EXTRAS_KEY = "bd-extras";
+  var DEFAULT_EXTRAS = { friend: false, checkins: false, weekly: false, trackers: false, goals: false, looks: false };
+  var FRONT = "front";
+  var SETTINGS = "settings";
+  var MAX_CAT_TABS = 6;
+  var nbPage = FRONT;
+  var extrasState = null;
+  var flipping = false;
+  var reduced = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  function $(id) { return document.getElementById(id); }
+  function extras() {
+    if (extrasState) return extrasState;
+    try { extrasState = Object.assign({}, DEFAULT_EXTRAS, JSON.parse(localStorage.getItem(EXTRAS_KEY) || "null") || {}); }
+    catch (e) { extrasState = Object.assign({}, DEFAULT_EXTRAS); }
+    return extrasState;
+  }
+  function saveExtras() {
+    try { localStorage.setItem(EXTRAS_KEY, JSON.stringify(extrasState)); } catch (e) {}
+  }
+  function isSimple() {
+    var x = extras();
+    return !x.friend && !x.checkins && !x.weekly && !x.trackers && !x.goals && !x.looks;
+  }
+  function topLevelCats() {
+    if (typeof orderedCats === "function") {
+      return orderedCats().filter(function (o) { return o.depth === 1 && typeof findCat === "function" && findCat(o.name); })
+        .map(function (o) { return findCat(o.name); });
+    }
+    return (categories || []).filter(function (c) { return c && !c.parent; });
+  }
+  function pageIds() {
+    return [FRONT].concat(topLevelCats().map(function (c) { return c.name; })).concat([SETTINGS]);
+  }
+  function pageIndex(id) {
+    var ids = pageIds();
+    var i = ids.indexOf(id);
+    return i < 0 ? 0 : i;
+  }
+  function namesIn(name) {
+    var out = [name];
+    if (typeof descendantsOf === "function") out = out.concat(descendantsOf(name));
+    return out;
+  }
+  function countIn(name, pred) {
+    var set = namesIn(name);
+    return (items || []).filter(function (it) {
+      if (it.deleted || it.letGo) return false;
+      if (set.indexOf(it.category) < 0) return false;
+      return pred ? pred(it) : true;
+    }).length;
+  }
+  function frontCount() {
+    return (items || []).filter(function (it) { return !it.deleted && !it.letGo; }).length;
+  }
+  function liveItems() {
+    return (items || []).filter(function (it) { return !it.deleted && !it.letGo; });
+  }
+
+  function ensureChrome() {
+    if ($("nbTabs")) return;
+    var body = document.body;
+    var top = document.createElement("div");
+    top.className = "nb-topbar";
+    top.id = "nbTopbar";
+    top.innerHTML = '<button type="button" class="nb-back" id="nbBack" hidden>← Front page</button>' +
+      '<div class="nb-page-label" id="nbPageLabel"></div>' +
+      '<button type="button" class="nb-contents-btn" id="nbContentsBtn" aria-haspopup="dialog" aria-controls="nbToc">Pages</button>';
+    var sub = document.querySelector(".subtitle");
+    var when = $("pageWhen");
+    var anchor = sub || when || document.querySelector("h1");
+    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(top, anchor.nextSibling);
+    else body.insertBefore(top, body.firstChild);
+
+    var why = $("whyLine");
+    if (why && $("nbContentsBtn") && why.parentNode !== top) {
+      top.insertBefore(why, $("nbContentsBtn"));
+    }
+
+    var tabs = document.createElement("nav");
+    tabs.id = "nbTabs";
+    tabs.className = "nb-tabs";
+    tabs.setAttribute("aria-label", "Notebook pages");
+    body.appendChild(tabs);
+
+    var bd = document.createElement("div");
+    bd.id = "nbTocBackdrop";
+    bd.className = "nb-toc-backdrop";
+    bd.hidden = true;
+    body.appendChild(bd);
+
+    var toc = document.createElement("div");
+    toc.id = "nbToc";
+    toc.className = "nb-toc";
+    toc.hidden = true;
+    toc.setAttribute("role", "dialog");
+    toc.setAttribute("aria-label", "Contents");
+    body.appendChild(toc);
+
+    var settings = document.createElement("div");
+    settings.id = "nbSettingsPage";
+    settings.className = "nb-settings";
+    settings.hidden = true;
+    var extrasBox = document.createElement("div");
+    extrasBox.id = "nbExtras";
+    settings.appendChild(extrasBox);
+    var oldSettings = $("settings");
+    if (oldSettings) settings.appendChild(oldSettings);
+    var more = document.createElement("div");
+    more.id = "nbMoreSettings";
+    settings.appendChild(more);
+    var list = $("list");
+    if (list && list.parentNode) list.parentNode.insertBefore(settings, list.nextSibling);
+    else body.appendChild(settings);
+
+    var ghost = document.createElement("div");
+    ghost.id = "nbFlipGhost";
+    ghost.className = "nb-flip-ghost";
+    ghost.hidden = true;
+    ghost.setAttribute("aria-hidden", "true");
+    body.appendChild(ghost);
+
+    $("nbContentsBtn").addEventListener("click", function () { nbOpenToc(); });
+    $("nbBack").addEventListener("click", function () { nbGo(FRONT); });
+    bd.addEventListener("click", function () { nbCloseToc(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { if (!$("nbToc").hidden) { e.preventDefault(); nbCloseToc(); } }
+    });
+  }
+
+  function renderTabs() {
+    var nav = $("nbTabs");
+    if (!nav) return;
+    var cats = topLevelCats();
+    var overflow = cats.length > MAX_CAT_TABS;
+    var shown = overflow ? cats.slice(0, MAX_CAT_TABS) : cats;
+    var html = "";
+    function tab(id, label, color) {
+      var on = nbPage === id ? " is-on" : "";
+      var style = color ? ' style="background:' + color + ';"' : "";
+      return '<button type="button" class="nb-tab' + on + '" data-page="' + escAttr(id) + '"' + style +
+        ' aria-current="' + (nbPage === id ? "page" : "false") + '" title="' + escAttr(label) + '"><span>' + escHtml(label) + "</span></button>";
+    }
+    html += tab(FRONT, "Front", "");
+    shown.forEach(function (c) { html += tab(c.name, shortLabel(c.name), c.color || "#e0d2bc"); });
+    if (overflow) html += tab("more", "···", "");
+    html += tab(SETTINGS, "Settings", "");
+    nav.innerHTML = html;
+    nav.querySelectorAll(".nb-tab").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-page");
+        if (id === "more") nbOpenToc();
+        else nbGo(id);
+      });
+    });
+  }
+
+  function shortLabel(name) {
+    name = String(name || "");
+    return name.length > 10 ? name.slice(0, 9) + "…" : name;
+  }
+  function escHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+  function escAttr(s) { return escHtml(s).replace(/\n/g, " "); }
+
+  function renderToc() {
+    var toc = $("nbToc");
+    if (!toc) return;
+    var rows = "";
+    function row(id, name, count, color, sub, jumpId) {
+      var on = (jumpId || id) === nbPage || (id === FRONT && nbPage === FRONT) || (id === SETTINGS && nbPage === SETTINGS);
+      var pip = color
+        ? '<span class="nb-pip" style="background:' + color + ';"></span>'
+        : '<span class="nb-pip" style="background:#f4ead8;box-shadow:0 0 0 1px rgba(90,60,20,0.28);"></span>';
+      var cnt = (count == null) ? "" : '<span class="nb-toc-count">' + count + "</span>";
+      return '<li><button type="button" class="' + (on ? "is-on " : "") + (sub ? "is-sub" : "") + '" data-jump="' + escAttr(jumpId || id) + '">' +
+        pip + '<span class="nb-toc-name">' + escHtml(name) + "</span>" + cnt + "</button></li>";
+    }
+    var fc = frontCount();
+    var fd = liveItems().filter(function (it) { return it.ghosted; }).length;
+    rows += row(FRONT, "Front page", fd + "/" + fc, "", false, FRONT);
+    topLevelCats().forEach(function (c) {
+      var total = countIn(c.name);
+      var done = countIn(c.name, function (it) { return it.ghosted; });
+      rows += row(c.name, c.name, done + "/" + total, c.color, false, c.name);
+      (typeof childrenOf === "function" ? childrenOf(c.name) : []).forEach(function (k) {
+        var t = countIn(k.name);
+        var d = countIn(k.name, function (it) { return it.ghosted; });
+        rows += row(k.name, k.name, d + "/" + t, k.color || c.color, true, c.name);
+      });
+    });
+    rows += row(SETTINGS, "Settings", null, "", false, SETTINGS);
+    toc.innerHTML = '<div class="nb-toc-head"><h2>Contents</h2><button type="button" class="nb-toc-close" id="nbTocClose" aria-label="Close contents">✕</button></div>' +
+      '<p class="nb-toc-note">Tap a page to flip straight there.</p>' +
+      '<ul class="nb-toc-list">' + rows + "</ul>";
+    $("nbTocClose").onclick = function () { nbCloseToc(); };
+    toc.querySelectorAll("[data-jump]").forEach(function (btn) {
+      btn.onclick = function () {
+        var id = btn.getAttribute("data-jump");
+        nbCloseToc();
+        nbGo(id);
+      };
+    });
+  }
+
+  function nbOpenToc() {
+    renderToc();
+    $("nbToc").hidden = false;
+    $("nbTocBackdrop").hidden = false;
+    try { $("nbContentsBtn").setAttribute("aria-expanded", "true"); } catch (e) {}
+  }
+  function nbCloseToc() {
+    var toc = $("nbToc"), bd = $("nbTocBackdrop");
+    if (toc) toc.hidden = true;
+    if (bd) bd.hidden = true;
+    try { $("nbContentsBtn").setAttribute("aria-expanded", "false"); } catch (e) {}
+  }
+
+  function syncPageLock() {
+    if (typeof workingItemId !== "undefined" && nbPage !== FRONT && nbPage !== SETTINGS) {
+      // Keep adds going to this page (or a sub the user already picked on it).
+      var allowed = namesIn(nbPage);
+      if (!currentCat || allowed.indexOf(currentCat) < 0) {
+        currentCat = nbPage;
+        workingItemId = null;
+        if (typeof save === "function") save();
+      }
+    } else if (nbPage === SETTINGS) {
+      // don't change currentCat
+    }
+  }
+
+  function nbAfterRender() {
+    syncPageLock();
+    filterListToPage();
+    if (nbPage === SETTINGS) {
+      $("nbSettingsPage").hidden = false;
+      nbRenderSettings();
+    } else {
+      $("nbSettingsPage").hidden = true;
+    }
+    nbApplyExtras();
+    renderTabs();
+    syncTopbar();
+    if (typeof markWorkingSpot === "function") markWorkingSpot({ scroll: false });
+    if (typeof updateAddingTo === "function") updateAddingTo();
+  }
+
+  function filterListToPage() {
+    var list = $("list");
+    if (!list || nbPage === FRONT || nbPage === SETTINGS) return;
+    var keep = namesIn(nbPage);
+    list.querySelectorAll(".group-header, .group-items").forEach(function (el) {
+      var name = el.getAttribute("data-cat") || el.getAttribute("data-for") || "";
+      if (!name) return;
+      if (name === "Finished" || name === "Recently Deleted" || name === "Let go") {
+        el.style.display = "none";
+        return;
+      }
+      if (keep.indexOf(name) < 0) el.style.display = "none";
+    });
+  }
+
+  function syncTopbar() {
+    var back = $("nbBack");
+    var label = $("nbPageLabel");
+    var pages = $("nbContentsBtn");
+    if (back) back.hidden = nbPage === FRONT;
+    if (pages) pages.hidden = false;
+    if (label) {
+      if (nbPage === FRONT) label.innerHTML = "";
+      else if (nbPage === SETTINGS) label.textContent = "Settings";
+      else {
+        var c = typeof findCat === "function" ? findCat(nbPage) : null;
+        var pip = c && c.color ? '<span class="nb-pip" style="background:' + c.color + ';"></span>' : "";
+        label.innerHTML = pip + escHtml(nbPage);
+      }
+    }
+    document.documentElement.setAttribute("data-nb-page", nbPage);
+    document.documentElement.classList.toggle("nb-simple", isSimple() && nbPage === FRONT);
+  }
+
+  function nbApplyExtras() {
+    var x = extras();
+    var root = document.documentElement;
+    root.classList.toggle("nb-x-friend", !!x.friend);
+    root.classList.toggle("nb-x-checkins", !!x.checkins);
+    root.classList.toggle("nb-x-weekly", !!x.weekly);
+    root.classList.toggle("nb-x-trackers", !!x.trackers);
+    root.classList.toggle("nb-x-goals", !!x.goals);
+    root.classList.toggle("nb-x-looks", !!x.looks);
+    var why = $("whyLine");
+    if (why && (nbPage !== FRONT || !x.goals)) why.style.display = "none";
+    var tr = $("trackers");
+    if (tr) tr.style.display = (x.trackers && nbPage === FRONT) ? "" : "none";
+    var th = $("trackHint");
+    if (th && !x.trackers) th.style.display = "none";
+    if (!x.friend || nbPage !== FRONT) {
+      try { if (typeof hideNudge === "function") hideNudge(); } catch (e) {}
+      try { if (typeof hideFriend === "function") hideFriend(); } catch (e) {}
+    }
+    root.classList.toggle("nb-simple", isSimple() && nbPage === FRONT);
+  }
+
+  function snapshotPaper() {
+    var ghost = $("nbFlipGhost");
+    if (!ghost) return;
+    try {
+      var w = document.body.offsetWidth;
+      var h = document.body.offsetHeight;
+      ghost.style.width = w + "px";
+      ghost.style.height = Math.max(h, window.innerHeight - 20) + "px";
+      ghost.innerHTML = "";
+      var clone = document.body.cloneNode(true);
+      clone.querySelectorAll("#nbTabs, #nbToc, #nbTocBackdrop, #nbFlipGhost, .color-picker, .sheet-backdrop, .kind-sheet, .cat-sheet, .ask-sheet, .due-sheet").forEach(function (n) { n.remove(); });
+      clone.querySelectorAll("[id]").forEach(function (n) { n.removeAttribute("id"); });
+      var wrap = document.createElement("div");
+      wrap.style.cssText = "position:absolute;inset:0;overflow:hidden;";
+      wrap.appendChild(clone);
+      // The clone is a body; strip positioning that would break the snapshot.
+      clone.style.cssText = "margin:0;min-height:0;box-shadow:none;padding:" + getComputedStyle(document.body).padding + ";background:" + getComputedStyle(document.body).backgroundColor + ";";
+      ghost.appendChild(wrap);
+      ghost.hidden = false;
+    } catch (e) {
+      ghost.hidden = true;
+    }
+  }
+
+  function clearGhost() {
+    var ghost = $("nbFlipGhost");
+    if (!ghost) return;
+    ghost.hidden = true;
+    ghost.innerHTML = "";
+    document.documentElement.classList.remove("nb-turning", "nb-turning-out", "nb-turning-in", "nb-midturn");
+  }
+
+  function nbGo(id, opts) {
+    opts = opts || {};
+    if (!id) id = FRONT;
+    if (id !== FRONT && id !== SETTINGS && typeof findCat === "function" && !findCat(id)) {
+      // Sub-category names jump to the top-level parent page.
+      var p = typeof parentOf === "function" ? parentOf(id) : "";
+      while (p && typeof parentOf === "function" && parentOf(p)) p = parentOf(p);
+      id = p || FRONT;
+    }
+    if (id === nbPage && !opts.force && !opts.freezeMid) return;
+    if (flipping && !opts.freezeMid) {
+      // A new tap (tab, Pages, Back, gear) should cancel the in-progress turn, not get swallowed.
+      clearGhost();
+      flipping = false;
+    }
+    var from = nbPage;
+    var animate = opts.animate !== false && !reduced && from !== id && !opts.instant;
+    nbCloseToc();
+    try { document.querySelectorAll(".color-picker").forEach(function (p) { /* leave if just opened */ }); } catch (e) {}
+
+    if (animate || opts.freezeMid) snapshotPaper();
+
+    nbPage = id;
+    if (id !== FRONT && id !== SETTINGS) {
+      try { currentCat = id; workingItemId = null; } catch (e) {}
+      try { if (typeof save === "function") save(); } catch (e) {}
+    }
+    if (typeof closeSettings === "function") { try { closeSettings(); } catch (e) {} }
+    if (typeof closeHowTo === "function") { try { closeHowTo(); } catch (e) {} }
+    if (typeof render === "function") render();
+    else nbAfterRender();
+    nbAfterRender();
+    try { window.scrollTo(0, 0); } catch (e) {}
+
+    if (opts.freezeMid) {
+      document.documentElement.classList.add("nb-midturn");
+      var g = $("nbFlipGhost");
+      if (g) g.hidden = false;
+      return;
+    }
+    if (animate) {
+      flipping = true;
+      document.documentElement.classList.add("nb-turning", "nb-turning-out", "nb-turning-in");
+      var g = $("nbFlipGhost");
+      if (g) {
+        // Force layout, then let CSS transition the ghost away.
+        void g.offsetWidth;
+      }
+      setTimeout(function () {
+        clearGhost();
+        flipping = false;
+      }, 500);
+    } else {
+      clearGhost();
+    }
+  }
+
+  function sampleLine(style, cuss) {
+    try {
+      if (typeof friendPool === "function") {
+        var pool = friendPool("sample", style, !!cuss);
+        return pool && pool[0] ? pool[0] : "";
+      }
+    } catch (e) {}
+    return "";
+  }
+  function nudgeExample(level) {
+    if (level === "off") return "The list just sits there. No check-ins, no reminders.";
+    if (level === "light") return "“Book a dentist checkup” is due. No big deal, just saying.";
+    if (level === "check") return "3 things in the dump. Pick one, let’s go.";
+    if (level === "stay") return "You told me to stay on you, so: today.";
+    return "";
+  }
+
+  function wireExtraSwitches(root) {
+    if (!root) return;
+    root.querySelectorAll("input[data-extra]").forEach(function (inp) {
+      inp.onchange = function () {
+        extrasState = extras();
+        extrasState[inp.getAttribute("data-extra")] = inp.checked;
+        if ((inp.getAttribute("data-extra") === "checkins" || inp.getAttribute("data-extra") === "weekly") && inp.checked) {
+          extrasState.friend = true;
+        }
+        if (inp.getAttribute("data-extra") === "friend" && !inp.checked) {
+          extrasState.checkins = false;
+          extrasState.weekly = false;
+        }
+        if (inp.getAttribute("data-extra") === "looks" && !inp.checked) {
+          try { if (typeof applyTheme === "function") applyTheme("warm", true); } catch (e) {}
+        }
+        if (inp.getAttribute("data-extra") === "goals") {
+          try { if (typeof renderWelcome === "function") renderWelcome(); } catch (e) {}
+        }
+        if (inp.getAttribute("data-extra") === "checkins") {
+          try {
+            profile = Object.assign({}, profile || {}, { checkins: inp.checked });
+            if (typeof saveProfile === "function") saveProfile(profile);
+          } catch (e) {}
+        }
+        saveExtras();
+        nbApplyExtras();
+        if (typeof renderWhy === "function") renderWhy();
+        if (typeof renderTrackers === "function") renderTrackers();
+        if (typeof renderWelcome === "function") { try { renderWelcome(); } catch (e) {} }
+        if (nbPage === SETTINGS) nbRenderSettings();
+        syncTopbar();
+      };
+    });
+  }
+
+  function nbRenderSettings() {
+    var root = $("nbSettingsPage");
+    if (!root) return;
+    var x = extras();
+    function sw(key, name, help) {
+      return '<div class="nb-switch-row">' +
+        '<div class="nb-switch-text"><div class="nb-switch-name">' + escHtml(name) + "</div>" +
+        '<p class="nb-switch-help">' + help + "</p></div>" +
+        '<label class="nb-switch"><input type="checkbox" data-extra="' + key + '"' + (x[key] ? " checked" : "") + '><span></span></label></div>';
+    }
+
+    var extrasBox = $("nbExtras");
+    if (!extrasBox) {
+      extrasBox = document.createElement("div");
+      extrasBox.id = "nbExtras";
+      root.insertBefore(extrasBox, root.firstChild);
+    }
+    var html = "";
+    html += '<section class="nb-sec"><h2>What’s in your notebook</h2>' +
+      '<p class="nb-sec-lead">A new notebook starts simple: the dump box, your list, and pages. Everything else is here if you want it, and each one can be turned off again.</p>';
+    html += sw("looks", "Looks picker", "Try Playful, Calm, or Bold. Off, the notebook stays Warm — yellow paper and handwriting.");
+    html += sw("friend", "Friend & nudges", "A short, friendly note now and then about what’s actually on your list. Off, the notebook stays quiet.");
+    html += sw("checkins", "Goal check-ins", "About once a week, a question if a goal you named has gone quiet. Off unless you turn it on.");
+    html += sw("weekly", "Weekly recap", "A Sunday note about what you finished, in your friend’s voice.");
+    html += sw("trackers", "Trackers", "Little counters for habits, like “4 walks this week.” Tap a card to check one off.");
+    html += sw("goals", "About you & goals", "Optional. Your friend uses this to make notes more personal, like reminding you about the gym if you said Healthier.");
+    html += "</section>";
+    extrasBox.innerHTML = html;
+    wireExtraSwitches(extrasBox);
+
+    // Reuse the existing Settings panel so v15 controls (Real default, cussing, Compare personalities, Save) stay intact.
+    var original = (typeof openSettings === "function" && openSettings._original) ? openSettings._original : null;
+    if (original) {
+      try { original(); } catch (e) {}
+    }
+    var setClose = $("setClose");
+    if (setClose) setClose.onclick = function () { nbGo(FRONT); };
+
+    var more = $("nbMoreSettings");
+    if (more) {
+      var moreHtml = "";
+      if (x.friend && (x.checkins || x.weekly)) {
+        moreHtml += '<p class="nb-quiet">Check-ins and the weekly recap use this same voice. They’re still off until you flip those switches above.</p>';
+      }
+      moreHtml += '<section class="nb-sec"><h2>Voice</h2>' +
+        '<p class="nb-sec-lead">Talk into the dump box on any page. This only sets how long to wait after you pause before saving a thought.</p>' +
+        '<div class="nb-field"><label for="nbVoicePause">Voice pause</label>' +
+        '<select id="nbVoicePause">' +
+        '<option value="0">Off — save as soon as a thought is recognized</option>' +
+        '<option value="1000">1 second</option>' +
+        '<option value="1500">1.5 seconds (a comfortable default)</option>' +
+        '<option value="2000">2 seconds</option>' +
+        '<option value="2500">2.5 seconds</option>' +
+        "</select></div>" +
+        '<p class="nb-quiet">Example: if you say “call the accountant and—” and pause, 1.5 seconds usually waits for the rest instead of saving a half-thought.</p>' +
+        "</section>";
+      moreHtml += '<section class="nb-sec"><h2>Data</h2>' +
+        '<p class="nb-sec-lead">Your list lives on this device for now. Export makes a text copy you can save or share.</p>' +
+        '<div class="nb-actions"><button type="button" id="nbExport">Export my list</button>' +
+        '<button type="button" class="secondary" id="nbClearWhy">Clear my why</button></div>' +
+        '<p class="nb-quiet">Sync across phone and computer is coming later, once a sign-in is in place. An Import button will sit next to Export then.</p>' +
+        "</section>";
+      more.innerHTML = moreHtml;
+      var pause = $("nbVoicePause");
+      var src = $("voicePause");
+      if (pause) {
+        if (src) pause.value = src.value || "1500";
+        pause.onchange = function () {
+          if (src) {
+            src.value = pause.value;
+            src.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+          try { localStorage.setItem("bd-voice-pause", pause.value); } catch (e) {}
+        };
+      }
+      if ($("nbExport")) $("nbExport").onclick = function () { if ($("exportBtn")) $("exportBtn").click(); };
+      if ($("nbClearWhy")) $("nbClearWhy").onclick = function () {
+        if ($("setClear")) $("setClear").click();
+        else if (typeof askSheet === "function") {
+          askSheet({ title: "Clear your why?", body: "This forgets the goals and ‘what matters’ you wrote. You can set them up again any time.", ok: "Clear", cancel: "Keep them", danger: true }).then(function (yes) {
+            if (!yes) return;
+            try {
+              profile = { skipped: true };
+              if (typeof saveProfile === "function") saveProfile(profile);
+              if (typeof renderWhy === "function") renderWhy();
+              nbRenderSettings();
+              if (typeof setStatus === "function") setStatus("Cleared");
+            } catch (e) {}
+          });
+        }
+      };
+    }
+  }
+
+  function hookFns() {
+    if (typeof render === "function" && !render.__nbWrapped) {
+      var _render = render;
+      var wrapped = function () {
+        var r = _render.apply(this, arguments);
+        try { nbAfterRender(); } catch (e) {}
+        return r;
+      };
+      wrapped.__nbWrapped = true;
+      render = wrapped;
+    }
+    if (typeof maybeShowNudge === "function" && !maybeShowNudge.__nbWrapped) {
+      var _nudge = maybeShowNudge;
+      maybeShowNudge = function () {
+        if (!extras().friend || nbPage !== FRONT) { try { hideNudge(); } catch (e) {} return; }
+        return _nudge.apply(this, arguments);
+      };
+      maybeShowNudge.__nbWrapped = true;
+    }
+    if (typeof maybeShowFriend === "function" && !maybeShowFriend.__nbWrapped) {
+      var _friend = maybeShowFriend;
+      maybeShowFriend = function () {
+        if (!extras().friend || nbPage !== FRONT) { try { hideFriend(); } catch (e) {} return; }
+        return _friend.apply(this, arguments);
+      };
+      maybeShowFriend.__nbWrapped = true;
+    }
+    if (typeof showWeekly === "function" && !showWeekly.__nbWrapped) {
+      var _sw = showWeekly;
+      showWeekly = function () {
+        if (!extras().friend || !extras().weekly || nbPage !== FRONT) return;
+        return _sw.apply(this, arguments);
+      };
+      showWeekly.__nbWrapped = true;
+    }
+    if (typeof showCheckin === "function" && !showCheckin.__nbWrapped) {
+      var _sc = showCheckin;
+      showCheckin = function () {
+        if (!extras().friend || !extras().checkins || nbPage !== FRONT) return;
+        return _sc.apply(this, arguments);
+      };
+      showCheckin.__nbWrapped = true;
+    }
+    if (typeof showBigger === "function" && !showBigger.__nbWrapped) {
+      var _sb = showBigger;
+      showBigger = function () {
+        if (!extras().goals || nbPage !== FRONT) return;
+        return _sb.apply(this, arguments);
+      };
+      showBigger.__nbWrapped = true;
+    }
+    if (typeof openSettings === "function" && !openSettings.__nbWrapped) {
+      var _os = openSettings;
+      openSettings = function () { nbGo(SETTINGS); };
+      openSettings.__nbWrapped = true;
+      openSettings._original = _os;
+    }
+    if (typeof renderWhy === "function" && !renderWhy.__nbWrapped) {
+      var _rw = renderWhy;
+      renderWhy = function () {
+        _rw.apply(this, arguments);
+        if (!extras().goals || nbPage !== FRONT) {
+          var el = $("whyLine");
+          if (el) el.style.display = "none";
+        }
+      };
+      renderWhy.__nbWrapped = true;
+    }
+    // Keep the original “Adding to: No category” chip on the Front page (core check + clear-tap).
+    if (typeof renderTrackers === "function" && !renderTrackers.__nbWrapped) {
+      var _rt = renderTrackers;
+      renderTrackers = function () {
+        _rt.apply(this, arguments);
+        var tr = $("trackers");
+        if (tr) tr.style.display = (extras().trackers && nbPage === FRONT) ? "" : "none";
+      };
+      renderTrackers.__nbWrapped = true;
+    }
+    if (typeof renderWelcome === "function" && !renderWelcome.__nbWrapped) {
+      var _welcome = renderWelcome;
+      renderWelcome = function () {
+        if (!extras().goals) {
+          var card = $("welcome");
+          if (card) { card.style.display = "none"; if (arguments.length === 0) card.innerHTML = ""; }
+          return;
+        }
+        return _welcome.apply(this, arguments);
+      };
+      renderWelcome.__nbWrapped = true;
+    }
+    if (typeof openCompare === "function" && !openCompare.__nbWrapped) {
+      var _oc = openCompare;
+      openCompare = function () {
+        if (nbPage !== FRONT) nbGo(FRONT, { instant: true });
+        document.documentElement.classList.add("nb-compare-open");
+        return _oc.apply(this, arguments);
+      };
+      openCompare.__nbWrapped = true;
+    }
+    if (typeof closeCompare === "function" && !closeCompare.__nbWrapped) {
+      var _cc = closeCompare;
+      closeCompare = function () {
+        document.documentElement.classList.remove("nb-compare-open");
+        var r = _cc.apply(this, arguments);
+        try { syncTopbar(); nbApplyExtras(); } catch (e) {}
+        return r;
+      };
+      closeCompare.__nbWrapped = true;
+    }
+    var setBtn = $("settingsBtn");
+    if (setBtn) setBtn.onclick = function () {
+      if (nbPage === SETTINGS) nbGo(FRONT);
+      else nbGo(SETTINGS);
+    };
+    var addTo = $("addingTo");
+    if (addTo) {
+      addTo.onclick = function () {
+        if (nbPage !== FRONT && nbPage !== SETTINGS) {
+          try {
+            currentCat = nbPage;
+            workingItemId = null;
+            if (typeof save === "function") save();
+            if (typeof updateSelect === "function") updateSelect();
+            if (typeof markWorkingSpot === "function") markWorkingSpot({ scroll: false });
+            if (typeof setStatus === "function") setStatus("You’re on the " + nbPage + " page, so new things go here. Flip to the front to add somewhere else.");
+          } catch (e) {}
+          return;
+        }
+        if (typeof clearWorkingSpot === "function") {
+          if (!currentCat && !workingItemId) { if ($("catSelect")) $("catSelect").focus(); return; }
+          clearWorkingSpot();
+        }
+      };
+    }
+  }
+
+  function hookSwipe() {
+    var startX = 0, startY = 0, tracking = false;
+    function ignore(t) {
+      if (!t || !t.closest) return false;
+      return !!(t.closest("input, textarea, select, button, a, .item, [draggable], .group-header, .group-items, #list, #trackers, #compareView, .nb-toc, .nb-tabs, .color-picker, .kind-sheet, .cat-sheet, .ask-sheet, .due-sheet, #howTo, #toolbar"));
+    }
+    document.addEventListener("touchstart", function (e) {
+      if (flipping || ($("nbToc") && !$("nbToc").hidden)) return;
+      if (document.documentElement.classList.contains("nb-compare-open")) return;
+      if (!e.touches || e.touches.length !== 1) return;
+      if (ignore(e.target)) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+    }, { passive: true });
+    document.addEventListener("touchend", function (e) {
+      if (!tracking) return;
+      tracking = false;
+      var t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      var dx = t.clientX - startX;
+      var dy = t.clientY - startY;
+      if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+      var ids = pageIds();
+      var i = pageIndex(nbPage);
+      if (dx < 0 && i < ids.length - 1) nbGo(ids[i + 1]);
+      else if (dx > 0 && i > 0) nbGo(ids[i - 1]);
+    }, { passive: true });
+  }
+
+  function init() {
+    if (isCompareUrl()) return;
+    document.documentElement.classList.add("nb-notebook");
+    ensureChrome();
+    hookFns();
+    hookSwipe();
+    // Always land on the front page, even if a previous session had a current category.
+    nbPage = FRONT;
+    try { currentCat = currentCat || ""; } catch (e) {}
+    try { if (typeof hideNudge === "function") hideNudge(); } catch (e) {}
+    try { if (typeof hideFriend === "function") hideFriend(); } catch (e) {}
+    nbApplyExtras();
+    if (typeof renderWhy === "function") renderWhy();
+    if (typeof renderWelcome === "function") renderWelcome();
+    if (typeof render === "function") render();
+    else nbAfterRender();
+    nbAfterRender();
+    if (typeof updateAddingTo === "function") updateAddingTo();
+    if (typeof __bdUpdatePageWhen === "function") __bdUpdatePageWhen();
+  }
+
+  function setExtras(partial, andRender) {
+    extrasState = Object.assign({}, extras(), partial || {});
+    saveExtras();
+    if (andRender !== false) {
+      nbApplyExtras();
+      if (nbPage === SETTINGS) nbRenderSettings();
+      if (typeof renderWhy === "function") renderWhy();
+      if (typeof renderTrackers === "function") renderTrackers();
+      if (typeof render === "function") render();
+      syncTopbar();
+    }
+    return extras();
+  }
+
+  window.__bdNotebook = {
+    go: nbGo,
+    page: function () { return nbPage; },
+    openToc: nbOpenToc,
+    closeToc: nbCloseToc,
+    extras: extras,
+    setExtras: setExtras,
+    pages: pageIds,
+    init: init
+  };
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
 })();
 
 </script>
