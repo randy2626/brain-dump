@@ -508,6 +508,137 @@ html[data-theme="warm"] .group-header {
 html[data-theme="warm"] .group-header.current { color: #b5522a; }
 html[data-theme="warm"] .group-header.current .cat-name { border-bottom: 2px solid #e0b089; }
 html[data-theme="warm"] .group-header.sub, html[data-theme="warm"] .group-items.sub { border-left: 2px solid #d8c4a6; padding-left: 8px; }
+
+/* Notebook Warm: sub-categories as paper bullets and dashes, not boxed cards. */
+html.nb-notebook[data-theme="warm"] .group-header.sub,
+html.nb-notebook[data-theme="warm"] .group-items.sub {
+  border-left: none;
+  padding-left: 0;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent;
+}
+html.nb-notebook[data-theme="warm"] .group-header.sub {
+  font-family: "Patrick Hand", Caveat, cursive;
+  font-size: 1.15rem;
+  font-weight: 400;
+  gap: 6px;
+  min-height: 28px;
+  margin: 4px 0 0;
+  color: #2b2118;
+}
+html.nb-notebook[data-theme="warm"] .group-header.sub .arrow {
+  font-size: 0.7rem;
+  opacity: 0.55;
+  width: 16px;
+}
+html.nb-notebook[data-theme="warm"] .group-header.sub .nb-bullet {
+  font-family: "Patrick Hand", Caveat, cursive;
+  font-size: 1.35rem;
+  line-height: 1;
+  margin: 0 2px 0 0;
+  cursor: pointer;
+  background: none !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  display: inline;
+}
+html.nb-notebook[data-theme="warm"] .group-header.sub .cat-name {
+  font-family: inherit;
+  font-weight: 400;
+  font-size: 1.15rem;
+}
+html.nb-notebook[data-theme="warm"] .group-header.sub.current .cat-name,
+html.nb-notebook[data-theme="warm"] .group-header.sub.working .cat-name {
+  border-bottom: 1px solid rgba(181, 82, 42, 0.45);
+}
+html.nb-notebook[data-theme="warm"] .group-header.sub .cat-count {
+  font-family: "Patrick Hand", Caveat, cursive;
+  font-weight: 400;
+  opacity: 0.7;
+}
+html.nb-notebook[data-theme="warm"] .group-items.sub {
+  margin: 0 0 6px 22px;
+}
+html.nb-notebook[data-theme="warm"] .group-items.sub .item {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 8px 0 0;
+  margin: 0;
+  min-height: 28px;
+  line-height: 28px;
+  align-items: center;
+  color: #1f160f;
+}
+html.nb-notebook[data-theme="warm"] .group-items.sub .item .item-text {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  flex: 1;
+}
+html.nb-notebook[data-theme="warm"] .group-items.sub .item .main::before {
+  content: "–";
+  font-family: "Patrick Hand", Caveat, cursive;
+  font-size: 1.15rem;
+  margin-right: 0.4em;
+  color: #7a5a3a;
+  flex: 0 0 auto;
+}
+html.nb-notebook[data-theme="warm"] .group-items.sub .item .main {
+  font-family: "Patrick Hand", Caveat, cursive;
+  font-size: 1.12rem;
+  line-height: 28px;
+}
+html.nb-notebook[data-theme="warm"] .group-items.sub .item.ghosted .main {
+  text-decoration: line-through;
+  text-decoration-color: #7a4a28;
+  text-decoration-thickness: 1.5px;
+  opacity: 0.75;
+}
+html.nb-notebook[data-theme="warm"] .group-items.sub .item .done,
+html.nb-notebook[data-theme="warm"] .group-items.sub .item .item-menu,
+html.nb-notebook[data-theme="warm"] .group-items.sub .item .del {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  font-size: 12px;
+  opacity: 0.55;
+  box-shadow: none;
+}
+html.nb-notebook[data-theme="warm"] .group-items.sub .item .done::after,
+html.nb-notebook[data-theme="warm"] .group-items.sub .item .item-menu::after,
+html.nb-notebook[data-theme="warm"] .group-items.sub .item .del::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+html.nb-notebook[data-theme="warm"] .group-header.working,
+html.nb-notebook[data-theme="warm"] .group-items.working {
+  outline: none;
+}
+
+/* Drop marks for within-list / category reorder */
+.item.nb-drop-before,
+.group-header.nb-drop-before { box-shadow: 0 -2px 0 #b5522a; }
+.item.nb-drop-after,
+.group-header.nb-drop-after { box-shadow: 0 2px 0 #b5522a; }
+.item.nb-dragging,
+.group-header.nb-dragging { opacity: 0.45; }
+.nb-drag-ghost {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.88;
+  margin: 0;
+  max-width: 80vw;
+  box-shadow: 0 8px 18px rgba(90, 60, 20, 0.2);
+}
 html[data-theme="warm"] .add-sub {
   background: transparent;
   border: 1px solid #d0b894;
@@ -1840,9 +1971,9 @@ html.nb-notebook:not([data-nb-page="front"]) .nb-topbar #whyLine { display: none
 }
 .nb-tab:focus { outline: 2px solid rgba(181, 82, 42, 0.45); outline-offset: 1px; }
 
-/* ---- Page turn ---- */
+/* ---- Page turn: instant book flip from the right edge around the spine ---- */
 .nb-flip-ghost {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 8;
   background: #f4ead8;
@@ -1850,43 +1981,101 @@ html.nb-notebook:not([data-nb-page="front"]) .nb-topbar #whyLine { display: none
   pointer-events: none;
   overflow: hidden;
   border-radius: 0;
-  box-shadow: 10px 0 24px rgba(90, 60, 20, 0.18);
+  box-shadow: 14px 0 28px rgba(90, 60, 20, 0.22);
+  will-change: transform, opacity;
 }
 .nb-flip-ghost[hidden] { display: none !important; }
 .nb-flip-ghost img,
 .nb-flip-ghost canvas { display: block; width: 100%; }
+.nb-flip-ghost::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 36px;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, rgba(90, 60, 20, 0.18));
+}
+html.nb-flip-back .nb-flip-ghost {
+  transform-origin: right center;
+  box-shadow: -14px 0 28px rgba(90, 60, 20, 0.22);
+}
+html.nb-flip-back .nb-flip-ghost::after {
+  right: auto; left: 0;
+  background: linear-gradient(to left, transparent, rgba(90, 60, 20, 0.18));
+}
+html.nb-flipping .nb-flip-ghost,
 html.nb-turning .nb-flip-ghost {
-  transition: transform 0.48s ease-in-out, opacity 0.48s ease-in-out;
+  transition: transform 300ms cubic-bezier(0.22, 0.7, 0.15, 1), opacity 300ms ease;
 }
-html.nb-turning-out .nb-flip-ghost,
-html.nb-midturn .nb-flip-ghost {
-  transform: perspective(1400px) rotateY(-32deg);
-  opacity: 0.88;
+html.nb-flip-fwd.nb-flipping .nb-flip-ghost,
+html.nb-turning-out .nb-flip-ghost {
+  transform: perspective(1600px) rotateY(-108deg);
+  opacity: 0.35;
 }
-html.nb-turning-in #list,
-html.nb-turning-in #nbSettingsPage,
-html.nb-midturn #list,
-html.nb-midturn #nbSettingsPage {
-  animation: none;
+html.nb-flip-back.nb-flipping .nb-flip-ghost {
+  transform: perspective(1600px) rotateY(108deg);
+  opacity: 0.35;
+}
+html.nb-midturn .nb-flip-ghost,
+html.nb-midturn #nbFlipGhost,
+html.nb-midturn.nb-flipping .nb-flip-ghost,
+html.nb-midturn.nb-flip-fwd .nb-flip-ghost,
+html.nb-midturn.nb-turning .nb-flip-ghost {
+  transition: none !important;
+  transform: perspective(1600px) rotateY(-62deg) !important;
+  opacity: 0.96;
+  box-shadow: 18px 0 32px rgba(90, 60, 20, 0.28);
+}
+html.nb-midturn.nb-flip-back .nb-flip-ghost,
+html.nb-midturn.nb-flip-back.nb-flipping .nb-flip-ghost {
+  transform-origin: right center;
+  transform: perspective(1600px) rotateY(62deg) !important;
+  box-shadow: -18px 0 32px rgba(90, 60, 20, 0.28);
+}
+html.nb-fade .nb-flip-ghost {
+  transition: opacity 160ms linear;
+  transform: none;
+  opacity: 0;
+}
+.nb-riffle {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  overflow: hidden;
+}
+.nb-riffle i {
+  position: absolute;
+  top: 6%;
+  right: 0;
+  width: 16px;
+  height: 88%;
+  background: #fbf6ec;
+  border-left: 1px solid rgba(90, 60, 20, 0.18);
+  box-shadow: -4px 0 10px rgba(90, 60, 20, 0.12);
   transform-origin: left center;
+  animation: nbRiffle 70ms ease-in both;
 }
-html.nb-midturn #list,
-html.nb-midturn #nbSettingsPage {
-  transform: perspective(1400px) rotateY(16deg);
-  opacity: 0.95;
+.nb-riffle.back i {
+  right: auto;
+  left: 0;
+  border-left: none;
+  border-right: 1px solid rgba(90, 60, 20, 0.18);
+  transform-origin: right center;
+  animation-name: nbRiffleBack;
 }
-html.nb-turning-in #list,
-html.nb-turning-in #nbSettingsPage {
-  animation: nbPageIn 0.48s ease-in-out both;
+@keyframes nbRiffle {
+  from { transform: perspective(1600px) rotateY(0deg); opacity: 1; }
+  to { transform: perspective(1600px) rotateY(-92deg); opacity: 0.25; }
 }
-@keyframes nbPageIn {
-  from { transform: perspective(1400px) rotateY(18deg); opacity: 0.35; }
-  to { transform: none; opacity: 1; }
+@keyframes nbRiffleBack {
+  from { transform: perspective(1600px) rotateY(0deg); opacity: 1; }
+  to { transform: perspective(1600px) rotateY(92deg); opacity: 0.25; }
 }
 @media (prefers-reduced-motion: reduce) {
-  html.nb-turning-in #list,
-  html.nb-turning-in #nbSettingsPage,
-  html.nb-turning .nb-flip-ghost { animation: none !important; transition: none !important; transform: none !important; }
+  html.nb-flipping .nb-flip-ghost,
+  html.nb-turning .nb-flip-ghost,
+  .nb-riffle i { animation: none !important; transition: opacity 160ms linear !important; transform: none !important; }
 }
 
 /* ---- Contents panel ---- */
@@ -2179,7 +2368,8 @@ html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) .s
 html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #friendCard,
 html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #nudgeCard,
 html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #welcome,
-html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #whyLine {
+html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) #whyLine,
+html[data-nb-page]:not([data-nb-page="front"]):not([data-nb-page="settings"]) .controls {
   display: none !important;
 }
 
@@ -2265,28 +2455,15 @@ html[data-theme="warm"] .nb-toc-list .is-on {
 }
 html[data-theme="warm"] .nb-toc-list .is-on .nb-toc-name { color: #b5522a; }
 
-/* Mid-turn uses a screenshot of the outgoing page, not a DOM clone. */
+/* Flip ghost is also #nbFlipGhost; rules live with the book-flip block above. */
 #nbFlipGhost {
-  position: fixed;
-  inset: 0;
-  z-index: 8;
-  background: transparent;
-  overflow: visible;
   pointer-events: none;
-  transform-origin: left center;
-  box-shadow: none;
-  border-radius: 0;
 }
 #nbFlipGhost img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: fill;
-}
-html.nb-midturn #nbFlipGhost {
-  transform: perspective(1200px) rotateY(-42deg);
-  box-shadow: 18px 0 32px rgba(90, 60, 20, 0.28);
-  opacity: 0.96;
 }
 
 /* Keep dump box, mic, Add, and item actions clear of the right-edge tabs. */
@@ -2528,12 +2705,31 @@ function normalizeCategories() {
   });
 }
 normalizeCategories();
-// Tree order: top level A–Z (incl. item categories with no category record), each followed by its children.
+// Tree order: top level A–Z until the user rearranges on the Front page, then saved `order`.
+function hasCustomCatOrder() {
+  return categories.some(c => c && !c.parent && typeof c.order === 'number');
+}
+function catOrderOf(name) {
+  const c = typeof findCat === 'function' ? findCat(name) : categories.find(x => x.name === name);
+  return (c && typeof c.order === 'number') ? c.order : 1e9;
+}
+function nextTopCatOrder() {
+  let m = -1;
+  categories.forEach(c => { if (c && !c.parent && typeof c.order === 'number' && c.order > m) m = c.order; });
+  return m + 1;
+}
+function applyTopCatOrder(names) {
+  names.forEach((n, i) => { const c = findCat(n); if (c && !c.parent) c.order = i; });
+}
+function topCatNames() {
+  return orderedCats().filter(o => o.depth === 1 && findCat(o.name) && !parentOf(o.name)).map(o => o.name);
+}
 function orderedCats(extraNames) {
   const known = new Set(categories.map(c => c.name));
   const tops = categories.filter(c => !c.parent).map(c => c.name);
   (extraNames || []).forEach(n => { if (n && n !== 'Uncategorized' && !known.has(n) && !tops.includes(n)) tops.push(n); });
-  tops.sort((a, b) => a.localeCompare(b));
+  if (hasCustomCatOrder()) tops.sort((a, b) => { const d = catOrderOf(a) - catOrderOf(b); return d !== 0 ? d : a.localeCompare(b); });
+  else tops.sort((a, b) => a.localeCompare(b));
   const out = [];
   const walk = (name, depth) => {
     if (out.some(o => o.name === name)) return;
@@ -2571,6 +2767,7 @@ function placeCategory(name, parentName, afterItem) {
   // New subcategories start with their parent's color so a branch reads as one group.
   c = { name, color: pName ? (findCat(pName).color || PALETTE[0]) : PALETTE[categories.length % PALETTE.length] };
   if (pName) c.parent = pName;
+  else if (hasCustomCatOrder()) c.order = nextTopCatOrder();
   if (afterItem != null) c.afterItem = afterItem;
   categories.push(c);
   return { cat: c, created: true };
@@ -4149,6 +4346,76 @@ function cleanupAfterItem() {
 let workingItemId = null;
 let revealing = false;
 let itemWasDragged = false;
+let catWasDragged = false;
+let catDragName = null;
+
+function clearDropMarks() {
+  document.querySelectorAll('.nb-drop-before, .nb-drop-after, .nb-dragging').forEach(el => {
+    el.classList.remove('nb-drop-before', 'nb-drop-after', 'nb-dragging');
+  });
+}
+function dropAfter(el, ev) {
+  if (!el || !ev || typeof ev.clientY !== 'number' || !ev.clientY) return false;
+  const r = el.getBoundingClientRect();
+  return ev.clientY > r.top + r.height / 2;
+}
+function isReorderableHeader(el) {
+  if (!el || !el.classList || !el.classList.contains('group-header')) return false;
+  const page = document.documentElement.getAttribute('data-nb-page');
+  if (page && page !== 'front') return false;
+  const name = el.dataset.cat;
+  if (el.dataset.depth && el.dataset.depth !== '1') return false;
+  if (!name || ['Finished', 'Recently Deleted', 'Let go', 'Uncategorized'].includes(name)) return false;
+  return !!findCat(name) && !parentOf(name);
+}
+function parseDragPayload(raw) {
+  raw = raw == null ? '' : String(raw);
+  if (raw.slice(0, 4) === 'cat:') return { kind: 'cat', name: raw.slice(4) };
+  if (raw) return { kind: 'item', id: raw };
+  return null;
+}
+function reorderTopCats(moved, overName, after) {
+  if (!moved || !findCat(moved) || parentOf(moved)) return false;
+  const tops = topCatNames().filter(n => n !== moved);
+  let i = overName ? tops.indexOf(overName) : tops.length;
+  if (i < 0) i = tops.length;
+  if (after) i += 1;
+  tops.splice(i, 0, moved);
+  applyTopCatOrder(tops);
+  save();
+  render();
+  return true;
+}
+function placeItemAt(id, overId, after, zoneCat) {
+  const it = items.find(i => String(i.id) === String(id));
+  if (!it || it.deleted || it.letGo) return false;
+  let target = overId != null ? items.find(i => String(i.id) === String(overId)) : null;
+  if (target && String(target.id) === String(it.id)) target = null;
+  if (zoneCat === 'Recently Deleted' || zoneCat === 'Let go') return false;
+  if (zoneCat !== 'Finished') {
+    let dest = zoneCat;
+    if (dest === 'Uncategorized') dest = '';
+    else if ((dest == null || dest === '') && target) dest = target.category || '';
+    else if (dest == null) dest = it.category || '';
+    it.category = dest || '';
+    it.color = getColor(it.category);
+    it.ghosted = false;
+    it.finishedAt = null;
+  } else {
+    it.category = '';
+    it.color = getColor('');
+  }
+  if (target && !!it.ghosted === !!target.ghosted) {
+    const from = items.indexOf(it);
+    if (from >= 0) items.splice(from, 1);
+    let to = items.indexOf(target);
+    if (to < 0) items.unshift(it);
+    else items.splice(after ? to + 1 : to, 0, it);
+  }
+  save();
+  render();
+  return true;
+}
 
 function updateAddingTo() {
   const el = $('addingTo');
@@ -4463,11 +4730,16 @@ function render() {
     const hiddenSubCount = isCollapsed && desc.length ? visible.filter(i => desc.includes(i.category)).length : 0;
     const subHint = isCollapsed && desc.length ? `<span class="sub-hint">+${desc.length} sub${desc.length === 1 ? '' : 's'}${hiddenSubCount ? ', ' + hiddenSubCount + ' more' : ''}</span>` : '';
     const addSub = isCat && depth < MAX_DEPTH ? `<button class="add-sub" data-cat="${attrName(name)}" title="Add a subcategory inside ${attrName(name)}">+ sub</button>` : '';
-    let block = `<div class="group-header ${subCls} ${name === currentCat ? 'current' : ''}" data-cat="${attrName(name)}" data-depth="${depth}" style="${indent}">
+    const onFront = !document.documentElement.getAttribute('data-nb-page') || document.documentElement.getAttribute('data-nb-page') === 'front';
+    const dragCat = onFront && depth === 1 && isCat ? ' draggable="true" data-drag="cat"' : '';
+    const bullet = depth > 1 ? `<span class="cat-dot nb-bullet" data-cat="${attrName(name)}" style="color:${col}" title="Change color">•</span>` : '';
+    const colorDot = depth > 1 ? '' : `<span class="cat-dot" data-cat="${attrName(name)}" style="width:16px;height:16px;border-radius:50%;background:${col};display:inline-block;margin-left:8px;cursor:pointer;"></span>`;
+    let block = `<div class="group-header ${subCls} ${name === currentCat ? 'current' : ''}" data-cat="${attrName(name)}" data-depth="${depth}"${dragCat} style="${indent}">
       <span class="arrow" data-cat="${attrName(name)}" title="Double-click to collapse">${isCollapsed ? '▶' : '▼'}</span>
+      ${bullet}
       <span class="cat-name" data-cat="${attrName(name)}" title="Click to rename">${name}</span>
       ${catCountHTML(arr)}${subHint}
-      <span class="cat-dot" data-cat="${attrName(name)}" style="width:16px;height:16px;border-radius:50%;background:${col};display:inline-block;margin-left:8px;cursor:pointer;"></span>
+      ${colorDot}
       ${addSub}
       ${name === 'Uncategorized' ? '' : `<button class="del-cat" data-cat="${attrName(name)}" title="Delete category" style="background:#ef4444;border:none;color:white;border-radius:50%;width:20px;height:20px;font-size:11px;margin-left:6px;cursor:pointer;padding:0;">✕</button><button type="button" class="cat-menu" data-cat="${attrName(name)}" aria-label="Category options">⋯</button>`}
     </div>
@@ -4527,17 +4799,50 @@ function render() {
   document.querySelectorAll('.item[draggable]').forEach(el => {
     el.ondragstart = e => {
       itemWasDragged = true;
+      catDragName = null;
       nestDragId = el.dataset.id;
       cancelNest();
+      clearDropMarks();
+      el.classList.add('nb-dragging');
       e.dataTransfer.setData('text/plain', el.dataset.id);
       e.dataTransfer.effectAllowed = 'move';
     };
-    el.ondragend = () => { cancelNest(); nestDragId = null; setTimeout(() => { itemWasDragged = false; }, 0); };
+    el.ondragend = () => { cancelNest(); nestDragId = null; clearDropMarks(); setTimeout(() => { itemWasDragged = false; }, 0); };
+  });
+  document.querySelectorAll('.group-header[data-drag="cat"]').forEach(el => {
+    el.ondragstart = e => {
+      e.stopPropagation();
+      catWasDragged = true;
+      catDragName = el.dataset.cat;
+      nestDragId = null;
+      cancelNest();
+      clearDropMarks();
+      el.classList.add('nb-dragging');
+      e.dataTransfer.setData('text/plain', 'cat:' + el.dataset.cat);
+      e.dataTransfer.effectAllowed = 'move';
+    };
+    el.ondragend = () => { catDragName = null; clearDropMarks(); setTimeout(() => { catWasDragged = false; }, 0); };
   });
   document.querySelectorAll('.group-header, .group-items').forEach(zone => {
     zone.ondragover = e => {
-      e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move';
+      e.preventDefault(); e.stopPropagation();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      const payload = parseDragPayload((catDragName ? 'cat:' + catDragName : '') || nestDragId);
+      const overItem = e.target && e.target.closest ? e.target.closest('.item[data-id]') : null;
+      const overHead = e.target && e.target.closest ? e.target.closest('.group-header') : null;
+      if (payload && payload.kind === 'cat') {
+        clearDropMarks();
+        if (isReorderableHeader(overHead) && overHead.dataset.cat !== payload.name) {
+          overHead.classList.add(dropAfter(overHead, e) ? 'nb-drop-after' : 'nb-drop-before');
+        }
+        zone.style.background = '';
+        return;
+      }
       trackNestHover(e);
+      document.querySelectorAll('.nb-drop-before, .nb-drop-after').forEach(n => n.classList.remove('nb-drop-before', 'nb-drop-after'));
+      if (overItem && !nestReady && String(overItem.dataset.id) !== String(nestDragId)) {
+        overItem.classList.add(dropAfter(overItem, e) ? 'nb-drop-after' : 'nb-drop-before');
+      }
       // While the "make sub" highlight shows, keep the group tint off so the two looks never mix.
       zone.style.background = (nestReady && zone.contains(document.querySelector('.item.nest-target'))) ? '' : 'rgba(96,165,250,0.1)';
     };
@@ -4546,23 +4851,41 @@ function render() {
       if (!e.relatedTarget || !zone.contains(e.relatedTarget)) {
         const t = document.querySelector('.item.nest-pending, .item.nest-target');
         if (t && zone.contains(t) && !(e.relatedTarget && t.contains(e.relatedTarget))) cancelNest();
+        document.querySelectorAll('.nb-drop-before, .nb-drop-after').forEach(n => n.classList.remove('nb-drop-before', 'nb-drop-after'));
       }
     };
     zone.ondrop = e => {
       e.preventDefault();
       e.stopPropagation();
       zone.style.background = '';
-      const id = e.dataTransfer.getData('text/plain') || nestDragId;
+      const raw = (e.dataTransfer && e.dataTransfer.getData('text/plain')) || (catDragName ? 'cat:' + catDragName : '') || nestDragId;
+      const payload = parseDragPayload(raw);
       const overItem = e.target && e.target.closest ? e.target.closest('.item[data-id]') : null;
+      const overHead = e.target && e.target.closest ? e.target.closest('.group-header') : null;
+      if (payload && payload.kind === 'cat') {
+        cancelNest();
+        catDragName = null;
+        const target = isReorderableHeader(overHead) ? overHead : (isReorderableHeader(zone) ? zone : null);
+        if (target && target.dataset.cat !== payload.name) reorderTopCats(payload.name, target.dataset.cat, dropAfter(target, e));
+        else clearDropMarks();
+        return;
+      }
+      const id = payload && payload.id;
       if (nestReady && nestTargetId != null && overItem && String(overItem.dataset.id) === String(nestTargetId)) {
         const tid = nestTargetId;
         cancelNest();
         nestDragId = null;
+        clearDropMarks();
         if (makeSubFromItem(tid, id)) return;
       }
       cancelNest();
+      clearDropMarks();
       let cat = zone.dataset.for || zone.dataset.cat;
       if (!cat || cat === 'Recently Deleted' || cat === 'Let go') return;
+      if (overItem) {
+        placeItemAt(id, overItem.dataset.id, dropAfter(overItem, e), cat);
+        return;
+      }
       const it = items.find(i => i.id == id);
       if (it) {
         it.category = (cat === 'Uncategorized' || cat === 'Finished') ? '' : cat;
@@ -4912,7 +5235,8 @@ listEl.addEventListener('click', e => {
   }
 
   // Single click header = working category (ignore arrow, buttons, name, dot). No full re-render so double-click still works.
-  if (header && !t.closest('button') && !t.classList.contains('cat-dot') && !t.classList.contains('arrow') && !t.classList.contains('cat-name')) {
+  if (header && !t.closest('button') && !t.classList.contains('cat-dot') && !t.classList.contains('arrow') && !t.classList.contains('cat-name') && !t.classList.contains('nb-bullet')) {
+    if (catWasDragged) { catWasDragged = false; return; }
     const cat = header.dataset.cat;
     if (cat && cat !== 'Recently Deleted' && cat !== 'Finished' && cat !== 'Let go') {
       setWorkingFromCat(cat);
@@ -6107,6 +6431,161 @@ setInterval(() => {
   if (items.length !== before) { save(); render(); }
 }, 60000);
 
+// Touch: long-press then drag to reorder items or Front-page categories.
+// Aborts if the finger moves first (scroll wins). Native HTML5 dragstart cancels this path.
+(function hookPointerReorder() {
+  const HOLD = 420, MOVE = 12;
+  let timer = null, startX = 0, startY = 0, mode = null, srcEl = null, ghost = null, pointerId = null, lastEv = null;
+  function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+  function hit(x, y) { return document.elementFromPoint(x, y); }
+  function liftGhost(el, ev) {
+    if (ghost) ghost.remove();
+    ghost = el.cloneNode(true);
+    ghost.className = (el.className || '') + ' nb-drag-ghost';
+    ghost.removeAttribute('id');
+    ghost.style.position = 'fixed';
+    ghost.style.left = ev.clientX + 'px';
+    ghost.style.top = ev.clientY + 'px';
+    ghost.style.width = Math.min(el.getBoundingClientRect().width, window.innerWidth * 0.8) + 'px';
+    ghost.style.margin = '0';
+    ghost.style.pointerEvents = 'none';
+    ghost.style.zIndex = '80';
+    ghost.style.opacity = '0.9';
+    document.body.appendChild(ghost);
+  }
+  function moveGhost(ev) {
+    if (!ghost) return;
+    ghost.style.left = (ev.clientX + 8) + 'px';
+    ghost.style.top = (ev.clientY - 10) + 'px';
+  }
+  function end() {
+    clearTimer();
+    if (ghost) { ghost.remove(); ghost = null; }
+    if (srcEl) srcEl.classList.remove('nb-dragging');
+    document.querySelectorAll('.group-header, .group-items').forEach(z => { z.style.background = ''; });
+    mode = null; srcEl = null; pointerId = null; lastEv = null;
+    cancelNest();
+    nestDragId = null;
+    catDragName = null;
+    clearDropMarks();
+    setTimeout(() => { itemWasDragged = false; catWasDragged = false; }, 0);
+  }
+  function startFrom(el, ev, kind) {
+    mode = kind;
+    srcEl = el;
+    el.classList.add('nb-dragging');
+    liftGhost(el, ev);
+    if (kind === 'item') {
+      itemWasDragged = true;
+      nestDragId = el.dataset.id;
+      catDragName = null;
+    } else {
+      catWasDragged = true;
+      catDragName = el.dataset.cat;
+      nestDragId = null;
+    }
+  }
+  function applyOver(ev) {
+    lastEv = ev;
+    moveGhost(ev);
+    const t = hit(ev.clientX, ev.clientY);
+    const overItem = t && t.closest ? t.closest('.item[data-id]') : null;
+    const overHead = t && t.closest ? t.closest('.group-header') : null;
+    const zone = t && t.closest ? t.closest('.group-header, .group-items') : null;
+    document.querySelectorAll('.nb-drop-before, .nb-drop-after').forEach(n => n.classList.remove('nb-drop-before', 'nb-drop-after'));
+    document.querySelectorAll('.group-header, .group-items').forEach(z => { z.style.background = ''; });
+    if (mode === 'cat') {
+      if (isReorderableHeader(overHead) && overHead.dataset.cat !== catDragName) {
+        overHead.classList.add(dropAfter(overHead, ev) ? 'nb-drop-after' : 'nb-drop-before');
+      }
+      return;
+    }
+    if (overItem) {
+      const fake = { target: overItem, clientY: ev.clientY };
+      trackNestHover(fake);
+    } else {
+      cancelNest();
+    }
+    if (overItem && !nestReady && String(overItem.dataset.id) !== String(nestDragId)) {
+      overItem.classList.add(dropAfter(overItem, ev) ? 'nb-drop-after' : 'nb-drop-before');
+    } else if (zone && !(nestReady && zone.contains(document.querySelector('.item.nest-target')))) {
+      zone.style.background = 'rgba(96,165,250,0.1)';
+    }
+  }
+  function dropAt(ev) {
+    const t = hit(ev.clientX, ev.clientY) || (ev.target && ev.target.closest ? ev.target : null);
+    const overItem = t && t.closest ? t.closest('.item[data-id]') : null;
+    const overHead = t && t.closest ? t.closest('.group-header') : null;
+    const zone = t && t.closest ? t.closest('.group-header, .group-items') : null;
+    if (mode === 'cat') {
+      const target = isReorderableHeader(overHead) ? overHead : (isReorderableHeader(zone) ? zone : null);
+      const name = catDragName;
+      if (target && target.dataset.cat !== name) reorderTopCats(name, target.dataset.cat, dropAfter(target, ev));
+      return;
+    }
+    const id = nestDragId;
+    if (nestReady && nestTargetId != null && overItem && String(overItem.dataset.id) === String(nestTargetId)) {
+      const tid = nestTargetId;
+      if (makeSubFromItem(tid, id)) return;
+    }
+    const cat = zone ? (zone.dataset.for || zone.dataset.cat) : null;
+    if (overItem) {
+      placeItemAt(id, overItem.dataset.id, dropAfter(overItem, ev), cat || overItem.closest('.group-items') && overItem.closest('.group-items').dataset.for);
+      return;
+    }
+    if (cat && cat !== 'Recently Deleted' && cat !== 'Let go') {
+      const it = items.find(i => String(i.id) === String(id));
+      if (it) {
+        it.category = (cat === 'Uncategorized' || cat === 'Finished') ? '' : cat;
+        it.color = getColor(it.category);
+        if (cat !== 'Finished') { it.ghosted = false; it.finishedAt = null; }
+        save(); render();
+      }
+    }
+  }
+  document.addEventListener('pointerdown', ev => {
+    if (ev.pointerType !== 'touch' || ev.button) return;
+    if (ev.target && ev.target.closest && ev.target.closest('input, textarea, select, button, a, .color-picker, .cat-sheet, .kind-sheet')) return;
+    const item = ev.target.closest && ev.target.closest('.item[draggable]');
+    const header = ev.target.closest && ev.target.closest('.group-header');
+    const kind = item ? 'item' : (isReorderableHeader(header) ? 'cat' : null);
+    const el = kind === 'item' ? item : header;
+    if (!kind || !el) return;
+    startX = ev.clientX; startY = ev.clientY; pointerId = ev.pointerId;
+    clearTimer();
+    timer = setTimeout(() => {
+      timer = null;
+      startFrom(el, ev, kind);
+      try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+    }, HOLD);
+  }, true);
+  document.addEventListener('dragstart', () => { clearTimer(); }, true);
+  document.addEventListener('pointermove', ev => {
+    if (pointerId != null && ev.pointerId !== pointerId) return;
+    if (timer) {
+      if (Math.abs(ev.clientX - startX) > MOVE || Math.abs(ev.clientY - startY) > MOVE) clearTimer();
+      return;
+    }
+    if (!mode) return;
+    ev.preventDefault();
+    applyOver(ev);
+  }, { capture: true, passive: false });
+  function finishPointer(ev) {
+    if (pointerId != null && ev.pointerId !== pointerId) return;
+    if (timer) { clearTimer(); pointerId = null; return; }
+    if (!mode) return;
+    ev.preventDefault();
+    try { dropAt(ev); } finally { end(); }
+  }
+  document.addEventListener('pointerup', finishPointer, true);
+  document.addEventListener('pointercancel', ev => {
+    if (pointerId != null && ev.pointerId !== pointerId) return;
+    clearTimer();
+    if (mode) end();
+    else pointerId = null;
+  }, true);
+})();
+
 if ((location.protocol === 'http:' || location.protocol === 'https:') && 'serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
@@ -6385,6 +6864,9 @@ render();
   var nbPage = FRONT;
   var extrasState = null;
   var flipping = false;
+  var flipTimer = null;
+  var paperCache = null;
+  var paperCacheTimer = null;
   var reduced = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   function $(id) { return document.getElementById(id); }
@@ -6626,6 +7108,7 @@ render();
     syncTopbar();
     if (typeof markWorkingSpot === "function") markWorkingSpot({ scroll: false });
     if (typeof updateAddingTo === "function") updateAddingTo();
+    if (!flipping) schedulePaperCache();
   }
 
   function filterListToPage() {
@@ -6684,36 +7167,124 @@ render();
     root.classList.toggle("nb-simple", isSimple() && nbPage === FRONT);
   }
 
-  function snapshotPaper() {
+  function paperRect() {
+    var b = document.body.getBoundingClientRect();
+    return { left: b.left, top: b.top, width: b.width, height: Math.max(b.height, window.innerHeight - 20) };
+  }
+  function placeGhost(ghost, r) {
+    ghost.style.position = "fixed";
+    ghost.style.left = r.left + "px";
+    ghost.style.top = r.top + "px";
+    ghost.style.width = r.width + "px";
+    ghost.style.height = r.height + "px";
+    ghost.style.margin = "0";
+    ghost.style.zIndex = "8";
+    ghost.style.pointerEvents = "none";
+  }
+  function fillGhostNow() {
     var ghost = $("nbFlipGhost");
-    if (!ghost) return;
+    if (!ghost) return null;
+    var r = paperRect();
+    placeGhost(ghost, r);
+    var bodyStyle = getComputedStyle(document.body);
+    ghost.style.background = bodyStyle.backgroundColor || "#f4ead8";
+    ghost.style.backgroundImage = bodyStyle.backgroundImage;
+    ghost.style.backgroundSize = bodyStyle.backgroundSize;
+    ghost.style.backgroundPosition = bodyStyle.backgroundPosition;
+    ghost.innerHTML = "";
+    if (paperCache) {
+      ghost.appendChild(paperCache);
+      paperCache = null;
+    }
+    ghost.hidden = false;
+    return ghost;
+  }
+  function cachePaper() {
+    paperCache = null;
     try {
-      var w = document.body.offsetWidth;
-      var h = document.body.offsetHeight;
-      ghost.style.width = w + "px";
-      ghost.style.height = Math.max(h, window.innerHeight - 20) + "px";
-      ghost.innerHTML = "";
       var clone = document.body.cloneNode(true);
-      clone.querySelectorAll("#nbTabs, #nbToc, #nbTocBackdrop, #nbFlipGhost, .color-picker, .sheet-backdrop, .kind-sheet, .cat-sheet, .ask-sheet, .due-sheet").forEach(function (n) { n.remove(); });
+      clone.querySelectorAll("#nbTabs, #nbToc, #nbTocBackdrop, #nbFlipGhost, .nb-riffle, .nb-drag-ghost, .color-picker, .sheet-backdrop, .kind-sheet, .cat-sheet, .ask-sheet, .due-sheet, [hidden], #addingTo").forEach(function (n) { n.remove(); });
       clone.querySelectorAll("[id]").forEach(function (n) { n.removeAttribute("id"); });
       var wrap = document.createElement("div");
       wrap.style.cssText = "position:absolute;inset:0;overflow:hidden;";
       wrap.appendChild(clone);
-      // The clone is a body; strip positioning that would break the snapshot.
       clone.style.cssText = "margin:0;min-height:0;box-shadow:none;padding:" + getComputedStyle(document.body).padding + ";background:" + getComputedStyle(document.body).backgroundColor + ";";
-      ghost.appendChild(wrap);
-      ghost.hidden = false;
-    } catch (e) {
-      ghost.hidden = true;
-    }
+      paperCache = wrap;
+    } catch (e) { paperCache = null; }
   }
-
+  function schedulePaperCache() {
+    if (paperCacheTimer) clearTimeout(paperCacheTimer);
+    paperCacheTimer = setTimeout(function () {
+      paperCacheTimer = null;
+      if (flipping) return;
+      cachePaper();
+    }, 80);
+  }
   function clearGhost() {
+    if (flipTimer) { clearTimeout(flipTimer); flipTimer = null; }
     var ghost = $("nbFlipGhost");
-    if (!ghost) return;
-    ghost.hidden = true;
-    ghost.innerHTML = "";
-    document.documentElement.classList.remove("nb-turning", "nb-turning-out", "nb-turning-in", "nb-midturn");
+    if (ghost) {
+      ghost.hidden = true;
+      ghost.innerHTML = "";
+      ghost.style.transition = "none";
+      ghost.style.transform = "";
+      ghost.style.opacity = "";
+    }
+    document.querySelectorAll(".nb-riffle").forEach(function (n) { n.remove(); });
+    document.documentElement.classList.remove("nb-turning", "nb-turning-out", "nb-turning-in", "nb-midturn", "nb-flipping", "nb-flip-fwd", "nb-flip-back", "nb-fade");
+    flipping = false;
+  }
+  function startBookFlip(dir, opts) {
+    opts = opts || {};
+    var root = document.documentElement;
+    if (!paperCache) cachePaper();
+    var ghost = fillGhostNow();
+    if (!ghost) return 0;
+    flipping = true;
+    root.classList.add("nb-flipping");
+    root.classList.add(dir === "back" ? "nb-flip-back" : "nb-flip-fwd");
+    ghost.style.transition = "none";
+    ghost.style.transformOrigin = dir === "back" ? "right center" : "left center";
+    ghost.style.transform = "perspective(1600px) rotateY(0deg)";
+    ghost.style.opacity = "1";
+    void ghost.offsetWidth;
+    if (opts.freezeMid) {
+      root.classList.add("nb-midturn", "nb-turning");
+      return 0;
+    }
+    if (opts.reduced) {
+      root.classList.add("nb-fade");
+      ghost.style.transition = "opacity 160ms linear";
+      ghost.style.opacity = "0";
+      return 160;
+    }
+    var land = 300;
+    var riffleMs = 0;
+    if (opts.riffle) {
+      var flicks = Math.min(4, Math.max(2, opts.flicks || 3));
+      riffleMs = flicks * 70;
+      var box = document.createElement("div");
+      box.className = "nb-riffle" + (dir === "back" ? " back" : "");
+      box.setAttribute("aria-hidden", "true");
+      for (var i = 0; i < flicks; i++) {
+        var sliver = document.createElement("i");
+        sliver.style.animationDelay = (i * 70) + "ms";
+        box.appendChild(sliver);
+      }
+      document.body.appendChild(box);
+      land = Math.min(500 - riffleMs, 300);
+    }
+    var total = riffleMs + land;
+    function landPage() {
+      ghost.style.transition = "transform " + land + "ms cubic-bezier(0.22, 0.7, 0.15, 1), opacity " + land + "ms ease";
+      ghost.style.transform = dir === "back"
+        ? "perspective(1600px) rotateY(108deg)"
+        : "perspective(1600px) rotateY(-108deg)";
+      ghost.style.opacity = "0.35";
+    }
+    if (riffleMs) setTimeout(landPage, riffleMs);
+    else landPage();
+    return total;
   }
 
   function nbGo(id, opts) {
@@ -6729,16 +7300,23 @@ render();
     if (flipping && !opts.freezeMid) {
       // A new tap (tab, Pages, Back, gear) should cancel the in-progress turn, not get swallowed.
       clearGhost();
-      flipping = false;
     }
     var from = nbPage;
-    var animate = opts.animate !== false && !reduced && from !== id && !opts.instant;
+    var dir = opts.dir || (pageIndex(id) < pageIndex(from) ? "back" : "fwd");
+    var dist = Math.abs(pageIndex(id) - pageIndex(from));
+    var riffle = !reduced && dist >= 2;
+    var animate = opts.animate !== false && from !== id && !opts.instant;
     nbCloseToc();
     try { document.querySelectorAll(".color-picker").forEach(function (p) { /* leave if just opened */ }); } catch (e) {}
 
-    if (animate || opts.freezeMid) snapshotPaper();
+    var ms = 0;
+    if (animate || opts.freezeMid) {
+      // Start the motion in this same turn, before the (slower) render of the new page.
+      ms = startBookFlip(dir, { riffle: riffle, flicks: dist, freezeMid: !!opts.freezeMid, reduced: reduced });
+    }
 
     nbPage = id;
+    document.documentElement.setAttribute("data-nb-page", nbPage);
     if (id !== FRONT && id !== SETTINGS) {
       try { currentCat = id; workingItemId = null; } catch (e) {}
       try { if (typeof save === "function") save(); } catch (e) {}
@@ -6750,26 +7328,15 @@ render();
     nbAfterRender();
     try { window.scrollTo(0, 0); } catch (e) {}
 
-    if (opts.freezeMid) {
-      document.documentElement.classList.add("nb-midturn");
-      var g = $("nbFlipGhost");
-      if (g) g.hidden = false;
-      return;
-    }
+    if (opts.freezeMid) return;
     if (animate) {
-      flipping = true;
-      document.documentElement.classList.add("nb-turning", "nb-turning-out", "nb-turning-in");
-      var g = $("nbFlipGhost");
-      if (g) {
-        // Force layout, then let CSS transition the ghost away.
-        void g.offsetWidth;
-      }
-      setTimeout(function () {
+      flipTimer = setTimeout(function () {
         clearGhost();
-        flipping = false;
-      }, 500);
+        schedulePaperCache();
+      }, Math.max(160, ms + 20));
     } else {
       clearGhost();
+      schedulePaperCache();
     }
   }
 
@@ -7081,8 +7648,8 @@ render();
       if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
       var ids = pageIds();
       var i = pageIndex(nbPage);
-      if (dx < 0 && i < ids.length - 1) nbGo(ids[i + 1]);
-      else if (dx > 0 && i > 0) nbGo(ids[i - 1]);
+      if (dx < 0 && i < ids.length - 1) nbGo(ids[i + 1], { dir: "fwd" });
+      else if (dx > 0 && i > 0) nbGo(ids[i - 1], { dir: "back" });
     }, { passive: true });
   }
 
@@ -7094,6 +7661,7 @@ render();
     hookSwipe();
     // Always land on the front page, even if a previous session had a current category.
     nbPage = FRONT;
+    document.documentElement.setAttribute("data-nb-page", nbPage);
     try { currentCat = currentCat || ""; } catch (e) {}
     try { if (typeof hideNudge === "function") hideNudge(); } catch (e) {}
     try { if (typeof hideFriend === "function") hideFriend(); } catch (e) {}
