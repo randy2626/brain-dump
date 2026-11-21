@@ -1,4 +1,4 @@
-const CACHE_NAME = 'brain-dump-test-v29';
+const CACHE_NAME = 'brain-dump-test-v30';
 const SHELL = [
   './',
   './index.html',

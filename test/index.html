@@ -3033,7 +3033,7 @@ html[data-theme="warm"] .howto-welcome button.footer-link {
       <li>Tap ✓ when you’re done. An item’s ⋯ lets you edit, set a date, move it, or delete it (you can undo a delete).</li>
       <li>Drag an item onto another page to move it. On a phone, ⋯ → Move to… does the same.</li>
       <li>When you talk, a pause, “next,” or a comma starts a new thought. “Move buy milk to Home” files something you’ve already added.</li>
-      <li>Add this to your Home Screen so your notes stay put on this device.</li>
+      <li>Add Brain Dump to your Home Screen so it opens like an app.</li>
     </ul>
     <p class="howto-feedback">Something off, or an idea? <button type="button" id="howToFeedback" class="footer-link">Send feedback</button></p>
     <p class="howto-welcome">Want a recap? <button type="button" id="howToWelcome" class="footer-link">See the welcome again</button></p>
@@ -3123,7 +3123,7 @@ const PALETTE = ['#ff8a80','#82b1ff','#b9f6ca','#ffff8d','#ea80fc','#ffd180','#f
 // FEEDBACK_EMAIL is a PLACEHOLDER until the owner picks a real address.
 // Replace this with the inbox that should receive tester notes. Do not put note contents in feedback.
 const FEEDBACK_EMAIL = 'feedback@example.com';
-const APP_VERSION = 'v29';
+const APP_VERSION = 'v30';
 
 let collapsed = JSON.parse(localStorage.getItem('bd-collapsed') || '{}');
 
@@ -3694,7 +3694,7 @@ const THEME_META = {
     subtitle: "A little notebook for whatever's rattling around.",
     catPh: 'New page (press Enter)',
     itemPh: "What's rattling around up there?",
-    empty: '<div class="empty"><div class="empty-emoji">✎</div><div class="empty-title">A blank page, just for you.</div><div class="empty-sub">Type or talk. Saved on this device.</div></div>'
+    empty: '<div class="empty"><div class="empty-emoji">✎</div><div class="empty-title">A blank page, just for you.</div><div class="empty-sub">Type or talk.</div></div>'
   },
   playful: {
     color: '#fff7fb',
@@ -6289,7 +6289,7 @@ function exportPlainText() {
   const lines = [];
   const when = new Date().toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
   lines.push('Brain Dump — readable copy');
-  lines.push('Saved on this device · ' + when);
+  lines.push(when);
   lines.push('');
   const walk = (parent, depth) => {
     const kids = categories.filter(c => (c.parent || '') === parent);
@@ -6429,7 +6429,7 @@ function feedbackBasicInfo() {
   } catch (e) {}
   const standalone = (typeof isStandaloneApp === 'function') ? isStandaloneApp() : false;
   return [
-    'App: Brain Dump ' + (typeof APP_VERSION === 'string' ? APP_VERSION : 'v29') + (/\btest\b/i.test(location.pathname || '') ? ' TEST' : ''),
+    'App: Brain Dump ' + (typeof APP_VERSION === 'string' ? APP_VERSION : 'v30') + (/\btest\b/i.test(location.pathname || '') ? ' TEST' : ''),
     'Browser: ' + browser,
     'Screen: ' + w + '×' + h + (sw && sh ? ' (device ' + sw + '×' + sh + ')' : ''),
     standalone ? 'Opened from Home Screen' : 'Opened in a browser tab'
@@ -6588,8 +6588,8 @@ function renderInstallTip() {
   if (!installTipDue()) { el.classList.remove('is-on'); el.innerHTML = ''; return; }
   const ios = /iP(hone|ad|od)/.test(navigator.userAgent || '') || (/Macintosh/.test(navigator.userAgent || '') && (navigator.maxTouchPoints || 0) > 1);
   const text = ios
-    ? 'Add to Home Screen so your notes stay put. On iPhone: tap Share, then Add to Home Screen.'
-    : 'Add to Home Screen so your notes stay put. Your browser’s menu usually has an “Add to Home Screen” or “Install” option.';
+    ? 'Add Brain Dump to your Home Screen so it opens like an app. On iPhone: tap Share, then Add to Home Screen.'
+    : 'Add Brain Dump to your Home Screen so it opens like an app. Your browser’s menu usually has an “Add to Home Screen” or “Install” option.';
   el.innerHTML = '<div class="install-tip-text">' + text + '</div><button type="button" class="install-tip-dismiss" aria-label="Dismiss tip">✕</button>';
   el.classList.add('is-on');
   const d = el.querySelector('.install-tip-dismiss');
@@ -6646,13 +6646,13 @@ function closeIntro() {
 function introHomeScreenCopy() {
   const ua = navigator.userAgent || '';
   const ios = /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1);
-  if (ios) return 'Add Brain Dump to your Home Screen so your notes stay put. On iPhone: tap Share, then Add to Home Screen.';
-  return 'Add Brain Dump to your Home Screen so your notes stay put. In your browser menu, tap Install app or Add to Home Screen.';
+  if (ios) return 'Add Brain Dump to your Home Screen so it opens like an app. On iPhone: tap Share, then Add to Home Screen.';
+  return 'Add Brain Dump to your Home Screen so it opens like an app. In your browser menu, tap Install app or Add to Home Screen.';
 }
 const INTRO_STEPS = [
-  { title: 'Dump anything here', body: 'Type a thought and tap Add, or tap the mic and say it out loud. Just get it out. It’s saved on this device.' },
+  { title: 'Dump anything here', body: 'Type a thought and tap Add, or tap the mic and say it out loud. Just get it out.' },
   { title: 'Put it where it belongs', body: 'Type or say “add milk to Ideas” and it’ll land on that page (we’ll make the page if it’s new). If you don’t name a page, it goes to Unsorted.' },
-  { title: 'Keep it on this phone', body: introHomeScreenCopy() }
+  { title: 'Add it to your Home Screen', body: introHomeScreenCopy() + ' During the trial, your notes are saved on your phone.' }
 ];
 function openIntro(opts) {
   opts = opts || {};
@@ -6758,7 +6758,7 @@ function showBackupReminder() {
   const tip = $('installTip');
   if (tip) { tip.classList.remove('is-on'); tip.innerHTML = ''; }
   el.innerHTML =
-    '<div class="bd-backup-text">Your notes live on this phone. Save a copy so nothing gets lost.</div>' +
+    '<div class="bd-backup-text">Save a copy of your notes so nothing gets lost.</div>' +
     '<div class="bd-backup-actions">' +
       '<button type="button" data-act="save">Save backup</button>' +
       '<button type="button" class="secondary" data-act="later">Later</button>' +
@@ -9114,11 +9114,11 @@ render();
         '<p class="nb-quiet">Example: if you say “call the accountant and—” and pause, 1.5 seconds usually waits for the rest instead of saving a half-thought.</p>' +
         "</section>";
       moreHtml += '<section class="nb-sec"><h2>Feedback</h2>' +
-        '<p class="nb-sec-lead">See something off, or have an idea? Send a short note. Your list stays on this device.</p>' +
+        '<p class="nb-sec-lead">See something off, or have an idea? Send a short note.</p>' +
         '<div class="nb-actions"><button type="button" class="secondary" id="nbFeedback">Send feedback</button></div>' +
         "</section>";
       moreHtml += '<section class="nb-sec"><h2>Data</h2>' +
-        '<p class="nb-sec-lead">Saved on this device. It isn’t copied to your other phones or computers yet.</p>' +
+        '<p class="nb-sec-lead">During the trial, notes aren’t copied between your phones and computers yet.</p>' +
         '<div class="nb-actions">' +
         '<button type="button" id="nbImport">Restore from a backup</button>' +
         '<button type="button" class="secondary" id="nbExport">Download backup (JSON)</button>' +
@@ -9148,8 +9148,8 @@ render();
 
       var hint = $("nbInstallHint");
       if (hint) {
-        if (typeof isStandaloneApp === "function" && isStandaloneApp()) hint.textContent = "This is installed on your Home Screen — good. That’s the best way to keep notes on this device.";
-        else hint.textContent = "Add to Home Screen so your notes stay put.";
+        if (typeof isStandaloneApp === "function" && isStandaloneApp()) hint.textContent = "Brain Dump is on your Home Screen — good.";
+        else hint.textContent = "Add Brain Dump to your Home Screen so it opens like an app.";
       }
       if ($("nbClearWhy")) $("nbClearWhy").onclick = function () {
         if ($("setClear")) $("setClear").click();
