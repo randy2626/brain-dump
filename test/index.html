@@ -2407,7 +2407,7 @@ html[data-nb-page="settings"] .input-area,
 html[data-nb-page="settings"] #micStatus,
 html[data-nb-page="settings"] .controls,
 html[data-nb-page="settings"] .finish-row,
-html[data-nb-page="settings"] #howTo,
+html[data-nb-page="settings"] #howTo:not(.as-sheet),
 html[data-nb-page="settings"] #trackHint,
 html[data-nb-page="settings"] #trackers,
 html[data-nb-page="settings"] .toolbar,
@@ -2676,9 +2676,13 @@ html.nb-notebook #trackerStrip .strip-bit strong {
   line-height: 1.35;
 }
 
-/* v24: one new-page control (Enter to add); hide the duplicate button */
-#addCatBtn { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); clip-path: inset(50%); white-space: nowrap; border: 0; padding: 0; margin: 0; }
+/* v30: Add Category sits beside the new-page field; Enter still adds the page. */
 .controls { position: relative; }
+#addCatBtn { flex: 0 0 auto; white-space: nowrap; }
+@media (max-width: 480px) {
+  .controls { flex-wrap: nowrap; }
+  #addCatBtn { padding-left: 12px; padding-right: 12px; }
+}
 
 /* v24: quieter Delete at the bottom of the item sheet */
 .item-sheet .sheet-delete {
@@ -2756,7 +2760,14 @@ html[data-nb-page="settings"] #installTip { display: none !important; }
 @media (max-width: 480px) {
   html[data-theme="warm"] h1 { margin: 2px 0 0 !important; }
   html[data-theme="warm"] #pageWhen { margin: 0 !important; min-height: 0 !important; }
-  html[data-theme="warm"] .subtitle { display: none !important; }
+  html[data-theme="warm"] .subtitle {
+    display: block !important;
+    font-size: 1.2rem;
+    line-height: 1.25;
+    margin: 2px 0 10px !important;
+    padding: 0 2px;
+    max-width: 100%;
+  }
   html[data-theme="warm"] .input-area { margin-bottom: 6px !important; gap: 6px; }
   html[data-theme="warm"] textarea#itemInput { min-height: 48px; padding-top: 8px; padding-bottom: 8px; }
   html[data-theme="warm"] .controls,
@@ -2767,6 +2778,23 @@ html[data-nb-page="settings"] #installTip { display: none !important; }
   html[data-theme="warm"] #searchInput { padding: 7px 12px; }
   html[data-theme="warm"] #micStatus { min-height: 0; }
   html[data-theme="warm"] #micStatus:empty { display: none; }
+}
+
+/* v30: How-to opened from Settings is a sheet, even on the Settings page. */
+html[data-nb-page="settings"] #howTo.as-sheet {
+  display: block !important;
+  position: fixed;
+  z-index: 1002;
+  left: 10px;
+  right: 10px;
+  margin: 0;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  top: auto;
+  max-height: calc(80vh - env(safe-area-inset-top, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
 }
 
 /* v24 import confirm sheet */
@@ -2997,8 +3025,8 @@ html[data-theme="warm"] .howto-welcome button.footer-link {
   <section id="compareView" hidden aria-label="Compare personalities"></section>
 
   <div class="controls">
-    <input id="catInput" placeholder="New page (press Enter)" aria-label="Name a new page, then press Enter">
-    <button id="addCatBtn" type="button" tabindex="-1" aria-hidden="true">Add page</button>
+    <input id="catInput" placeholder="Name a new page..." aria-label="Name a new page">
+    <button id="addCatBtn" type="button">Add Category</button>
   </div>
   <div class="finish-row">
     <select id="catSelect" aria-label="Add new items to"><option value="">No category</option></select>
@@ -3029,7 +3057,7 @@ html[data-theme="warm"] .howto-welcome button.footer-link {
     <ul class="howto-steps" style="margin:8px 0 0;padding:0 0 0 1.15em;">
       <li>Type or tap the mic and say what’s on your mind. Just get it out.</li>
       <li>The dropdown under the box is where the next item goes. Pick “No category” if you don’t want a page yet.</li>
-      <li>Type “add milk to Ideas” to file it on that page (it’ll make the page if it’s new). Or type a page name in the box below and press Enter.</li>
+      <li>Type “add milk to Ideas” to file it on that page (it’ll make the page if it’s new). Or type a page name below and tap Add Category, or press Enter.</li>
       <li>Tap ✓ when you’re done. An item’s ⋯ lets you edit, set a date, move it, or delete it (you can undo a delete).</li>
       <li>Drag an item onto another page to move it. On a phone, ⋯ → Move to… does the same.</li>
       <li>When you talk, a pause, “next,” or a comma starts a new thought. “Move buy milk to Home” files something you’ve already added.</li>
@@ -3333,7 +3361,8 @@ function howToIsSheet() { return !!(window.matchMedia && matchMedia('(max-width:
 function openHowTo() {
   howTo.style.display = 'block';
   howToToggle.textContent = 'How to (close)';
-  if (howToIsSheet()) {
+  const onSettings = document.documentElement.getAttribute('data-nb-page') === 'settings';
+  if (howToIsSheet() || onSettings) {
     howTo.classList.add('as-sheet');
     howTo.scrollTop = 0;
     if (!document.querySelector('.howto-backdrop')) {
@@ -3692,7 +3721,7 @@ const THEME_META = {
   warm: {
     color: '#f4ead8',
     subtitle: "A little notebook for whatever's rattling around.",
-    catPh: 'New page (press Enter)',
+    catPh: 'Name a new page...',
     itemPh: "What's rattling around up there?",
     empty: '<div class="empty"><div class="empty-emoji">✎</div><div class="empty-title">A blank page, just for you.</div><div class="empty-sub">Type or talk.</div></div>'
   },
@@ -9075,6 +9104,9 @@ render();
       root.insertBefore(extrasBox, root.firstChild);
     }
     var html = "";
+    html += '<section class="nb-sec"><h2>How to use Brain Dump</h2>' +
+      '<p class="nb-sec-lead">A short guide to typing, talking, and pages.</p>' +
+      '<div class="nb-actions"><button type="button" class="secondary" id="nbHowTo">How to use Brain Dump</button></div></section>';
     html += '<section class="nb-sec"><h2>What’s in your notebook</h2>' +
       '<p class="nb-sec-lead">A new notebook starts simple: the dump box, your list, and pages. Everything else is here if you want it, and each one can be turned off again.</p>';
     html += sw("looks", "Looks picker", "Try Playful, Calm, or Bold. Off, the notebook stays Warm — yellow paper and handwriting.");
@@ -9086,6 +9118,7 @@ render();
     html += "</section>";
     extrasBox.innerHTML = html;
     wireExtraSwitches(extrasBox);
+    if ($("nbHowTo")) $("nbHowTo").onclick = function () { if (typeof openHowTo === "function") openHowTo(); };
 
     // Reuse the existing Settings panel so v15 controls (Real default, cussing, Compare personalities, Save) stay intact.
     var original = (typeof openSettings === "function" && openSettings._original) ? openSettings._original : null;
