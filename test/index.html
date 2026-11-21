@@ -2856,6 +2856,16 @@ html[data-theme="warm"] .feedback-sheet .fb-types button.is-on {
 }
 .feedback-sheet .fb-include input { margin-top: 3px; flex: 0 0 auto; }
 .feedback-sheet .ask-body { white-space: normal; }
+.feedback-sheet .fb-reachout {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #6a4e38;
+  margin: 0 0 12px;
+  text-align: left;
+  font-weight: 400;
+}
+html[data-theme="warm"] .feedback-sheet .fb-reachout { color: #6a4e38; }
+
 .howto-feedback {
   margin: 12px 0 0;
   font-size: 13px;
@@ -3040,7 +3050,7 @@ const PALETTE = ['#ff8a80','#82b1ff','#b9f6ca','#ffff8d','#ea80fc','#ffd180','#f
 // FEEDBACK_EMAIL is a PLACEHOLDER until the owner picks a real address.
 // Replace this with the inbox that should receive tester notes. Do not put note contents in feedback.
 const FEEDBACK_EMAIL = 'feedback@example.com';
-const APP_VERSION = 'v25';
+const APP_VERSION = 'v26';
 
 let collapsed = JSON.parse(localStorage.getItem('bd-collapsed') || '{}');
 
@@ -6341,7 +6351,7 @@ function feedbackBasicInfo() {
   } catch (e) {}
   const standalone = (typeof isStandaloneApp === 'function') ? isStandaloneApp() : false;
   return [
-    'App: Brain Dump ' + (typeof APP_VERSION === 'string' ? APP_VERSION : 'v25') + (/\btest\b/i.test(location.pathname || '') ? ' TEST' : ''),
+    'App: Brain Dump ' + (typeof APP_VERSION === 'string' ? APP_VERSION : 'v26') + (/\btest\b/i.test(location.pathname || '') ? ' TEST' : ''),
     'Browser: ' + browser,
     'Screen: ' + w + '×' + h + (sw && sh ? ' (device ' + sw + '×' + sh + ')' : ''),
     standalone ? 'Opened from Home Screen' : 'Opened in a browser tab'
@@ -6405,6 +6415,7 @@ function openFeedbackSheet() {
     '</div>' +
     '<textarea id="fbText" placeholder="What’s on your mind?" maxlength="4000"></textarea>' +
     '<label class="fb-include"><input type="checkbox" id="fbInclude" checked> Include basic info (app version, this phone or computer, and screen size). Never your notes.</label>' +
+    '<p class="fb-reachout">Your brain is yours, and we respect that. We can’t see anything you write in Brain Dump. We only see the feedback you send, along with your email so we can reach out.</p>' +
     '<div class="ask-actions">' +
       '<button type="button" data-act="send">Send email</button>' +
       '<button type="button" class="secondary" data-act="copy">Copy</button>' +
