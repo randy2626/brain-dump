@@ -110,6 +110,8 @@ S.removeItem=function(x){return r.call(this,k.call(this,x));};})();</script>
   .search-row { display:flex; gap:8px; margin-bottom:12px; align-items:center; }
   #searchInput { flex:1; font-size:16px; border-radius:999px; padding:9px 14px; }
   #searchClear { min-width:44px; min-height:40px; display:none; }
+  #searchInput::-webkit-search-cancel-button { -webkit-appearance:none; appearance:none; display:none; }
+  #searchInput::-ms-clear { display:none; }
   #searchCount { font-size:12px; color:#888; white-space:nowrap; }
   #trackers { margin-bottom:14px; }
   .tracker-head { display:flex; justify-content:space-between; align-items:center; color:#888; font-size:13px; margin-bottom:6px; }
@@ -660,6 +662,8 @@ html[data-theme="warm"] .empty { text-align: center; color: #7a5e46; padding: 48
 html[data-theme="warm"] .empty-emoji { font-size: 2rem; margin-bottom: 8px; color: #b5522a; }
 html[data-theme="warm"] .empty-title { font-family: Fraunces, Georgia, serif; font-size: 1.35rem; color: #3a2718; margin-bottom: 6px; }
 html[data-theme="warm"] .empty-sub { font-family: Caveat, cursive; font-size: 1.35rem; color: #8a5a38; }
+.page-empty { text-align: center; color: #888; padding: 22px 14px; line-height: 1.25; }
+html[data-theme="warm"] .page-empty { font-family: Caveat, cursive; font-size: 1.35rem; color: #8a5a38; }
 html[data-theme="warm"] #howTo {
   background: #fff7ea;
   border-radius: 8px;
@@ -3151,7 +3155,7 @@ const PALETTE = ['#ff8a80','#82b1ff','#b9f6ca','#ffff8d','#ea80fc','#ffd180','#f
 // FEEDBACK_EMAIL is a PLACEHOLDER until the owner picks a real address.
 // Replace this with the inbox that should receive tester notes. Do not put note contents in feedback.
 const FEEDBACK_EMAIL = 'feedback@example.com';
-const APP_VERSION = 'v30';
+const APP_VERSION = 'v31';
 
 let collapsed = JSON.parse(localStorage.getItem('bd-collapsed') || '{}');
 
@@ -5163,6 +5167,10 @@ function undoMakeSub(name, t, tIndex, did, before) {
 }
 
 function render() {
+  if (addedCatDest !== undefined && currentCat !== addedCatDest) {
+    addedCatDest = undefined;
+    if (/New items will still go to/.test(micStatus.textContent || '')) setStatus('');
+  }
   updateSelect();
   cleanupAfterItem();
   const allVisible = items.filter(i => !i.deleted && !i.letGo);
@@ -5171,10 +5179,10 @@ function render() {
   const deletedItems = q ? items.filter(i => i.deleted && matchesSearch(i, q)) : items.filter(i => i.deleted);
   const letGoItems = q ? items.filter(i => i.letGo && !i.deleted && matchesSearch(i, q)) : items.filter(i => i.letGo && !i.deleted);
   const sc = $('searchCount'), sx = $('searchClear');
-  if (sc) sc.textContent = q ? (visible.length + ' found') : '';
+  if (sc) sc.textContent = (q && visible.length) ? (visible.length + ' found') : '';
   if (sx) sx.style.display = q ? 'inline-block' : 'none';
   if (q && !visible.length && !deletedItems.length && !letGoItems.length) {
-    listEl.innerHTML = '<div class="empty">Nothing matches “' + esc(searchQuery.trim()) + '”.</div>';
+    listEl.innerHTML = '<div class="empty">Nothing in here matches “' + esc(searchQuery.trim()) + '”.</div>';
     toolbar.style.display = 'none';
     return;
   }
@@ -5531,6 +5539,14 @@ function showColorPicker(catName) {
   }, 0);
 }
 
+var addedCatDest; // destination named in the "still go to" line, so it can clear once untrue
+function addedCatStatus(added, name) {
+  addedCatDest = undefined;
+  if (currentCat === name) return added + '. New items will go there.';
+  addedCatDest = currentCat;
+  return added + '. New items will still go to ' + (currentCat || 'No category') + ' until you pick ' + name + '.';
+}
+
 addCatBtn.onclick = () => {
   const name = catInput.value.trim();
   if (!name) return;
@@ -5562,7 +5578,7 @@ addCatBtn.onclick = () => {
     save();
     render();
     if (last) showColorPicker(last.name);
-    setStatus(problem ? problem : ('Added “' + catPath(last.name) + '”' + movedNote + '. Dropdown still points where it did.'));
+    setStatus(problem ? problem : addedCatStatus('Added “' + catPath(last.name) + '”' + movedNote, last.name));
     return;
   }
   if (!categories.find(c => c.name === name)) categories.push({ name, color: PALETTE[categories.length % PALETTE.length] });
@@ -5572,7 +5588,7 @@ addCatBtn.onclick = () => {
   render();
   if (lastPointerType !== 'mouse' || matchMedia('(pointer: coarse)').matches) catInput.blur();
   showColorPicker(name);
-  setStatus('Added “' + name + '”. Dropdown still points where it did.');
+  setStatus(addedCatStatus('Added “' + name + '”', name));
 };
 catInput.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); addCatBtn.click(); } };
 catSelect.onchange = () => { workingItemId = null; currentCat = catSelect.value; save(); render(); revealCurrentCat({ scroll: true }); };
@@ -6838,7 +6854,7 @@ let voicePending = null;      // latest interim text not yet finalized { idx, te
 let voiceErrorShown = false;  // an error message is on screen; don't overwrite it on end
 
 const VOICE_COLORS = {red:'#ff8a80',blue:'#82b1ff',green:'#b9f6ca',yellow:'#ffff8d',purple:'#ea80fc',orange:'#ffd180'};
-const UNSUPPORTED_VOICE_MSG = 'Voice needs Chrome or Edge. This browser does not support speech recognition.';
+const UNSUPPORTED_VOICE_MSG = 'Voice isn’t available in this browser. Try Safari or Chrome, then tap the mic.';
 
 function resetMicUI(clearStatus) {
   listening = false;
@@ -6856,9 +6872,9 @@ function voiceErrorInfo(err) {
     case 'aborted': return { msg: '', stop: false };
     case 'not-allowed':
       return { stop: true, msg: IS_IOS
-        ? (IS_STANDALONE ? 'The mic is blocked. Tap the mic and choose Allow (iPhone may ask each time the home-screen app opens).'
-                         : 'The mic is blocked. Tap aA in the address bar → Website Settings → Microphone → Allow, then tap the mic.')
-        : 'The mic is blocked. Allow the microphone for this site, then tap the mic.' };
+        ? (IS_STANDALONE ? 'The mic is blocked. Tap the mic and choose Allow.'
+                         : 'The mic is blocked. Allow the microphone, then tap the mic again.')
+        : 'The mic is blocked. Allow the microphone, then tap the mic again.' };
     case 'service-not-allowed':
       return { stop: true, msg: IS_IOS
         ? 'iPhone speech is off. Turn on Settings → General → Keyboard → Enable Dictation, then tap the mic.'
@@ -7641,9 +7657,13 @@ function maybeShowMicTip() {
     localStorage.setItem('bd-mic-tip', '1');
   } catch (e) { return; }
   const msg = IS_STANDALONE
-    ? 'Tip: iPhone asks about the mic each time the home-screen app opens. That\'s an Apple rule. Tap Allow and you\'re set for that visit.'
+    ? 'iPhone may ask about the mic each time you open the app. Just tap Allow.'
     : 'Tip: to stop iPhone asking every time, tap aA in the address bar → Website Settings → Microphone → Allow.';
-  setTimeout(() => showVoiceToast(msg, null, 9000), 600);
+  setTimeout(() => {
+    showVoiceToast(msg, null, 9000);
+    const tipText = document.querySelector('#voiceToast .vt-msg');
+    if (tipText) tipText.style.whiteSpace = 'normal';
+  }, 600);
 }
 
 let micReadyThisSession = false;
@@ -8714,6 +8734,18 @@ render();
       }
       if (keep.indexOf(name) < 0) el.style.display = "none";
     });
+    // A quiet note on a truly empty page (sub-pages with items count as not empty).
+    if (list.querySelector(".page-empty") || (searchQuery || "").trim()) return;
+    if (items.some(function (i) { return !i.deleted && !i.letGo && keep.indexOf(i.category) >= 0; })) return;
+    var area = Array.prototype.find.call(list.querySelectorAll(".group-items"), function (el) {
+      return el.getAttribute("data-for") === nbPage;
+    });
+    if (!area) return;
+    var note = document.createElement("div");
+    note.className = "page-empty";
+    note.textContent = "Nothing on this page yet. Type or talk to add something.";
+    if (area.classList.contains("collapsed")) area.parentNode.insertBefore(note, area.nextSibling);
+    else area.appendChild(note);
   }
 
   function syncTopbar() {
