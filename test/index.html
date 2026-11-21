@@ -2721,6 +2721,7 @@ html.nb-notebook #trackerStrip .strip-bit strong {
 #moreMenu.open { display: flex; }
 #moreMenu button { width: 100%; justify-content: flex-start; text-align: left; margin: 0; }
 .finish-row { position: relative; }
+.finish-row:has(#moreMenu.open) { z-index: 60; }
 
 /* v24: Add to Home Screen tip */
 #installTip {
@@ -2772,6 +2773,110 @@ html[data-nb-page="settings"] #installTip { display: none !important; }
 .import-sheet .ask-actions { flex-wrap: wrap; }
 .import-sheet .ask-actions button { flex: 1 1 40%; }
 
+
+/* v25: keep “done today …” on one line */
+.item .meta {
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 100%;
+}
+html[data-theme="warm"] .item .meta {
+  white-space: nowrap;
+}
+
+/* v25: quiet footer feedback link */
+.bd-footer {
+  text-align: center;
+  margin: 18px 0 8px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+}
+.bd-footer .footer-link {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  color: #8a6a4a !important;
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 36px;
+  padding: 4px 10px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+html[data-nb-page="settings"] .bd-footer { display: none !important; }
+
+/* v25: feedback sheet */
+.feedback-sheet {
+  width: min(420px, calc(100% - 24px));
+}
+.feedback-sheet .fb-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+.feedback-sheet .fb-types button {
+  flex: 1 1 auto;
+  min-height: 40px;
+  font-size: 14px;
+}
+.feedback-sheet .fb-types button.is-on {
+  outline: 2px solid #b5522a;
+  outline-offset: 1px;
+}
+html[data-theme="warm"] .feedback-sheet .fb-types button.is-on {
+  background: rgba(224,176,137,0.35);
+  color: #5a3018;
+}
+.feedback-sheet textarea {
+  width: 100%;
+  min-height: 96px;
+  box-sizing: border-box;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #d7c3a4;
+  background: #fffaf1;
+  color: #2b2118;
+  resize: vertical;
+}
+.feedback-sheet .fb-include {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  margin: 0 0 12px;
+  color: #5a4330;
+  text-align: left;
+}
+.feedback-sheet .fb-include input { margin-top: 3px; flex: 0 0 auto; }
+.feedback-sheet .ask-body { white-space: normal; }
+.howto-feedback {
+  margin: 12px 0 0;
+  font-size: 13px;
+}
+.howto-feedback button,
+html[data-theme="warm"] .howto-feedback button,
+html[data-theme="warm"] .howto-feedback button.footer-link {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  color: #5a3018 !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0 !important;
+  min-height: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 </style>
 </head>
 <body data-theme="warm" data-tracker-place="strip">
@@ -2821,6 +2926,7 @@ html[data-nb-page="settings"] #installTip { display: none !important; }
     <button type="button" id="moreActions" class="secondary" aria-label="More actions" aria-haspopup="true" aria-expanded="false">⋯</button>
     <div id="moreMenu" hidden>
       <button id="howToToggle" class="secondary">How to</button>
+      <button type="button" id="feedbackBtn" class="secondary">Feedback</button>
       <button id="exportBtn" class="secondary">Download backup</button>
     </div>
   </div>
@@ -2847,6 +2953,7 @@ html[data-nb-page="settings"] #installTip { display: none !important; }
       <li>When you talk, a pause, “next,” or a comma starts a new thought. “Move buy milk to Home” files something you’ve already added.</li>
       <li>Add this to your Home Screen so your notes stay put on this device.</li>
     </ul>
+    <p class="howto-feedback">Something off, or an idea? <button type="button" id="howToFeedback" class="footer-link">Send feedback</button></p>
   </div>
   <div id="settings"></div>
 
@@ -2897,6 +3004,7 @@ html[data-nb-page="settings"] #installTip { display: none !important; }
   </div>
 
   <div id="list"></div>
+  <div id="bdFooter" class="bd-footer"><button type="button" id="footerFeedback" class="footer-link">Feedback</button></div>
 
 <script>
 // Preview trick: ?debugdate=2026-11-22T19:00 (or 2026-11-22, or +5 for "5 days from now") pretends it's that time.
@@ -2928,6 +3036,11 @@ let lastAddedId = null;
 let pendingCorrection = false;
 
 const PALETTE = ['#ff8a80','#82b1ff','#b9f6ca','#ffff8d','#ea80fc','#ffd180','#ff9e80','#b388ff'];
+
+// FEEDBACK_EMAIL is a PLACEHOLDER until the owner picks a real address.
+// Replace this with the inbox that should receive tester notes. Do not put note contents in feedback.
+const FEEDBACK_EMAIL = 'feedback@example.com';
+const APP_VERSION = 'v25';
 
 let collapsed = JSON.parse(localStorage.getItem('bd-collapsed') || '{}');
 
@@ -6201,6 +6314,142 @@ if ($('importFile')) $('importFile').onchange = ev => {
   offerImportFile(f);
 };
 
+
+function closeFeedbackSheet() {
+  document.querySelectorAll('.feedback-sheet').forEach(s => {
+    if (s._sheetDismiss) try { s._sheetDismiss(); } catch (e) {}
+    s.remove();
+  });
+}
+function feedbackBasicInfo() {
+  const w = window.innerWidth || 0, h = window.innerHeight || 0;
+  const sw = (screen && screen.width) || 0, sh = (screen && screen.height) || 0;
+  let browser = (navigator.userAgent || 'unknown');
+  try {
+    const ua = navigator.userAgent || '';
+    const isIOS = /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1);
+    const isAndroid = /Android/i.test(ua);
+    const isMac = /Macintosh/.test(ua) && !isIOS;
+    const isWin = /Windows/i.test(ua);
+    let engine = 'browser';
+    if (/Edg\//.test(ua)) engine = 'Edge';
+    else if (/Chrome\//.test(ua) && !/Edg\//.test(ua)) engine = 'Chrome';
+    else if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) engine = 'Safari';
+    else if (/Firefox\//.test(ua)) engine = 'Firefox';
+    const device = isIOS ? 'iPhone/iPad' : isAndroid ? 'Android' : isMac ? 'Mac' : isWin ? 'Windows' : 'device';
+    browser = engine + ' on ' + device;
+  } catch (e) {}
+  const standalone = (typeof isStandaloneApp === 'function') ? isStandaloneApp() : false;
+  return [
+    'App: Brain Dump ' + (typeof APP_VERSION === 'string' ? APP_VERSION : 'v25') + (/\btest\b/i.test(location.pathname || '') ? ' TEST' : ''),
+    'Browser: ' + browser,
+    'Screen: ' + w + '×' + h + (sw && sh ? ' (device ' + sw + '×' + sh + ')' : ''),
+    standalone ? 'Opened from Home Screen' : 'Opened in a browser tab'
+  ].join('\n');
+}
+function feedbackTypeLabel(id) {
+  return id === 'broke' ? 'Something broke' : id === 'idea' ? 'Idea' : 'Other';
+}
+function buildFeedbackMessage(type, text, includeInfo) {
+  const lines = [];
+  lines.push('Kind: ' + feedbackTypeLabel(type));
+  lines.push('');
+  lines.push((text || '').trim() || '(no message)');
+  if (includeInfo) {
+    lines.push('');
+    lines.push('--');
+    lines.push(feedbackBasicInfo());
+  }
+  return lines.join('\n');
+}
+function openFeedbackMailto(type, text, includeInfo) {
+  const sub = 'Brain Dump feedback: ' + feedbackTypeLabel(type);
+  const body = buildFeedbackMessage(type, text, includeInfo);
+  const href = 'mailto:' + FEEDBACK_EMAIL +
+    '?subject=' + encodeURIComponent(sub) +
+    '&body=' + encodeURIComponent(body);
+  return { href: href, subject: sub, body: body };
+}
+function copyFeedbackText(text) {
+  const done = () => { if (typeof showVoiceToast === 'function') showVoiceToast('Copied. Paste it into an email if you need to.'); else setStatus('Copied'); };
+  const fail = () => { if (typeof setStatus === 'function') setStatus("Couldn't copy — long-press and copy the text if you need to."); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text).then(done).catch(fail);
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    if (ok) done(); else fail();
+  } catch (e) { fail(); }
+}
+function openFeedbackSheet() {
+  closeFeedbackSheet();
+  if (typeof closeHowTo === 'function') try { closeHowTo(); } catch (e) {}
+  const div = document.createElement('div');
+  div.className = 'kind-sheet ask-sheet feedback-sheet';
+  div.setAttribute('role', 'dialog');
+  div.setAttribute('aria-label', 'Send feedback');
+  div.innerHTML =
+    '<div class="kind-title">Tell us how it’s going</div>' +
+    '<div class="ask-body">A bug, an idea, or anything else. This opens an email — your notes stay on this device.</div>' +
+    '<div class="fb-types" role="group" aria-label="What kind of note is this?">' +
+      '<button type="button" class="secondary is-on" data-type="broke">Something broke</button>' +
+      '<button type="button" class="secondary" data-type="idea">Idea</button>' +
+      '<button type="button" class="secondary" data-type="other">Other</button>' +
+    '</div>' +
+    '<textarea id="fbText" placeholder="What’s on your mind?" maxlength="4000"></textarea>' +
+    '<label class="fb-include"><input type="checkbox" id="fbInclude" checked> Include basic info (app version, this phone or computer, and screen size). Never your notes.</label>' +
+    '<div class="ask-actions">' +
+      '<button type="button" data-act="send">Send email</button>' +
+      '<button type="button" class="secondary" data-act="copy">Copy</button>' +
+      '<button type="button" class="secondary" data-act="cancel">Cancel</button>' +
+    '</div>';
+  let kind = 'broke';
+  const setKind = (id) => {
+    kind = id;
+    div.querySelectorAll('.fb-types button').forEach(b => b.classList.toggle('is-on', b.dataset.type === id));
+  };
+  const finish = (act) => {
+    const text = ((div.querySelector('#fbText') || {}).value || '');
+    const include = !!(div.querySelector('#fbInclude') && div.querySelector('#fbInclude').checked);
+    if (act === 'cancel') { closeFeedbackSheet(); return; }
+    const packed = openFeedbackMailto(kind, text, include);
+    if (act === 'copy') { copyFeedbackText(packed.body); return; }
+    if (act === 'send') {
+      try { window.location.href = packed.href; } catch (e) {}
+      if (typeof showVoiceToast === 'function') showVoiceToast('If an email didn’t open, tap Copy and paste it.');
+      closeFeedbackSheet();
+    }
+  };
+  div.addEventListener('click', ev => {
+    const typeBtn = ev.target.closest('.fb-types button');
+    if (typeBtn) { ev.preventDefault(); setKind(typeBtn.dataset.type); return; }
+    const b = ev.target.closest('.ask-actions button');
+    if (b) { ev.preventDefault(); finish(b.dataset.act); }
+  });
+  document.body.appendChild(div);
+  if (typeof wireDismiss === 'function') wireDismiss(div, closeFeedbackSheet);
+  const ta = div.querySelector('#fbText');
+  if (ta) setTimeout(() => ta.focus(), 50);
+  return div;
+}
+try {
+  window.__bdFeedback = {
+    open: openFeedbackSheet,
+    close: closeFeedbackSheet,
+    build: buildFeedbackMessage,
+    mailto: openFeedbackMailto,
+    email: function () { return FEEDBACK_EMAIL; },
+    info: feedbackBasicInfo
+  };
+} catch (e) {}
+
 (function wireMoreMenu() {
   const btn = $('moreActions');
   const menu = $('moreMenu');
@@ -6219,7 +6468,11 @@ if ($('importFile')) $('importFile').onchange = ev => {
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && menu.classList.contains('open')) close(); });
   if ($('howToToggle')) $('howToToggle').addEventListener('click', close);
   if ($('exportBtn')) $('exportBtn').addEventListener('click', close);
+  if ($('feedbackBtn')) $('feedbackBtn').addEventListener('click', ev => { ev.preventDefault(); close(); openFeedbackSheet(); });
 })();
+if ($('footerFeedback')) $('footerFeedback').onclick = ev => { ev.preventDefault(); openFeedbackSheet(); };
+if ($('howToFeedback')) $('howToFeedback').onclick = ev => { ev.preventDefault(); openFeedbackSheet(); };
+
 
 const INSTALL_TIP_KEY = 'bd-install-tip';
 function isStandaloneApp() {
@@ -8581,6 +8834,10 @@ render();
         "</select></div>" +
         '<p class="nb-quiet">Example: if you say “call the accountant and—” and pause, 1.5 seconds usually waits for the rest instead of saving a half-thought.</p>' +
         "</section>";
+      moreHtml += '<section class="nb-sec"><h2>Feedback</h2>' +
+        '<p class="nb-sec-lead">See something off, or have an idea? Send a short note. Your list stays on this device.</p>' +
+        '<div class="nb-actions"><button type="button" class="secondary" id="nbFeedback">Send feedback</button></div>' +
+        "</section>";
       moreHtml += '<section class="nb-sec"><h2>Data</h2>' +
         '<p class="nb-sec-lead">Saved on this device. It isn’t copied to your other phones or computers yet.</p>' +
         '<div class="nb-actions">' +
@@ -8606,6 +8863,8 @@ render();
       if ($("nbExport")) $("nbExport").onclick = function () { if (typeof exportJSONBackup === "function") exportJSONBackup(); else if ($("exportBtn")) $("exportBtn").click(); };
       if ($("nbExportText")) $("nbExportText").onclick = function () { if (typeof exportPlainText === "function") exportPlainText(); };
       if ($("nbImport")) $("nbImport").onclick = function () { var inp = $("importFile"); if (inp) inp.click(); };
+      if ($("nbFeedback")) $("nbFeedback").onclick = function () { if (typeof openFeedbackSheet === "function") openFeedbackSheet(); };
+
       var hint = $("nbInstallHint");
       if (hint) {
         if (typeof isStandaloneApp === "function" && isStandaloneApp()) hint.textContent = "This is installed on your Home Screen — good. That’s the best way to keep notes on this device.";
