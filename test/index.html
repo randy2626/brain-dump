@@ -457,7 +457,7 @@ html[data-theme="warm"] #micBtn.listening { background: #f8d4d1; box-shadow: 0 0
 html[data-theme="warm"] #addItemBtn { border-radius: 16px; }
 html[data-theme="warm"] .voice-opts { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 13px; color: #8a7058; }
 html[data-theme="warm"] .voice-opts select { padding: 4px 8px; }
-html[data-theme="warm"] #micStatus { color: #8a7058 !important; }
+html[data-theme="warm"] #micStatus { color: #4a3020 !important; }
 html[data-theme="warm"] .toolbar {
   gap: 8px;
   margin-bottom: 12px;
@@ -1762,8 +1762,10 @@ html[data-theme="warm"] { padding: calc(10px + env(safe-area-inset-top, 0px)) ca
   .due-sheet { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
 }
 /* Fix 8: dump box sits right under the title; quiet status line under it */
-#micStatus { margin: -8px 0 8px; }
+#micStatus { text-align: center; font-size: 13px; color: #888; min-height: 18px; margin: -8px 0 8px; }
 html #micStatus:empty { min-height: 0 !important; margin: 0; }
+/* Warm: phone-readable status line, room for two lines, nothing reserved when empty. */
+html[data-theme="warm"] #micStatus:not(:empty) { font-size: 15px; line-height: 1.45; min-height: 0; margin: 2px 0 10px; padding: 0 4px; white-space: normal; overflow-wrap: break-word; }
 @media (max-width: 480px) {
   html .finish-row #catSelect, html[data-theme] .finish-row #catSelect { flex: 1 1 100%; min-width: 0; }
   .finish-row .btn-word { display: none; }
@@ -2989,6 +2991,106 @@ html[data-theme="warm"] .howto-welcome button.footer-link {
   cursor: pointer;
 }
 
+/* v32 Smart-starts: the "idea?" thought bubble and its sheet */
+#list .item.has-hint, #list .group-items.has-hint-group { overflow: visible; }
+#list .item.has-hint .item-text { min-width: 0; }
+#list .item .hint-bubble,
+#list .item .hint-bubble:hover,
+#list .item .hint-bubble:active {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 44px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0 -2px 0 -4px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: inherit;
+  font-weight: 400;
+  cursor: pointer;
+  transform: translateY(-6px) rotate(-5deg);
+}
+#list .item .hint-bubble svg {
+  display: block;
+  width: 54px;
+  height: 44px;
+  filter: drop-shadow(1px 2px 2px rgba(90,60,20,0.12));
+}
+#list .item .hint-bubble .bubble-label {
+  position: absolute;
+  left: 7px;
+  top: 7px;
+  width: 40px;
+  text-align: center;
+  font-family: Caveat, "Patrick Hand", cursive;
+  font-size: 14px;
+  font-weight: 600;
+  color: #7a4a28;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  transform: rotate(3deg);
+}
+#list .item .hint-bubble:focus-visible { outline: 2px solid #b5522a; outline-offset: 1px; border-radius: 10px; }
+#list .item .hint-bubble.is-calm,
+#list .item .hint-bubble.is-calm:hover,
+#list .item .hint-bubble.is-calm:active {
+  opacity: 0.68;
+  transform: translateY(-6px) rotate(-5deg) scale(0.86);
+}
+#list .item .hint-bubble.is-pop { animation: bd-hint-pop 620ms cubic-bezier(.3,1.5,.5,1) both; }
+@keyframes bd-hint-pop {
+  0% { opacity: 0; transform: translateY(6px) rotate(-5deg) scale(0.5); }
+  60% { opacity: 1; transform: translateY(-10px) rotate(-5deg) scale(1.1); }
+  100% { opacity: 1; transform: translateY(-6px) rotate(-5deg) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #list .item .hint-bubble.is-pop { animation: none; }
+}
+#list .item.has-hint-intro { flex-wrap: wrap; }
+#list .item .hint-intro {
+  flex: 1 0 100%;
+  display: block;
+  order: 20;
+  margin: 2px 0 0;
+  font-family: Caveat, "Patrick Hand", cursive;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: #7a4a28;
+  text-align: left;
+}
+.smart-sheet {
+  position: fixed;
+  left: 50%;
+  top: 16%;
+  transform: translateX(-50%) rotate(-0.4deg);
+  width: min(400px, calc(100% - 24px));
+  max-height: 72vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  z-index: 1001;
+  padding: 18px 18px 14px;
+  background: #fffaf1;
+  border: 1px solid #d7c3a4;
+  border-radius: 7px 14px 9px 11px;
+  box-shadow: 0 18px 40px rgba(60,40,15,0.22);
+  color: #2b2118;
+}
+.smart-sheet .tip-kicker { font-family: "Source Serif 4", serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8a5a38; }
+.smart-sheet .tip-title { margin: 2px 0 4px; font-family: Caveat, "Patrick Hand", cursive; font-size: 30px; font-weight: 600; line-height: 1.05; color: #5a3018; }
+.smart-sheet .tip-item { font-family: "Patrick Hand", "Segoe Print", cursive; font-size: 16px; color: #7a5a3a; overflow-wrap: anywhere; }
+.smart-sheet .tip-steps { margin: 12px 0 14px; padding-left: 22px; font-family: "Patrick Hand", "Segoe Print", cursive; font-size: 19px; line-height: 1.3; color: #2b2118; }
+.smart-sheet .tip-steps li { margin-bottom: 5px; }
+.smart-sheet button { display: block; width: 100%; min-height: 46px; margin-bottom: 8px; text-align: center; }
 
 </style>
 </head>
@@ -3025,7 +3127,7 @@ html[data-theme="warm"] .howto-welcome button.footer-link {
     <button id="micBtn" type="button" aria-label="Start voice capture">🎤</button>
     <button id="addItemBtn" type="button" aria-label="Add item">Add</button>
   </div>
-  <div id="micStatus" style="text-align:center;font-size:13px;color:#888;min-height:18px;"></div>
+  <div id="micStatus"></div>
   <section id="compareView" hidden aria-label="Compare personalities"></section>
 
   <div class="controls">
@@ -3155,7 +3257,7 @@ const PALETTE = ['#ff8a80','#82b1ff','#b9f6ca','#ffff8d','#ea80fc','#ffd180','#f
 // FEEDBACK_EMAIL is a PLACEHOLDER until the owner picks a real address.
 // Replace this with the inbox that should receive tester notes. Do not put note contents in feedback.
 const FEEDBACK_EMAIL = 'feedback@example.com';
-const APP_VERSION = 'v31';
+const APP_VERSION = 'v32';
 
 let collapsed = JSON.parse(localStorage.getItem('bd-collapsed') || '{}');
 
@@ -3774,7 +3876,11 @@ function applyTheme(name, persist) {
   }
   if (typeof window.__bdUpdatePageWhen === 'function') window.__bdUpdatePageWhen();
 }
-function emptyHTML() { return THEME_META[currentTheme].empty; }
+function emptyHTML() {
+  const fallback = THEME_META[currentTheme].empty;
+  if (currentTheme !== 'warm' || !uiHasCopy('emptyFrontTitle') || !uiHasCopy('emptyFrontSub')) return fallback;
+  return '<div class="empty"><div class="empty-emoji">✎</div><div class="empty-title">' + uiCopy('emptyFrontTitle', null, '') + '</div><div class="empty-sub">' + uiCopy('emptyFrontSub', null, '') + '</div></div>';
+}
 function looksHTML(current, name) {
   return `<div class="ob-looks" role="radiogroup">` + LOOKS.map(l => `<label class="ob-look ${current === l.id ? 'on' : ''}">
     <input type="radio" name="${name}" value="${l.id}" ${current === l.id ? 'checked' : ''}>
@@ -4216,6 +4322,14 @@ var FRIEND_COPY = /*FRIEND_COPY_START*/{
     nudgeClear: ["List's clear. Look at you. Who are you right now?", "Nothing waiting. Weird flex, but okay."],
     tailLight: ["No big deal, just saying.", "Up to you. I'm just the friend who says it."],
     tailStay: ["Seriously, one thing today. Let's go.", "You told me to stay on you, so: today."],
+    emptyFrontTitle: ["Oh, look at that. A blank page, just ready for you."],
+    emptyFrontSub: ["Type or talk whenever you're ready."],
+    emptyPage: ["Nothing on this page yet. Type or talk whenever you're ready."],
+    emptySearch: ["Hmm, nothing in here matches “{q}”."],
+    addedPageUncat: ["New items will go uncategorized until you assign them."],
+    addedPageDest: ["New items will still go to {dest} until you assign them."],
+    itemAdded: ["Got it — “{item}” is on the list."],
+    capturedUnsorted: ["Tossed it in Unsorted."],
     cuss: {
       sample: ["Hey. Yeah, I'm gonna be annoying, but you're going to get shit done and be the person you want to be. So let's fucking go."],
       addAck: ["Got it. “{item}” is on the list. Now let's get shit done.", "“{item}”, added. Yeah, I'm gonna be annoying about this one. Damn right."],
@@ -4306,6 +4420,19 @@ function friendLineAs(style, cuss, type, params, seed) {
   if (params.n != null && params.things == null) params.things = Number(params.n) === 1 ? 'thing' : 'things';
   var out = t.replace(/\{(\w+)\}/g, function (m, k) { return params[k] != null ? obEsc(params[k]) : m; });
   return out.charAt(0).toUpperCase() + out.slice(1);
+}
+// UI chrome wording from the current voice (never cussing). A voice without the line gets the caller's fallback, not Warm's.
+function uiHasCopy(type) {
+  var c = FRIEND_COPY[voiceStyle()];
+  return !!(c && c[type] && c[type].length);
+}
+// For innerHTML: params come back HTML-escaped, so an HTML fallback must be escaped by the caller too.
+function uiCopy(type, params, fallback) {
+  return uiHasCopy(type) ? friendLineAs(voiceStyle(), false, type, params) : fallback;
+}
+// For textContent / setStatus: plain text, so names like "R&D" don't show as entities.
+function uiCopyText(type, params, fallback) {
+  return uiHasCopy(type) ? friendPlain(friendLineAs(voiceStyle(), false, type, params)) : fallback;
 }
 function friendLevel() {
   var n = profile && profile.nudge;
@@ -5169,7 +5296,7 @@ function undoMakeSub(name, t, tIndex, did, before) {
 function render() {
   if (addedCatDest !== undefined && currentCat !== addedCatDest) {
     addedCatDest = undefined;
-    if (/New items will still go to/.test(micStatus.textContent || '')) setStatus('');
+    if (/New items will (still go to|go uncategorized)/.test(micStatus.textContent || '')) setStatus('');
   }
   updateSelect();
   cleanupAfterItem();
@@ -5182,7 +5309,7 @@ function render() {
   if (sc) sc.textContent = (q && visible.length) ? (visible.length + ' found') : '';
   if (sx) sx.style.display = q ? 'inline-block' : 'none';
   if (q && !visible.length && !deletedItems.length && !letGoItems.length) {
-    listEl.innerHTML = '<div class="empty">Nothing in here matches “' + esc(searchQuery.trim()) + '”.</div>';
+    listEl.innerHTML = '<div class="empty">' + uiCopy('emptySearch', { q: searchQuery.trim() }, 'Nothing in here matches “' + esc(searchQuery.trim()) + '”.') + '</div>';
     toolbar.style.display = 'none';
     return;
   }
@@ -5544,7 +5671,8 @@ function addedCatStatus(added, name) {
   addedCatDest = undefined;
   if (currentCat === name) return added + '. New items will go there.';
   addedCatDest = currentCat;
-  return added + '. New items will still go to ' + (currentCat || 'No category') + ' until you pick ' + name + '.';
+  if (!currentCat) return added + '. ' + uiCopyText('addedPageUncat', null, 'New items will go uncategorized until you assign them.');
+  return added + '. ' + uiCopyText('addedPageDest', { dest: currentCat }, 'New items will still go to ' + currentCat + ' until you assign them.');
 }
 
 addCatBtn.onclick = () => {
@@ -5661,7 +5789,7 @@ function addTypedItem() {
   }
   const before = micStatus.textContent;
   const it = addItem();
-  if (it && micStatus.textContent === before) setStatus('✓ Added: ' + shortQuote(it.text));
+  if (it && micStatus.textContent === before) setStatus(uiCopyText('itemAdded', { item: shortQuote(it.text).slice(1, -1) }, '✓ Added: ' + shortQuote(it.text)));
   return it;
 }
 addItemBtn.onclick = () => { addTypedItem(); if (addKeepsFocus) itemInput.focus(); addKeepsFocus = false; };
@@ -5687,6 +5815,12 @@ listEl.addEventListener('click', e => {
   const itemEl = t.closest('.item');
   const header = t.closest('.group-header');
 
+  const tipBubble = t.closest('.hint-bubble');
+  if (tipBubble) {
+    e.stopPropagation();
+    if (!selectMode) openTipSheet(tipBubble.dataset.id);
+    return;
+  }
   const slideHint = t.closest('.slide-hint');
   if (slideHint) {
     e.stopPropagation();
@@ -6687,6 +6821,7 @@ function closeIntro() {
     if (s._sheetDismiss) try { s._sheetDismiss(); } catch (e) {}
     s.remove();
   });
+  try { syncTipBubbles(); } catch (e) {}
 }
 function introHomeScreenCopy() {
   const ua = navigator.userAgent || '';
@@ -6740,11 +6875,163 @@ function openIntro(opts) {
   document.body.appendChild(wrap);
   if (opts.fromHowTo && typeof wireDismiss === 'function') wireDismiss(wrap, () => finish(false));
   paint();
+  try { syncTipBubbles(); } catch (e) {}
   return wrap;
 }
 function maybeShowIntro() {
   if (!introDue()) return;
   openIntro();
+}
+
+// v32 Smart-starts: a thought bubble on things that have sat a couple of days.
+var TIP_WAIT_MS = 2 * 24 * 60 * 60 * 1000;
+var TIP_MAX_BUBBLES = 2;
+var TIP_CALM_AFTER = 3;
+var TIP_STATS_KEY = 'bd-tips-stats';
+var TIP_INTRO_KEY = 'bd-tips-intro-seen';
+var TIP_BUBBLE_SVG = '<svg viewBox="0 0 54 44" fill="none" aria-hidden="true"><path d="M13 16.5 C10.5 8.2, 21 3.4, 28 6.2 C32.5 2.0, 45.5 4.4, 46.5 13 C52.5 14.2, 53.2 24.2, 46.2 27.2 C43.4 33.6, 30.5 34.8, 24.2 30 C17.6 33.6, 8.6 27.8, 13 16.5 Z" fill="#fffaf1" stroke="#5a3a18" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="18.2" cy="33.6" rx="3.0" ry="2.5" fill="#fffaf1" stroke="#5a3a18" stroke-width="1.2"/><ellipse cx="12.4" cy="40.2" rx="2.0" ry="1.7" fill="#fffaf1" stroke="#5a3a18" stroke-width="1.1"/></svg><span class="bubble-label">idea?</span>';
+var tipIntroId = null;   // the item showing the one-time line this session
+var tipPopUntil = 0;     // render() can run twice on load, so the first bounce gets a short window
+var tipPopId = null;
+
+function tipStats() {
+  try {
+    const s = JSON.parse(localStorage.getItem(TIP_STATS_KEY) || '{}');
+    return { opens: +s.opens || 0, dismisses: +s.dismisses || 0 };
+  } catch (e) { return { opens: 0, dismisses: 0 }; }
+}
+function bumpTipStat(name) {
+  const s = tipStats();
+  s[name] += 1;
+  try { localStorage.setItem(TIP_STATS_KEY, JSON.stringify(s)); } catch (e) {}
+}
+function tipsAreCalm() {
+  const s = tipStats();
+  return s.opens >= TIP_CALM_AFTER || s.dismisses >= TIP_CALM_AFTER;
+}
+function tipIntroSeen() {
+  try { return localStorage.getItem(TIP_INTRO_KEY) === '1'; } catch (e) { return true; }
+}
+function itemCanHaveTip(it) {
+  if (!it || it.ghosted || it.deleted || it.letGo || it.tipStepsAdded) return false;
+  if (typeof it.createdAt !== 'number' || !isFinite(it.createdAt)) return false;
+  return bdNow() - it.createdAt >= TIP_WAIT_MS;
+}
+function syncTipBubbles() {
+  if (typeof listEl === 'undefined' || !listEl) return;
+  listEl.querySelectorAll('.hint-bubble, .hint-intro').forEach(n => n.remove());
+  listEl.querySelectorAll('.has-hint, .has-hint-intro').forEach(n => n.classList.remove('has-hint', 'has-hint-intro'));
+  listEl.querySelectorAll('.has-hint-group').forEach(n => n.classList.remove('has-hint-group'));
+  if (selectMode || isCaptureMode() || introIsOpen()) return;
+
+  const picks = [];
+  listEl.querySelectorAll('.item[data-id]').forEach(row => {
+    if (row.classList.contains('ghosted') || row.querySelector('.unsure-decide')) return;
+    const it = items.find(i => String(i.id) === row.dataset.id);
+    if (!itemCanHaveTip(it) || !row.querySelector('.done') || !row.offsetParent) return;
+    picks.push({ row, it });
+  });
+  picks.sort((a, b) => a.it.createdAt - b.it.createdAt);
+  const chosen = picks.slice(0, TIP_MAX_BUBBLES);
+  const calm = tipsAreCalm();
+
+  if (!chosen.some(p => String(p.it.id) === tipIntroId)) tipIntroId = null;
+  if (chosen.length && !calm && !tipIntroSeen()) {
+    tipIntroId = String(chosen[0].it.id);
+    tipPopId = tipIntroId;
+    tipPopUntil = performance.now() + 500;
+    try { localStorage.setItem(TIP_INTRO_KEY, '1'); } catch (e) {}
+  }
+
+  chosen.forEach(({ row, it }) => {
+    const id = String(it.id);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'hint-bubble' + (calm ? ' is-calm' : '') + (!calm && id === tipPopId && performance.now() < tipPopUntil ? ' is-pop' : '');
+    btn.dataset.id = id;
+    btn.setAttribute('aria-label', 'An idea for this item');
+    btn.innerHTML = TIP_BUBBLE_SVG;
+    row.insertBefore(btn, row.querySelector('.item-menu') || row.querySelector('.done'));
+    row.classList.add('has-hint');
+    for (let g = row.closest('.group-items'); g; g = g.parentElement && g.parentElement.closest('.group-items')) g.classList.add('has-hint-group');
+    if (id === tipIntroId && !calm) {
+      const line = document.createElement('span');
+      line.className = 'hint-intro';
+      line.textContent = 'I’ve got an idea for this one.';
+      row.appendChild(line);
+      row.classList.add('has-hint-intro');
+    }
+  });
+}
+function tipFor(text) {
+  const t = String(text || '').toLowerCase();
+  const has = re => re.test(t);
+  if (has(/\b(clean|tidy|organi[sz]e|declutter|garage|closet|basement|attic)\b/)) return { title: 'Just one corner.', steps: ['Start with one corner', 'Sort it: keep, sell, donate, or toss', 'Stop after 20 minutes and call it a win'] };
+  if (has(/\bcall\b/)) return { title: 'Let’s make this call easy.', steps: ['Find a quiet minute', 'Jot down what you want to say', 'Make the call'] };
+  if (has(/\b(email|e-mail|reply|respond|text|message|write)\b/)) return { title: 'A rough one counts.', steps: ['Jot down the one thing you need to say', 'Write a rough version', 'Send it'] };
+  if (has(/\b(buy|shop|shopping|groceries|order)\b/)) return { title: 'Let’s get this one handled.', steps: ['Write down exactly what you need', 'Pick when you’ll get it', 'Cross it off when you have it'] };
+  if (has(/\b(fix|repair|replace)\b/)) return { title: 'One look at it first.', steps: ['Take a look and write down what’s wrong', 'Gather what you need', 'Set a time to fix it'] };
+  if (has(/\b(pay|bill|bills|taxes|budget)\b/)) return { title: 'Ten minutes, tops.', steps: ['Find the paperwork', 'Set aside ten minutes', 'Take care of it and cross it off'] };
+  return { title: 'Let’s make this one smaller.', steps: ['Pick the smallest first step', 'Set a time to do it', 'Cross it off when it’s done'] };
+}
+function closeTipSheet() { unwireDismiss('.smart-sheet'); }
+function openTipSheet(id) {
+  closeTipSheet();
+  const it = items.find(i => String(i.id) === String(id));
+  if (!itemCanHaveTip(it)) return;
+  bumpTipStat('opens');
+  tipIntroId = null;
+  const tip = tipFor(it.text);
+  const div = document.createElement('div');
+  div.id = 'bdTipSheet';
+  div.className = 'smart-sheet';
+  div.setAttribute('role', 'dialog');
+  div.setAttribute('aria-modal', 'true');
+  div.setAttribute('aria-labelledby', 'bdTipTitle');
+  div.innerHTML = `<div class="tip-kicker">Your friend</div>
+    <div class="tip-title" id="bdTipTitle">${esc(tip.title)}</div>
+    <div class="tip-item">“${esc(it.text)}”</div>
+    <ol class="tip-steps">${tip.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+    <button type="button" data-act="add">Add these as steps</button>
+    <button type="button" class="secondary" data-act="later">Not now</button>`;
+  const leave = () => {
+    closeTipSheet();
+    syncTipBubbles();
+    const back = listEl.querySelector(`.hint-bubble[data-id="${String(it.id).replace(/"/g, '')}"]`);
+    if (back) back.focus({ preventScroll: true });
+  };
+  const dismiss = () => { bumpTipStat('dismisses'); leave(); };
+  div.addEventListener('click', ev => {
+    const b = ev.target.closest('button[data-act]');
+    if (!b) return;
+    if (b.dataset.act === 'later') { dismiss(); return; }
+    closeTipSheet();
+    addTipSteps(it, tip.steps);
+  });
+  document.body.appendChild(div);
+  wireDismiss(div, dismiss);
+  syncTipBubbles();
+  const primary = div.querySelector('[data-act="add"]');
+  if (primary) primary.focus({ preventScroll: true });
+}
+// Added directly so the steps stay in this item's category and the dump dropdown is left alone.
+function addTipSteps(it, steps) {
+  const same = i => !i.deleted && !i.letGo && (i.category || '') === (it.category || '');
+  const fresh = steps.filter(s => !items.some(i => same(i) && i.text === s));
+  const at = items.indexOf(it);
+  const now = bdNow();
+  const rows = fresh.map(text => ({
+    id: Date.now() + Math.random(),
+    text,
+    category: it.category,
+    color: it.color,
+    ghosted: false, finishedAt: null, due: null, deleted: false, selected: false,
+    createdAt: now
+  }));
+  items.splice(at + 1, 0, ...rows);
+  it.tipStepsAdded = true;
+  save(); render();
+  setStatus(rows.length ? 'Added ' + rows.length + (rows.length === 1 ? ' step' : ' steps') : 'Those steps are already here');
 }
 
 function notesForBackup() {
@@ -6897,12 +7184,12 @@ function showVoiceToast(msg, undoFn, ms) {
     el.id = 'voiceToast';
     el.setAttribute('role', 'status');
     el.setAttribute('aria-live', 'polite');
-    el.style.cssText = 'position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9999;width:max-content;max-width:calc(100vw - 24px);white-space:nowrap;background:rgba(40,32,24,.92);color:#fff;border-radius:12px;padding:10px 14px;font-size:15px;line-height:1.3;display:none;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,.25);';
+    el.style.cssText = 'position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9999;width:max-content;max-width:calc(100vw - 24px);box-sizing:border-box;white-space:normal;background:rgba(40,32,24,.92);color:#fff;border-radius:12px;padding:10px 14px;font-size:15px;line-height:1.4;display:none;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,.25);';
     document.body.appendChild(el);
   }
   el.innerHTML = '';
   const span = document.createElement('span'); span.className = 'vt-msg'; span.textContent = msg; span.title = msg;
-  span.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; el.appendChild(span);
+  span.style.cssText = 'min-width:0;overflow:hidden;white-space:normal;overflow-wrap:break-word;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;'; el.appendChild(span);
   if (undoFn) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'vt-undo'; b.textContent = 'Undo';
@@ -7256,7 +7543,7 @@ function captureToast(dest, how) {
   const parent = dest && dest.name && typeof parentOf === 'function' ? parentOf(dest.name) : '';
   let msg;
   if (!dest || isUnsortedName(dest.name)) {
-    msg = 'Tossed it in Unsorted.';
+    msg = uiCopyText('capturedUnsorted', null, 'Tossed it in Unsorted.');
   } else if (parent) {
     msg = 'Got it — in ' + dest.name + ' (under ' + parent + ').';
     if (how === 'recent') msg = 'Got it — in ' + dest.name + ' (under ' + parent + '). That’s the one you used last.';
@@ -7662,7 +7949,7 @@ function maybeShowMicTip() {
   setTimeout(() => {
     showVoiceToast(msg, null, 9000);
     const tipText = document.querySelector('#voiceToast .vt-msg');
-    if (tipText) tipText.style.whiteSpace = 'normal';
+    if (tipText) tipText.style.display = 'block'; // this one tip needs its full 3 lines, so no 2-line clamp
   }, 600);
 }
 
@@ -8707,6 +8994,7 @@ render();
   function nbAfterRender() {
     syncPageLock();
     filterListToPage();
+    try { syncTipBubbles(); } catch (e) {}
     if (nbPage === SETTINGS) {
       $("nbSettingsPage").hidden = false;
       nbRenderSettings();
@@ -8743,7 +9031,7 @@ render();
     if (!area) return;
     var note = document.createElement("div");
     note.className = "page-empty";
-    note.textContent = "Nothing on this page yet. Type or talk to add something.";
+    note.textContent = uiCopyText("emptyPage", null, "Nothing on this page yet. Type or talk to add something.");
     if (area.classList.contains("collapsed")) area.parentNode.insertBefore(note, area.nextSibling);
     else area.appendChild(note);
   }
