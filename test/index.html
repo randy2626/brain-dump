@@ -3050,7 +3050,7 @@ const PALETTE = ['#ff8a80','#82b1ff','#b9f6ca','#ffff8d','#ea80fc','#ffd180','#f
 // FEEDBACK_EMAIL is a PLACEHOLDER until the owner picks a real address.
 // Replace this with the inbox that should receive tester notes. Do not put note contents in feedback.
 const FEEDBACK_EMAIL = 'feedback@example.com';
-const APP_VERSION = 'v27';
+const APP_VERSION = 'v28';
 
 let collapsed = JSON.parse(localStorage.getItem('bd-collapsed') || '{}');
 
@@ -6351,7 +6351,7 @@ function feedbackBasicInfo() {
   } catch (e) {}
   const standalone = (typeof isStandaloneApp === 'function') ? isStandaloneApp() : false;
   return [
-    'App: Brain Dump ' + (typeof APP_VERSION === 'string' ? APP_VERSION : 'v27') + (/\btest\b/i.test(location.pathname || '') ? ' TEST' : ''),
+    'App: Brain Dump ' + (typeof APP_VERSION === 'string' ? APP_VERSION : 'v28') + (/\btest\b/i.test(location.pathname || '') ? ' TEST' : ''),
     'Browser: ' + browser,
     'Screen: ' + w + '×' + h + (sw && sh ? ' (device ' + sw + '×' + sh + ')' : ''),
     standalone ? 'Opened from Home Screen' : 'Opened in a browser tab'
@@ -6407,7 +6407,7 @@ function openFeedbackSheet() {
   div.setAttribute('aria-label', 'Send feedback');
   div.innerHTML =
     '<div class="kind-title">Tell us how it’s going</div>' +
-    '<p class="fb-reachout">Your brain is yours, and we respect that. We can’t see anything you write in Brain Dump. We only see the feedback you send, along with your email so we can reach out.</p>' +
+    '<p class="fb-reachout">Your brain is yours, and we respect that. We can’t see anything you write in Brain Dump. We only see the feedback you send, along with your email so we can reach out. Just like you’re trying to learn and grow, so are we.</p>' +
     '<div class="fb-types" role="group" aria-label="What kind of note is this?">' +
       '<button type="button" class="secondary is-on" data-type="broke">Something broke</button>' +
       '<button type="button" class="secondary" data-type="idea">Idea</button>' +
