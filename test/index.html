@@ -2887,6 +2887,77 @@ html[data-theme="warm"] .howto-feedback button.footer-link {
   cursor: pointer;
 }
 
+/* v29: slightly taller phone tap targets for ⋯, the more menu, and the footer link */
+@media (max-width: 480px), (hover: none) and (pointer: coarse) {
+  #moreActions, #selectBtn, #settingsBtn { min-height: 44px; }
+  #moreMenu button { min-height: 44px; }
+  .bd-footer .footer-link { min-height: 40px; }
+}
+
+/* v29: first-time welcome + backup reminder (Warm) */
+.bd-intro-sheet {
+  width: min(420px, calc(100% - 24px));
+  text-align: left;
+}
+.bd-intro-sheet .kind-title { margin-bottom: 6px; }
+.bd-intro-sheet .bd-intro-body {
+  font-size: 15px;
+  line-height: 1.45;
+  color: #5a4330;
+  margin: 0 0 16px;
+  white-space: normal;
+}
+html[data-theme="warm"] .bd-intro-sheet .bd-intro-body { color: #5a4330; }
+.bd-intro-dots {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+.bd-intro-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e2d0b4;
+}
+.bd-intro-dots span.on { background: #b5522a; }
+.bd-intro-sheet .ask-actions { margin-top: 4px; }
+.bd-backup-card {
+  display: none;
+  margin: 0 0 10px;
+  padding: 12px 12px 12px 14px;
+  background: rgba(255,250,241,0.95);
+  border: 1px solid rgba(181,82,42,0.28);
+  border-radius: 12px;
+  color: #3a2718;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+}
+.bd-backup-card.is-on { display: block; }
+.bd-backup-card .bd-backup-text { margin: 0 0 10px; }
+.bd-backup-card .bd-backup-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.bd-backup-card .bd-backup-actions button { margin: 0; min-height: 40px; }
+html[data-nb-page="settings"] .bd-backup-card,
+html[data-nb-page="contents"] .bd-backup-card { display: none !important; }
+.howto-welcome { margin: 8px 0 0; font-size: 13px; }
+.howto-welcome button,
+html[data-theme="warm"] .howto-welcome button,
+html[data-theme="warm"] .howto-welcome button.footer-link {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  color: #5a3018 !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0 !important;
+  min-height: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+
 </style>
 </head>
 <body data-theme="warm" data-tracker-place="strip">
@@ -2941,6 +3012,7 @@ html[data-theme="warm"] .howto-feedback button.footer-link {
     </div>
   </div>
   <div id="installTip" role="status"></div>
+  <div id="bdBackupCard" class="bd-backup-card" hidden></div>
   <input type="file" id="importFile" accept=".json,application/json,text/plain" hidden aria-hidden="true">
   <div id="howTo" style="display:none;" role="dialog" aria-label="How to">
     <div class="howto-head"><strong>How it works</strong><button type="button" class="howto-close secondary" aria-label="Close how-to">✕</button></div>
@@ -2964,6 +3036,7 @@ html[data-theme="warm"] .howto-feedback button.footer-link {
       <li>Add this to your Home Screen so your notes stay put on this device.</li>
     </ul>
     <p class="howto-feedback">Something off, or an idea? <button type="button" id="howToFeedback" class="footer-link">Send feedback</button></p>
+    <p class="howto-welcome">Want a recap? <button type="button" id="howToWelcome" class="footer-link">See the welcome again</button></p>
   </div>
   <div id="settings"></div>
 
@@ -3050,7 +3123,7 @@ const PALETTE = ['#ff8a80','#82b1ff','#b9f6ca','#ffff8d','#ea80fc','#ffd180','#f
 // FEEDBACK_EMAIL is a PLACEHOLDER until the owner picks a real address.
 // Replace this with the inbox that should receive tester notes. Do not put note contents in feedback.
 const FEEDBACK_EMAIL = 'feedback@example.com';
-const APP_VERSION = 'v28';
+const APP_VERSION = 'v29';
 
 let collapsed = JSON.parse(localStorage.getItem('bd-collapsed') || '{}');
 
@@ -3765,8 +3838,12 @@ function wireNudges(root, onPick) {
 // ---------- First-run card (inline, never blocks dumping) ----------
 function renderWelcome(step) {
   const card = $('welcome');
+  if (!card) return;
   if (step == null) {
-    const show = !profile || (!profile.setupDone && !profile.skipped);
+    if (typeof introIsOpen === 'function' && introIsOpen()) { card.style.display = 'none'; return; }
+    let justClosed = false;
+    try { justClosed = sessionStorage.getItem('bd-intro-just-closed') === '1'; } catch (e) {}
+    const show = !justClosed && (!profile || (!profile.setupDone && !profile.skipped));
     card.style.display = show ? 'block' : 'none';
     if (!show) return;
     card.innerHTML = `<div class="ob-title">Hey 👋 want this to fit you?</div>
@@ -6195,6 +6272,7 @@ function downloadBlob(name, text, type) {
 function exportJSONBackup() {
   const payload = { app: 'Brain Dump', exportedAt: new Date().toISOString(), items: items, categories: categories };
   downloadBlob('brain-dump-backup-' + backupStamp() + '.json', JSON.stringify(payload, null, 2), 'application/json');
+  if (typeof markBackupSaved === 'function') markBackupSaved();
   setStatus('Backup saved');
 }
 function exportPlainText() {
@@ -6351,7 +6429,7 @@ function feedbackBasicInfo() {
   } catch (e) {}
   const standalone = (typeof isStandaloneApp === 'function') ? isStandaloneApp() : false;
   return [
-    'App: Brain Dump ' + (typeof APP_VERSION === 'string' ? APP_VERSION : 'v28') + (/\btest\b/i.test(location.pathname || '') ? ' TEST' : ''),
+    'App: Brain Dump ' + (typeof APP_VERSION === 'string' ? APP_VERSION : 'v29') + (/\btest\b/i.test(location.pathname || '') ? ' TEST' : ''),
     'Browser: ' + browser,
     'Screen: ' + w + '×' + h + (sw && sh ? ' (device ' + sw + '×' + sh + ')' : ''),
     standalone ? 'Opened from Home Screen' : 'Opened in a browser tab'
@@ -6482,6 +6560,7 @@ try {
 })();
 if ($('footerFeedback')) $('footerFeedback').onclick = ev => { ev.preventDefault(); openFeedbackSheet(); };
 if ($('howToFeedback')) $('howToFeedback').onclick = ev => { ev.preventDefault(); openFeedbackSheet(); };
+if ($('howToWelcome')) $('howToWelcome').onclick = ev => { ev.preventDefault(); openIntro({ fromHowTo: true }); };
 
 
 const INSTALL_TIP_KEY = 'bd-install-tip';
@@ -6516,7 +6595,197 @@ function renderInstallTip() {
   const d = el.querySelector('.install-tip-dismiss');
   if (d) d.onclick = dismissInstallTip;
 }
+
 try { renderInstallTip(); } catch (e) {}
+
+// v29: first-time welcome (brand-new notebooks only) + backup reminder
+const INTRO_SEEN_KEY = 'bd-intro-seen';
+const BACKUP_AT_KEY = 'bd-backup-at';
+const BACKUP_NUDGE_KEY = 'bd-backup-nudge';
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+function bdNow() {
+  if (typeof window.__bdNow === 'number' && isFinite(window.__bdNow)) return window.__bdNow;
+  return Date.now();
+}
+function isCaptureMode() {
+  try {
+    const q = new URLSearchParams(location.search || '');
+    if (q.get('capture') === '1') return true;
+    if (typeof isCaptureUrl === 'function' && isCaptureUrl()) return true;
+    const cap = document.getElementById('bdCapture');
+    if (cap && cap.offsetParent !== null) return true;
+  } catch (e) {}
+  return false;
+}
+function notebookHasData() {
+  try {
+    if ((items || []).some(it => !it.deleted)) return true;
+    if ((categories || []).length) return true;
+  } catch (e) {}
+  return false;
+}
+function introWasSeen() {
+  try { return localStorage.getItem(INTRO_SEEN_KEY) === '1'; } catch (e) { return false; }
+}
+function markIntroSeen() {
+  try { localStorage.setItem(INTRO_SEEN_KEY, '1'); } catch (e) {}
+}
+function introIsOpen() { return !!document.querySelector('.bd-intro-sheet'); }
+function introDue() {
+  if (introWasSeen()) return false;
+  if (notebookHasData()) return false;
+  if (isCaptureMode()) return false;
+  return true;
+}
+function closeIntro() {
+  document.querySelectorAll('.bd-intro-sheet').forEach(s => {
+    if (s._sheetDismiss) try { s._sheetDismiss(); } catch (e) {}
+    s.remove();
+  });
+}
+function introHomeScreenCopy() {
+  const ua = navigator.userAgent || '';
+  const ios = /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1);
+  if (ios) return 'Add Brain Dump to your Home Screen so your notes stay put. On iPhone: tap Share, then Add to Home Screen.';
+  return 'Add Brain Dump to your Home Screen so your notes stay put. In your browser menu, tap Install app or Add to Home Screen.';
+}
+const INTRO_STEPS = [
+  { title: 'Dump anything here', body: 'Type a thought and tap Add, or tap the mic and say it out loud. Just get it out. It’s saved on this device.' },
+  { title: 'Put it where it belongs', body: 'Type or say “add milk to Ideas” and it’ll land on that page (we’ll make the page if it’s new). If you don’t name a page, it goes to Unsorted.' },
+  { title: 'Keep it on this phone', body: introHomeScreenCopy() }
+];
+function openIntro(opts) {
+  opts = opts || {};
+  if (!opts.fromHowTo && isCaptureMode()) return null;
+  closeIntro();
+  if (typeof closeHowTo === 'function') try { closeHowTo(); } catch (e) {}
+  if (typeof closeFeedbackSheet === 'function') try { closeFeedbackSheet(); } catch (e) {}
+  let step = 0;
+  const wrap = document.createElement('div');
+  wrap.className = 'kind-sheet ask-sheet bd-intro-sheet';
+  wrap.setAttribute('role', 'dialog');
+  wrap.setAttribute('aria-label', 'Welcome');
+  const finish = (mark) => {
+    if (mark) markIntroSeen();
+    try { sessionStorage.setItem('bd-intro-just-closed', '1'); } catch (e) {}
+    closeIntro();
+    if (typeof renderInstallTip === 'function') try { renderInstallTip(); } catch (e) {}
+  };
+  const paint = () => {
+    const s = INTRO_STEPS[step];
+    const last = step === INTRO_STEPS.length - 1;
+    const dots = '<div class="bd-intro-dots" aria-hidden="true">' + INTRO_STEPS.map((_, i) => '<span class="' + (i === step ? 'on' : '') + '"></span>').join('') + '</div>';
+    wrap.innerHTML =
+      dots +
+      '<div class="kind-title">' + s.title + '</div>' +
+      '<div class="bd-intro-body">' + s.body + '</div>' +
+      '<div class="ask-actions">' +
+        (last ? '<button type="button" data-act="done">Got it</button>' : '<button type="button" data-act="next">Next</button>') +
+        '<button type="button" class="secondary" data-act="skip">Skip</button>' +
+      '</div>';
+  };
+  wrap.addEventListener('click', ev => {
+    const b = ev.target.closest('.ask-actions button');
+    if (!b) return;
+    ev.preventDefault();
+    const act = b.dataset.act;
+    if (act === 'next') { step = Math.min(step + 1, INTRO_STEPS.length - 1); paint(); return; }
+    finish(true);
+  });
+  document.body.appendChild(wrap);
+  if (opts.fromHowTo && typeof wireDismiss === 'function') wireDismiss(wrap, () => finish(false));
+  paint();
+  return wrap;
+}
+function maybeShowIntro() {
+  if (!introDue()) return;
+  openIntro();
+}
+
+function notesForBackup() {
+  try { return (items || []).some(it => !it.deleted); } catch (e) { return false; }
+}
+function firstNoteAt() {
+  try {
+    const times = (items || []).filter(it => !it.deleted).map(it => +it.createdAt || 0).filter(n => n > 0);
+    return times.length ? Math.min.apply(null, times) : 0;
+  } catch (e) { return 0; }
+}
+function lastBackupAt() {
+  try { return +localStorage.getItem(BACKUP_AT_KEY) || 0; } catch (e) { return 0; }
+}
+function backupNudgeAt() {
+  try { return +localStorage.getItem(BACKUP_NUDGE_KEY) || 0; } catch (e) { return 0; }
+}
+function backupReminderDue() {
+  if (isCaptureMode()) return false;
+  if (introIsOpen()) return false;
+  if (!notesForBackup()) return false;
+  const now = bdNow();
+  if (backupNudgeAt() && (now - backupNudgeAt()) < THREE_DAYS_MS) return false;
+  const last = lastBackupAt();
+  const anchor = last || firstNoteAt() || now;
+  return (now - anchor) >= THREE_DAYS_MS;
+}
+function markBackupSaved() {
+  try { localStorage.setItem(BACKUP_AT_KEY, String(bdNow())); } catch (e) {}
+  try { localStorage.removeItem(BACKUP_NUDGE_KEY); } catch (e) {}
+  hideBackupReminder();
+}
+function backupLastLabel() {
+  const last = lastBackupAt();
+  if (!last) return 'No copy saved yet.';
+  const days = Math.floor((bdNow() - last) / (24 * 60 * 60 * 1000));
+  if (days <= 0) return 'Last saved copy: today.';
+  if (days === 1) return 'Last saved copy: yesterday.';
+  return 'Last saved copy: ' + days + ' days ago.';
+}
+function hideBackupReminder() {
+  const el = $('bdBackupCard');
+  if (!el) return;
+  el.classList.remove('is-on');
+  el.hidden = true;
+  el.innerHTML = '';
+  if (typeof renderInstallTip === 'function') try { renderInstallTip(); } catch (e) {}
+}
+function snoozeBackupReminder() {
+  try { localStorage.setItem(BACKUP_NUDGE_KEY, String(bdNow())); } catch (e) {}
+  hideBackupReminder();
+}
+function showBackupReminder() {
+  const el = $('bdBackupCard');
+  if (!el) return;
+  const tip = $('installTip');
+  if (tip) { tip.classList.remove('is-on'); tip.innerHTML = ''; }
+  el.innerHTML =
+    '<div class="bd-backup-text">Your notes live on this phone. Save a copy so nothing gets lost.</div>' +
+    '<div class="bd-backup-actions">' +
+      '<button type="button" data-act="save">Save backup</button>' +
+      '<button type="button" class="secondary" data-act="later">Later</button>' +
+    '</div>';
+  el.hidden = false;
+  el.classList.add('is-on');
+  el.onclick = ev => {
+    const b = ev.target.closest('button');
+    if (!b) return;
+    ev.preventDefault();
+    if (b.dataset.act === 'later') snoozeBackupReminder();
+    if (b.dataset.act === 'save') {
+      if (typeof exportJSONBackup === 'function') exportJSONBackup();
+    }
+  };
+}
+function maybeShowBackupReminder() {
+  if (backupReminderDue()) showBackupReminder();
+  else hideBackupReminder();
+}
+try {
+  window.__bdIntro = { open: openIntro, close: closeIntro, due: introDue, isOpen: introIsOpen, seenKey: INTRO_SEEN_KEY };
+  window.__bdBackup = { due: backupReminderDue, show: showBackupReminder, hide: hideBackupReminder, snooze: snoozeBackupReminder, mark: markBackupSaved, lastLabel: backupLastLabel, keyAt: BACKUP_AT_KEY, keyNudge: BACKUP_NUDGE_KEY };
+} catch (e) {}
+try { maybeShowIntro(); } catch (e) {}
+try { if (!introIsOpen()) maybeShowBackupReminder(); } catch (e) {}
+
 
 // Voice
 let recognition = null;
@@ -8851,10 +9120,11 @@ render();
       moreHtml += '<section class="nb-sec"><h2>Data</h2>' +
         '<p class="nb-sec-lead">Saved on this device. It isn’t copied to your other phones or computers yet.</p>' +
         '<div class="nb-actions">' +
-        '<button type="button" id="nbExport">Download backup (JSON)</button>' +
-        '<button type="button" class="secondary" id="nbExportText">Download a readable copy</button>' +
-        '<button type="button" class="secondary" id="nbImport">Import from a backup</button></div>' +
-        '<p class="nb-quiet">The JSON backup can be imported later if something goes missing. The readable copy is for you to keep or print.</p>' +
+        '<button type="button" id="nbImport">Restore from a backup</button>' +
+        '<button type="button" class="secondary" id="nbExport">Download backup (JSON)</button>' +
+        '<button type="button" class="secondary" id="nbExportText">Download a readable copy</button></div>' +
+        '<p class="nb-quiet">Restore is one tap. It asks first, and Merge is the default — it keeps what’s already here. The JSON backup can be imported later if something goes missing. The readable copy is for you to keep or print.</p>' +
+        '<p class="nb-quiet" id="nbLastBackup"></p>' +
         '<p class="nb-quiet" id="nbInstallHint"></p>' +
         "</section>";
       more.innerHTML = moreHtml;
@@ -8873,6 +9143,7 @@ render();
       if ($("nbExport")) $("nbExport").onclick = function () { if (typeof exportJSONBackup === "function") exportJSONBackup(); else if ($("exportBtn")) $("exportBtn").click(); };
       if ($("nbExportText")) $("nbExportText").onclick = function () { if (typeof exportPlainText === "function") exportPlainText(); };
       if ($("nbImport")) $("nbImport").onclick = function () { var inp = $("importFile"); if (inp) inp.click(); };
+      if ($("nbLastBackup") && typeof backupLastLabel === "function") $("nbLastBackup").textContent = backupLastLabel();
       if ($("nbFeedback")) $("nbFeedback").onclick = function () { if (typeof openFeedbackSheet === "function") openFeedbackSheet(); };
 
       var hint = $("nbInstallHint");
