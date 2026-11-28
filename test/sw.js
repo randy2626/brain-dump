@@ -1,7 +1,10 @@
-const CACHE_NAME = 'brain-dump-test-v32';
+const CACHE_NAME = 'brain-dump-test-v35';
 const SHELL = [
   './',
   './index.html',
+  './styles.css',
+  './app-core.js',
+  './app-ui.js',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
